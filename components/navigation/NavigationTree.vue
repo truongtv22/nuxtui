@@ -30,7 +30,8 @@ const items = [{
   label: 'Utilities',
   icon: 'i-heroicons-wrench-screwdriver',
   content: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed neque elit, tristique placerat feugiat ac, facilisis vitae arcu. Proin eget egestas augue. Praesent ut sem nec arcu pellentesque aliquet. Duis dapibus diam vel metus tempus vulputate.'
-}]
+},
+]
 const colorMode = useColorMode()
 const isDark = computed({
   get () {
@@ -40,11 +41,16 @@ const isDark = computed({
     colorMode.preference = colorMode.value === 'dark' ? 'light' : 'dark'
   }
 })
+
 </script>
 
 <template>
-  <div>
-    <h1 class="text-center py-5">PDM</h1>
+  <div class="">
+    <h1 class="text-center py-5 pb-0 text-red-500 font-bold items-center flex justify-center gap-1" @click="isDark=!isDark">PDM<UIcon :name="isDark?'i-material-symbols-light-dark-mode-outline-rounded':'i-material-symbols-light-light-mode-outline'" /></h1>
+    <div class="w-full flex justify-center">
+    </div>
+    
+      
     <UAccordion :items="items" color="secondary">
       <template #item="{item}" >
         <h3 v-if="item.content">{{item.content}}</h3>
@@ -53,8 +59,9 @@ const isDark = computed({
         </template>
       </template>
     </UAccordion>
-  </div>
     
+  </div>
+  
     
   
 </template>
