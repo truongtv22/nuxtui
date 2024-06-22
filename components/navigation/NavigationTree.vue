@@ -46,16 +46,16 @@ const isDark = computed({
 
 <template>
   <div class="">
-    <h1 class="text-center py-5 pb-0 text-red-500 font-bold items-center flex justify-center gap-1" @click="isDark=!isDark">PDM<UIcon :name="isDark?'i-material-symbols-light-dark-mode-outline-rounded':'i-material-symbols-light-light-mode-outline'" /></h1>
+    <h1 class="text-center py-5 text-red-500 font-bold items-center flex justify-center gap-1 text-4xl" @click="isDark=!isDark">PDM<UIcon :name="isDark?'i-material-symbols-light-dark-mode-outline-rounded':'i-material-symbols-light-light-mode-outline'" /></h1>
     <div class="w-full flex justify-center">
     </div>
     
       
-    <UAccordion :items="items" color="secondary">
+    <UAccordion :items="items" color="red" >
       <template #item="{item}" >
-        <h3 v-if="item.content">{{item.content}}</h3>
+        <h3 v-if="item.content" >{{item.content}}</h3>
         <template v-else class="flex flex-column">
-          <ULink class="block border-l border-slate-600 hover:border-slate-200 pl-4" v-for="itc in item.items" :to="itc.to">{{ itc.label }}</ULink>
+          <ULink class="block border-l border-red-800 hover:border-red-500 pl-4 capitalize text-red-800 hover:text-red-500" v-for="itc in item.items" :to="itc.to">{{ itc.label }}</ULink>
         </template>
       </template>
     </UAccordion>
