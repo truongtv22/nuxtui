@@ -32,53 +32,122 @@
     </UDropdown>
   </div>
 
-  <UDivider orientation="horizontal" />
-  <div class="w-full px-3">
-    <h1 @click="te=shuffle(te)">helo</h1>
-    {{ chartData }}{{ te }}
-    <Bar id="my-chart-id" :options="chartOptions" :data="testData" />
-  </div>
+  <UDivider orientation="horizontal" :ui="{border:{base:'dark:border-gray-600'}}"/>
+  <ClientOnly>
+    <div class="px-3 flex gap-3 w-full">
+      <UCard class="w-full my-2">
+        <Bar id="my-chart-id" :options="chartOptions" :data="testData" />
+      </UCard>
+      <UCard class="w-full my-2">
+        <Bar id="my-chart-id" :options="chartOptions" :data="testData" />
+     </UCard>
+    </div>
+    <div class="px-3 flex gap-3 w-full">
+      <UCard class="w-full my-2">
+        <Bar id="my-chart-id" :options="chartOptions" :data="testData" />
+      </UCard>
+      <UCard class="w-full my-2">
+        <Bar id="my-chart-id" :options="chartOptions" :data="testData" />
+     </UCard>
+    </div>
+  </ClientOnly>
+
 
 </template>
 
 <script setup lang="ts">
 import { shuffle } from 'lodash';
 import { Bar } from 'vue-chartjs'
-import { Chart as ChartJS, Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale } from 'chart.js'
 import { sub, format, isSameDay, type Duration } from 'date-fns'
-
-ChartJS.register(Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale)
+import { plugins } from '#tailwind-config';
+import Chart, { scales } from 'chart.js/auto';
+import { color } from 'chart.js/helpers';
 const colorMode = useColorMode()
-const data = ref([30, 40, 60, 70, 5]);
-const te=ref(['#77CEFF', '#0079AF', '#123E6B', '#97B0C4', '#A5C8ED'])
-const testData = computed(() => ({
-      labels: ['Paris', 'Nîmes', 'Toulon', 'Perpignan', 'Autre'],
-      datasets: [
-        {
-          data: data.value,
-          backgroundColor:te.value,
-        },
-      ],
-    }));
 const isDark = computed({
-  get () {
+  get() {
     return colorMode.value === 'dark'
   },
-  set () {
+  set() {
     colorMode.preference = colorMode.value === 'dark' ? 'light' : 'dark'
   }
 })
+const data = ref([30, 40, 60, 70, 5]);
+const te = ref(['#77CEFF', '#0079AF', '#123E6B', '#97B0C4', '#A5C8ED'])
+const te1=ref(isDark)
+const testData = computed(() => ({
+  labels: ['Paris', 'Nîmes', 'Toulon', 'Perpignan', 'Autre'],
+  datasets: [
+    {label:'a',
+      data: data.value,
+      backgroundColor: te.value,
+    },
+  ],
+  color:'#666'
+}));
+const colors={
+  x:computed(()=>({
+     
+  }))
+}
+
 const chartData = ref({
   labels: ['January', 'February', 'March'],
   datasets: [{
     borderColor: te.value,
-    backgroundColor: colorMode.value=='dark'?'#9BD0F5':'#fff', label: 'hello', data: [40, 20, 12]
+    backgroundColor: colorMode.value == 'dark' ? '#9BD0F5' : '#fff', label: 'hello', data: [40, 20, 12]
   }, { label: 'hello1', data: [40, 20, 12] }]
 })
-const chartOptions = ref({
+const chartOptions = computed(()=>({
   responsive: true,
+  plugins: {
+    legend:{
+labels:{
+  color:te1.value?'#fff':'#000'
+}
+    },
+    title: {
+      text: 'hello 1',
+      display: true,
+      font: {
+        size: '30rem'
+      },
+      color:te1.value?'#fff':'#000'
+      
+    },
+    subtitle: {
+      display: true,
+      text: 'Chart Subtitle',
+      color: 'blue',
+      font: {
+        size: 22,
+        family: 'tahoma',
+        weight: 'normal',
+        style: 'italic'
+      },
+      padding: {
+        bottom: 10
+      }
+    }
+  },
+  scales: {
+    x: {
+      ticks: {
+        color: te1.value?'#fff':'#000'
+      },
+      grid:{
+        color:te1.value?'#5B5B66':'#F0F0F4'
+      }
+    },
+    y: {
+      ticks: {
+        color: te1.value?'#fff':'#000'
+      },grid:{
+        color:te1.value?'#5B5B66':'#F0F0F4'
+      }
+    }
+  }
 
-})
+}))
 const props = defineProps(['title'])
 const date = ref()
 const ranges = [

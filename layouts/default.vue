@@ -2,12 +2,12 @@
   <div class="flex justify-content-center">
     <UContainer class="flex flex-row" :ui="ui">
         <NavigationTree  class="w-80 min-w-12 max-w-80"/>
-      <UDivider orientation="vertical" />
+      <UDivider orientation="vertical" :ui="{border:{base:'dark:border-gray-600'}}"/>
       <div class="w-full">
         <ClientOnly>
           <h1 class="capitalize py-5 px-3 font-bold">{{props.title}}</h1>
         </ClientOnly>
-        <UDivider orientation="horizontal" />
+        <UDivider orientation="horizontal" :ui="{border:{base:'dark:border-gray-600'}}"/>
         <slot class="w-full"/>
       </div>
         
