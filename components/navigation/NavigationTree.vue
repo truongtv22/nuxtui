@@ -1,37 +1,6 @@
 <script setup lang="ts">
-
-const items = [{
-  label: 'Getting Started',
-  icon: 'i-heroicons-information-circle',
-  defaultOpen: true,
-  items:[
-    {label:'home',to:'/'},
-    {label:'about',to:'/about'},
-    {label:'contact',to:'/contact'}
-  ]
-}, {
-  label: 'Installation',
-  icon: 'i-heroicons-arrow-down-tray',
-  disabled: true,
-  content: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed neque elit, tristique placerat feugiat ac, facilisis vitae arcu. Proin eget egestas augue. Praesent ut sem nec arcu pellentesque aliquet. Duis dapibus diam vel metus tempus vulputate.'
-}, {
-  label: 'Theming',
-  icon: 'i-heroicons-eye-dropper',
-  content: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed neque elit, tristique placerat feugiat ac, facilisis vitae arcu. Proin eget egestas augue. Praesent ut sem nec arcu pellentesque aliquet. Duis dapibus diam vel metus tempus vulputate.'
-}, {
-  label: 'Layouts',
-  icon: 'i-heroicons-rectangle-group',
-  content: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed neque elit, tristique placerat feugiat ac, facilisis vitae arcu. Proin eget egestas augue. Praesent ut sem nec arcu pellentesque aliquet. Duis dapibus diam vel metus tempus vulputate.'
-}, {
-  label: 'Components',
-  icon: 'i-heroicons-square-3-stack-3d',
-  content: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed neque elit, tristique placerat feugiat ac, facilisis vitae arcu. Proin eget egestas augue. Praesent ut sem nec arcu pellentesque aliquet. Duis dapibus diam vel metus tempus vulputate.'
-}, {
-  label: 'Utilities',
-  icon: 'i-heroicons-wrench-screwdriver',
-  content: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed neque elit, tristique placerat feugiat ac, facilisis vitae arcu. Proin eget egestas augue. Praesent ut sem nec arcu pellentesque aliquet. Duis dapibus diam vel metus tempus vulputate.'
-},
-]
+const menu=useMyMenuItemsStore()
+const items = menu.admin
 const colorMode = useColorMode()
 const isDark = computed({
   get () {
@@ -41,7 +10,12 @@ const isDark = computed({
     colorMode.preference = colorMode.value === 'dark' ? 'light' : 'dark'
   }
 })
-
+const route=useRoute()
+const myRoute=computed({
+  get(){
+    return route.fullPath
+  }
+})
 </script>
 
 <template>
@@ -52,9 +26,28 @@ const isDark = computed({
     
       
     <UAccordion :items="items" color="red" >
-      <template #item="{item}" >
+    <template #default={item,index,open}>
+      <UButton color="red" :variant="myRoute==item.to?'solid':'ghost'" size="xl" class="font-bold" :to="item.to">
+        <template #leading>
+            <UIcon dynamic :name="item.icon" color="red" class="w-4 h-4 text-white dark:text-gray-900" />
+
+        </template>
+
+        <span class="truncate">{{ item.label }}</span>
+
+        <template #trailing v-if="item.items && item.item.length>0">
+          <UIcon
+            name="i-heroicons-chevron-right-20-solid"
+            class="w-5 h-5 ms-auto transform transition-transform duration-200"
+            :class="[open && 'rotate-90']"
+          />
+        </template>
+      </UButton>
+      
+    </template>
+      <template #item="{item}">
         <h3 v-if="item.content" >{{item.content}}</h3>
-        <template v-else class="flex flex-column">
+        <template v-else-if="item.items && item.items.length>0"class="flex flex-column">
           <ULink class="block border-l border-red-800 hover:border-red-500 pl-4 capitalize text-red-800 hover:text-red-500" v-for="itc in item.items" :to="itc.to">{{ itc.label }}</ULink>
         </template>
       </template>

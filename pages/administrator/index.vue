@@ -33,29 +33,28 @@
   </div>
 
   <UDivider orientation="horizontal" :ui="{border:{base:'dark:border-gray-600'}}"/>
-  <ClientOnly>
-    <div class="px-3 flex gap-3 w-full">
-      <UCard class="w-full my-2">
-        <Bar id="my-chart-id" :options="chartOptions" :data="testData" />
+    <div class="px-3 flex flex-col lg:flex-row gap-3 w-full">
+      <UCard class="w-full my-2" ref="refDiv" >
+        <Bar :style="myStyle" id="my-chart-id" :options="chartOptions" :data="testData" />
       </UCard>
-      <UCard class="w-full my-2">
-        <Bar id="my-chart-id" :options="chartOptions" :data="testData" />
+      <UCard class="w-full my-2" >
+        <Bar :style="myStyle" id="my-chart-id" :options="chartOptions" :data="testData" />
      </UCard>
     </div>
-    <div class="px-3 flex gap-3 w-full">
+    <div class="px-3 flex flex-col lg:flex-row gap-3 w-full">
       <UCard class="w-full my-2">
-        <Bar id="my-chart-id" :options="chartOptions" :data="testData" />
+        <Bar :style="myStyle" id="my-chart-id" :options="chartOptions" :data="testData" />
       </UCard>
       <UCard class="w-full my-2">
-        <Bar id="my-chart-id" :options="chartOptions" :data="testData" />
+        <Bar :style="myStyle" id="my-chart-id" :options="chartOptions" :data="testData" />
      </UCard>
     </div>
-  </ClientOnly>
 
 
 </template>
 
 <script setup lang="ts">
+import {ref, onMounted} from 'vue';
 import { shuffle } from 'lodash';
 import { Bar } from 'vue-chartjs'
 import { sub, format, isSameDay, type Duration } from 'date-fns'
@@ -147,6 +146,23 @@ labels:{
     }
   }
 
+}))
+const refDiv = ref(null);
+onMounted(()=>{
+  window.addEventListener('resize', ()=>{
+    myElement.value.w= refDiv.value.$el.clientWidth
+    myElement.value.h= refDiv.value.$el.clientHeight
+  });
+
+})
+const myElement=ref({
+  w:null,
+  h:null
+})
+const myStyle=computed(()=>({
+  position:'relative',
+  width:myElement.value.w+'px',
+  height:myElement.value.h+'px'
 }))
 const props = defineProps(['title'])
 const date = ref()
