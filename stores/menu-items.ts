@@ -17,15 +17,16 @@ export const useMyMenuItemsStore = defineStore({
         to:'/'
       },
     ],
-    admin:[{
+    admin:[
+      {
         label: 'Dashboard',
         icon: 'i-heroicons-information-circle',
-        to:'/administrator/'
-        //defaultOpen: true,
-        ///items:[]
+        to:'/administrator'
+        //content: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed neque elit, tristique placerat feugiat ac, facilisis vitae arcu. Proin eget egestas augue. Praesent ut sem nec arcu pellentesque aliquet. Duis dapibus diam vel metus tempus vulputate.'
       }, {
         label: 'Warehouse',
         icon: 'i-material-symbols-light-warehouse-outline-rounded',
+        to:'/administrator/warehouse',
         //disabled: true,
         content: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed neque elit, tristique placerat feugiat ac, facilisis vitae arcu. Proin eget egestas augue. Praesent ut sem nec arcu pellentesque aliquet. Duis dapibus diam vel metus tempus vulputate.'
       },
@@ -56,7 +57,17 @@ export const useMyMenuItemsStore = defineStore({
       {
         label: 'Settings',
         icon: 'i-material-symbols-light-settings-rounded',
-        to:'/administrator/settings'
+        to:'/administrator/settings',
+        items:[
+          {
+            label:'Profile',
+            to:'/administrator/profile'
+          },
+          {
+            label:'Security',
+            to:'/administrator/security'
+          },
+        ]
         //content: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed neque elit, tristique placerat feugiat ac, facilisis vitae arcu. Proin eget egestas augue. Praesent ut sem nec arcu pellentesque aliquet. Duis dapibus diam vel metus tempus vulputate.'
       }
       ]

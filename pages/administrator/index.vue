@@ -1,4 +1,6 @@
 <template>
+    
+<ClientOnly>
   <div class="flex px-3 py-2 gap-2">
     <UPopover :popper="{ placement: 'bottom-start' }" class="">
       <UButton icon="i-heroicons-calendar-days-20-solid"
@@ -49,6 +51,8 @@
         <Bar :style="myStyle" id="my-chart-id" :options="chartOptions" :data="testData" />
      </UCard>
     </div>
+</ClientOnly>
+  
 
 
 </template>

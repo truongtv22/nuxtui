@@ -100,7 +100,8 @@
           </USlideover>
         </ClientOnly>
         <UDivider orientation="horizontal" :ui="{ border: { base: 'dark:border-gray-600' } }" />
-        <slot class="w-full" />
+          <slot class="w-full" />
+        
       </div>
 
 
