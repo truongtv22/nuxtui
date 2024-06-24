@@ -33,7 +33,10 @@ const issetMenu=computed(()=>{
   })
   return v
 })
-
+const myAccordion=ref(null)
+function closeAll() {
+  myAccordion.value[0].buttonRefs.forEach((btn) => btn.close());
+}
 </script>
 
 <template>
@@ -43,7 +46,7 @@ const issetMenu=computed(()=>{
     </div>
     <div class="flex flex-col">
       <template v-for="item in items">
-        <UButton color="red" :to="item.to" v-if="!item.hasOwnProperty('items')" :variant="myRoute==item.to?'soft':'ghost'" size="xl" :ui="{base:'border-l-2 '+(myRoute.indexOf==item.to?'border-red-500':''), rounded: 'rounded-none', padding: { sm: 'p-3' } }">
+        <UButton color="red" :to="item.to" v-if="!item.hasOwnProperty('items')" :variant="myRoute==item.to?'soft':'ghost'" size="xl" :ui="{base:'border-l-2 '+(myRoute==item.to?'border-red-500':''), rounded: 'rounded-none', padding: { sm: 'p-3' } }" @click="closeAll">
         <template #leading>
           <div>
             <UIcon dynamic :name="item.icon" />
@@ -53,7 +56,7 @@ const issetMenu=computed(()=>{
         <span class="font-bold">{{ item.label }}</span>
 
       </UButton>
-      <UAccordion v-else :items="[item]" :default-open="issetMenu" >
+      <UAccordion v-else :items="[item]" ref="myAccordion" :unmount="true" :default-open="issetMenu">
         <template #default="{item,open,index}">
           <UButton color="red" :variant="issetMenu?'soft':'ghost'" size="xl" :ui="{ base:'border-l-2 '+(issetMenu?'border-red-500':''),rounded: 'rounded-none', padding: { sm: 'p-3' } }">
         <template #leading>

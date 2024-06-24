@@ -72,6 +72,10 @@ const filteredRows = computed(() => {
 const modal=ref({
   display:false
 })
+const productList=ref({
+  display:false,
+  data:[]
+})
 </script>
 
 <template>
@@ -82,7 +86,8 @@ const modal=ref({
     </div>
 
     <UTable :rows="filteredRows" :columns="columns" />
-    <AdministratorWarehouseCreateNew :display="modal.display" @display="modal.display=$event"/>
+    <AdministratorWarehouseCreateNew :display="modal.display" @display="modal.display=$event" />
+    
   </div>
 </template>
 
