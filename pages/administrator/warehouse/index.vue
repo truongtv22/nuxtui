@@ -86,7 +86,10 @@ const productList=ref({
     </div>
 
     <UTable :rows="filteredRows" :columns="columns" />
-    <AdministratorWarehouseCreateNew :display="modal.display" @display="modal.display=$event" />
+    <KeepAlive>
+      <AdministratorWarehouseCreateNew :display="modal.display" @display="modal.display=$event" />
+    </KeepAlive>
+    
     
   </div>
 </template>

@@ -11,7 +11,8 @@
   },
   "dependencies": {
     "@iconify-json/material-symbols-light": "^1.1.22",
-    "@nuxt/ui": "^2.17.0",
+    "@nuxt/ui": "npm:@nuxt/ui-edge@latest",
+    "@nuxt/ui-edge": "^2.17.0-28653769.c904604",
     "@pinia/nuxt": "^0.5.1",
     "@popperjs/core": "^2.11.8",
     "@unovis/ts": "^1.4.1",
