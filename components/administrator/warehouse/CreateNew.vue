@@ -276,7 +276,7 @@ const filteredRows = computed(() => {
       </UCard>
     </UModal>
     <USlideover v-if="productList.display" v-model="productList.display" side="bottom" @close="isOpen = true"
-      :ui="{ wrapper: 'w-1/2 left-25 inset-x-1/4 inset-y-1/4 h-3/5', height: 'max-h-screen h-4/5 overflow' }">
+      :ui="{ wrapper: 'w-full sm:w-1/2 left-25 sm:inset-x-1/4 sm:inset-y-1/4 h-full sm:h-3/5', height: 'max-h-screen h-full sm:h-4/5 overflow' }">
       <div class="p-4 flex-1 h-full">
         <h1 class="mb-4 font-bold">Product list</h1>
         <div class="flex px-3 py-3.5 border-b border-gray-200 dark:border-gray-700">
@@ -290,7 +290,7 @@ const filteredRows = computed(() => {
       </UInput>
     </div>
 
-    <UTable v-model="productInfo.selected" :rows="filteredRows" :columns="columns" class="h-3/4" :ui="{thead:'sticky top-0 backdrop-blur-3xl drop-shadow z-50',divide:'divide-y-0'}"/>
+    <UTable v-model="productInfo.selected" :rows="filteredRows" :columns="columns" class="h-full sm:h-3/4 overflow-auto" :ui="{thead:'sticky top-0 backdrop-blur-3xl drop-shadow z-50',divide:'divide-y-0'}"/>
       </div>
     </USlideover>
 
