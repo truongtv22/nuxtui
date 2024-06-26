@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import { z } from 'zod'
 import type { FormSubmitEvent } from '#ui/types'
+import SideOver from './SideOver.vue';
 
+const router=useRouter()
 const history = useMyHistoryStore()
 const props = defineProps(['display'])
 const emits = defineEmits(['display', 'showProductList'])
@@ -30,11 +32,20 @@ onBeforeUnmount(() => {
 })
 const schema = z.object({
   name: z.object({}),
-  price: z.number({
+  price1:z.preprocess((val) => Number(val), z.number({
     required_error: "Price is required",
     invalid_type_error: "Price must be a number",
   }
-  ).min(1)
+  ).min(1,{ message: "Price is required"})),
+  price2:z.preprocess((val) => Number(val), z.number({
+    required_error: "Price is required",
+    invalid_type_error: "Price must be a number",
+  }
+  ).min(1,{ message: "Price is required"})),
+  quantity: z.preprocess((val) => Number(val), z.number({
+    required_error: "Quantity is required",
+    invalid_type_error: "Quantity must be a number",
+  }).min(1,{ message: "Quantity is required"})),
 })
 
 type Schema = z.output<typeof schema>
@@ -67,19 +78,39 @@ const productInfo = ref({
   name: null,
   price: null,
   barcode: null,
-  selected:[]
+  quantity:null,
+  price1:null,
+  price2:null,
+  unit:null,
+  supplier:{
+    display:false,
+    value:[]
+  },
+  selected: []
 })
-const itemSelected=computed({
-  get(){
+const itemSelected = computed({
+  get() {
     return productInfo.value.selected.length
   }
 })
-watch(itemSelected,(newVal,oldVal)=>{
-  if(parseInt(newVal)>1){
-    productInfo.value.selected.splice(0,1)
-    
+watch(itemSelected, (newVal, oldVal) => {
+  if (parseInt(newVal) > 1) {
+    productInfo.value.selected.splice(0, 1)
+
   }
-  productInfo.value.name=productInfo.value.selected[0]
+  productInfo.value.name = productInfo.value.selected[0]
+})
+const supplierSelected = computed({
+  get() {
+    return productInfo.value.supplier.value.length
+  }
+})
+watch(supplierSelected, (newVal, oldVal) => {
+  if (parseInt(newVal) > 1) {
+    productInfo.value.supplier.value.splice(0, 1)
+
+  }
+  //productInfo.value.s = productInfo.value.selected[0]
 })
 const nameSelected = computed({
   get() {
@@ -174,8 +205,68 @@ const people = [{
   title: 'Principal Designer',
   email: 'floyd.miles@example.com',
   role: 'Member'
+}, {
+  id: 6,
+  name: 'Floyd Miles',
+  title: 'Principal Designer',
+  email: 'floyd.miles@example.com',
+  role: 'Member'
+}, {
+  id: 6,
+  name: 'Floyd Miles',
+  title: 'Principal Designer',
+  email: 'floyd.miles@example.com',
+  role: 'Member'
+}, {
+  id: 6,
+  name: 'Floyd Miles',
+  title: 'Principal Designer',
+  email: 'floyd.miles@example.com',
+  role: 'Member'
+}, {
+  id: 6,
+  name: 'Floyd Miles',
+  title: 'Principal Designer',
+  email: 'floyd.miles@example.com',
+  role: 'Member'
+}, {
+  id: 6,
+  name: 'Floyd Miles',
+  title: 'Principal Designer',
+  email: 'floyd.miles@example.com',
+  role: 'Member'
+}, {
+  id: 6,
+  name: 'Floyd Miles',
+  title: 'Principal Designer',
+  email: 'floyd.miles@example.com',
+  role: 'Member'
+}, {
+  id: 6,
+  name: 'Floyd Miles',
+  title: 'Principal Designer',
+  email: 'floyd.miles@example.com',
+  role: 'Member'
+}, {
+  id: 6,
+  name: 'Floyd Miles',
+  title: 'Principal Designer',
+  email: 'floyd.miles@example.com',
+  role: 'Member'
+}, {
+  id: 6,
+  name: 'Floyd Miles',
+  title: 'Principal Designer',
+  email: 'floyd.miles@example.com',
+  role: 'Member'
+}, {
+  id: 6,
+  name: 'Floyd Miles',
+  title: 'Principal Designer',
+  email: 'floyd.miles@example.com',
+  role: 'Member'
 }]
-
+const units=ref([])
 const q = ref('')
 
 const filteredRows = computed(() => {
@@ -193,8 +284,8 @@ const filteredRows = computed(() => {
 
 <template>
   <div>
-    <UModal v-if="isOpen" :ui="{ width: `sm:max-w-6xl` }" v-model="isOpen" :fullscreen="sizeScreen.w < 800 ? true : false"
-      :prevent-close="!productList.display">
+    <UModal v-if="isOpen" :ui="{ width: `sm:max-w-6xl` }" v-model="isOpen"
+      :fullscreen="sizeScreen.w < 800 ? true : false" :prevent-close="!productList.display">
 
       <UCard :ui="{
         base: 'h-fit flex flex-col',
@@ -207,7 +298,7 @@ const filteredRows = computed(() => {
         <template #header>
           <div class="flex items-center justify-between">
             <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">
-              Insert new product to warehouse {{ sizeScreen.w }}{{productInfo.name}}
+              Insert new product to warehouse {{ sizeScreen.w }}{{ productInfo.name }}
             </h3>
             <UButton color="gray" variant="ghost" icon="i-heroicons-x-mark-20-solid" class="-my-1"
               @click="isOpen = false" />
@@ -216,9 +307,14 @@ const filteredRows = computed(() => {
 
         <UForm :schema="schema" :state="productInfo" class="space-y-4" @submit="onSubmit">
           <UFormGroup label="Tên sản phẩm" name="name">
-            <UButton size="xl" variant="outline" class="w-full justify-center flex" @click="productList.display = true">
-              <template v-if="productInfo.selected.length>0">{{ productInfo.selected[0].name }}</template>
-              <UIcon v-else name="i-material-symbols-light-add" />
+            <div v-if="productInfo.selected.length > 0" class="w-full flex-col justify-center flex gap-y-1 border p-2 rounded-md">
+              <h1 class="text-center border border-dotted border-gray-800 rounded-md p-2" @dblclick="router.push('/')">{{ productInfo.selected[0].name }}</h1>
+              <UButton size="xl" variant="soft" class="w-full justify-center flex" @click="productList.display = true">
+                <UIcon name="i-material-symbols-light-add" />
+              </UButton>
+            </div>
+            <UButton v-else size="xl" variant="outline" class="w-full justify-center flex" @click="productList.display = true">
+              <UIcon  name="i-material-symbols-light-add" />
             </UButton>
 
 
@@ -226,20 +322,39 @@ const filteredRows = computed(() => {
           <UFormGroup label="Barcode" name="barcode">
             <UInput v-model="productInfo.barcode" />
           </UFormGroup>
-          <UFormGroup label="Giá nhập" name="price">
-            <UInput v-model="productInfo.price" />
+          <UFormGroup label="Giá nhập" name="price1">
+            <UInput v-model="productInfo.price1" />
           </UFormGroup>
-          <UFormGroup label="Giá bán" name="price">
-            <UInput v-model="state.email" />
+          <UFormGroup label="Giá bán" name="price2">
+            <UInput v-model="productInfo.price2" />
           </UFormGroup>
-          <UFormGroup label="Số lượng" name="price">
-            <UInput v-model="state.email" />
+          <UFormGroup label="Số lượng" name="quantity">
+            <UInput v-model="productInfo.quantity"  type="number"/>
           </UFormGroup>
           <UFormGroup label="Đơn vị" name="price">
-            <UInput v-model="state.email" />
+            <USelectMenu
+    searchable
+    searchable-placeholder="Search a person..."
+    class="w-full"
+    placeholder="Select a person"
+    :options="units"
+    v-model="productInfo.unit"
+  >
+  <template #option-empty="{ query }">
+      <UButton icon="i-material-symbols-light-add" @click="units.push(query);productInfo.unit=query">Create new {{ query }}</UButton>
+    </template>
+</USelectMenu>
           </UFormGroup>
           <UFormGroup label="Nhà cung cấp" name="price">
-            <UInput v-model="state.email" />
+            <div v-if="productInfo.supplier.value.length > 0" class="w-full flex-col justify-center flex gap-y-1 border p-2 rounded-md">
+              <h1 class="text-center border border-dotted border-gray-800 rounded-md p-2" @dblclick="router.push('/')">{{ productInfo.supplier.value[0] }}</h1>
+              <UButton size="xl" variant="soft" class="w-full justify-center flex" @click="productInfo.supplier.display = true">
+                <UIcon name="i-material-symbols-light-add" />
+              </UButton>
+            </div>
+            <UButton v-else size="xl" variant="outline" class="w-full justify-center flex" @click="productInfo.supplier.display = true">
+              <UIcon  name="i-material-symbols-light-add" />
+            </UButton>
           </UFormGroup>
           <UFormGroup label="Ngày sản xuất" name="price">
             <UInput v-model="state.email" />
@@ -248,7 +363,13 @@ const filteredRows = computed(() => {
             <UInput v-model="state.email" />
           </UFormGroup>
           <UFormGroup label="Đơn vị" name="price">
-            <UInput v-model="state.email" />
+            <USelectMenu
+    searchable
+    searchable-placeholder="Search a person..."
+    class="w-full lg:w-48"
+    placeholder="Select a person"
+    :options="units"
+  />
           </UFormGroup>
           <UFormGroup label="Ngày hết hạn" name="price">
             <UInput v-model="state.email" />
@@ -275,24 +396,66 @@ const filteredRows = computed(() => {
         </UForm>
       </UCard>
     </UModal>
-    <USlideover v-if="productList.display" v-model="productList.display" side="bottom" @close="isOpen = true"
-      :ui="{ wrapper: 'w-full sm:w-1/2 left-25 sm:inset-x-1/4 sm:inset-y-1/4 h-full sm:h-3/5', height: 'max-h-screen h-full sm:h-4/5 overflow' }">
-      <div class="p-4 flex-1 h-full">
-        <h1 class="mb-4 font-bold">Product list</h1>
-        <div class="flex px-3 py-3.5 border-b border-gray-200 dark:border-gray-700">
-      <UInput icon="i-heroicons-magnifying-glass-20-solid" :trailing="q.length>0?true:false" v-model="q" placeholder="Filter people..."  class="w-full" :ui="{ icon: { trailing: { pointer: '' } } }">
-        <template #trailing v-if="q.length>0">
-          <UButton variant="ghost" @click="q=''" color="red" :ui="{rounded:'rounded-full'}">
-            <UIcon name="i-material-symbols-light-close" />
-          </UButton>
+
+    <SideOver :productList="productList" @isOpen="isOpen=$event">
+      <template #header>
+        <h1 class="font-bold capitalize">product list</h1>
+      </template>
+      <template #body>
+        <div class="flex px-3 py-3.5 border-b border-gray-200 dark:border-gray-700 flex-col">
+          <UInput icon="i-heroicons-magnifying-glass-20-solid" :trailing="q.length > 0 ? true : false" v-model="q"
+            placeholder="Filter people..." class="w-full" :ui="{ icon: { trailing: { pointer: '' } } }">
+            <template #trailing v-if="q.length > 0">
+              <UButton variant="ghost" @click="q = ''" color="red" :ui="{ rounded: 'rounded-full' }">
+                <UIcon name="i-material-symbols-light-close" />
+              </UButton>
+
+            </template>
+          </UInput>
+          <div class="gap-1 flex my-2">
+            <UButton v-for="old in history.search" variant="ghost" :ui="{rounded:'rounded-full'}" @click="productInfo.selected.push(old);productList.display=false;isOpen=true">{{ old.name }}</UButton>
+          </div>
           
+        </div>
+
+        <UTable v-model="productInfo.selected" :rows="filteredRows" :columns="columns"
+          class="overflow-auto overflow-y-auto h-full"
+          :ui="{ thead: 'sticky top-0 backdrop-blur-3xl drop-shadow z-50', divide: 'divide-y-0' }">
+        <template #name-data="{row}">
+          <h1 @dblclick="router.push('/')" @click="productInfo.selected.push(row)">{{ row.name }}</h1>
         </template>
-      </UInput>
-    </div>
+        </UTable>
+      </template>
+    </SideOver>
+    <SideOver :productList="productInfo.supplier" @isOpen="isOpen=$event">
+      <template #header>
+        <h1 class="font-bold capitalize">Supplier list</h1>
+      </template>
+      <template #body>
+        <div class="flex px-3 py-3.5 border-b border-gray-200 dark:border-gray-700 flex-col">
+          <UInput icon="i-heroicons-magnifying-glass-20-solid" :trailing="q.length > 0 ? true : false" v-model="q"
+            placeholder="Filter people..." class="w-full" :ui="{ icon: { trailing: { pointer: '' } } }">
+            <template #trailing v-if="q.length > 0">
+              <UButton variant="ghost" @click="q = ''" color="red" :ui="{ rounded: 'rounded-full' }">
+                <UIcon name="i-material-symbols-light-close" />
+              </UButton>
 
-    <UTable v-model="productInfo.selected" :rows="filteredRows" :columns="columns" class="h-full sm:h-3/4 overflow-auto" :ui="{thead:'sticky top-0 backdrop-blur-3xl drop-shadow z-50',divide:'divide-y-0'}"/>
-      </div>
-    </USlideover>
+            </template>
+          </UInput>
+          <div class="gap-1 flex my-2">
+            <UButton v-for="old in history.search" variant="ghost" :ui="{rounded:'rounded-full'}" @click="productInfo.supplier.value.push(old);productList.display=false;isOpen=true">{{ old.name }}</UButton>
+          </div>
+          
+        </div>
 
+        <UTable v-model="productInfo.supplier.value" :rows="filteredRows" :columns="columns"
+          class="overflow-auto overflow-y-auto h-full"
+          :ui="{ thead: 'sticky top-0 backdrop-blur-3xl drop-shadow z-50', divide: 'divide-y-0' }">
+        <template #name-data="{row}">
+          <h1 @dblclick="router.push('/')" @click="productInfo.supplier.value.push(row)">{{ row.name }}</h1>
+        </template>
+        </UTable>
+      </template>
+    </SideOver>
   </div>
 </template>
