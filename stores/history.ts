@@ -3,11 +3,14 @@ import { defineStore } from 'pinia'
 export const useMyHistoryStore = defineStore({
   id: 'myHistoryStore',
   state: () => ({ 
-    search:[]
+    search:{
+      products:[],
+      suppliers:[]
+    }
   }),
   actions: {
-    insertSearch(item){
-      this.search.push(item)
+    insertSearch(type,item){
+          this.search[`${type}`].push(item)
     }
   }
 })

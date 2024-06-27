@@ -110,7 +110,15 @@ watch(supplierSelected, (newVal, oldVal) => {
     productInfo.value.supplier.value.splice(0, 1)
 
   }
-  //productInfo.value.s = productInfo.value.selected[0]
+  let iss = false
+  history.search.suppliers.forEach(it => {
+    if (it.id == productInfo.value.supplier.value[0].id) {
+      iss = true
+    }
+  })
+  if (!iss) {
+    history.insertSearch('suppliers',productInfo.value.supplier.value[0])
+  }
 })
 const nameSelected = computed({
   get() {
@@ -119,15 +127,16 @@ const nameSelected = computed({
 })
 watch(nameSelected, (newVal, oldVal) => {
   let iss = false
-  history.search.forEach(it => {
+  history.search.products.forEach(it => {
     if (it.id == newVal.id) {
       iss = true
     }
   })
   if (!iss) {
-    history.insertSearch(newVal)
+    history.insertSearch('products',newVal)
   }
 })
+
 const columns = [{
   key: 'id',
   label: 'ID'
@@ -309,11 +318,11 @@ const filteredRows = computed(() => {
           <UFormGroup label="Tên sản phẩm" name="name">
             <div v-if="productInfo.selected.length > 0" class="w-full flex-col justify-center flex gap-y-1 border p-2 rounded-md">
               <h1 class="text-center border border-dotted border-gray-800 rounded-md p-2" @dblclick="router.push('/')">{{ productInfo.selected[0].name }}</h1>
-              <UButton size="xl" variant="soft" class="w-full justify-center flex" @click="productList.display = true">
+              <UButton size="xl" variant="soft" class="w-full justify-center flex" @click="productList.display = true;isOpen=false">
                 <UIcon name="i-material-symbols-light-add" />
               </UButton>
             </div>
-            <UButton v-else size="xl" variant="outline" class="w-full justify-center flex" @click="productList.display = true">
+            <UButton v-else size="xl" variant="outline" class="w-full justify-center flex" @click="productList.display = true;isOpen=false">
               <UIcon  name="i-material-symbols-light-add" />
             </UButton>
 
@@ -347,12 +356,12 @@ const filteredRows = computed(() => {
           </UFormGroup>
           <UFormGroup label="Nhà cung cấp" name="price">
             <div v-if="productInfo.supplier.value.length > 0" class="w-full flex-col justify-center flex gap-y-1 border p-2 rounded-md">
-              <h1 class="text-center border border-dotted border-gray-800 rounded-md p-2" @dblclick="router.push('/')">{{ productInfo.supplier.value[0] }}</h1>
-              <UButton size="xl" variant="soft" class="w-full justify-center flex" @click="productInfo.supplier.display = true">
+              <h1 class="text-center border border-dotted border-gray-800 rounded-md p-2" @dblclick="router.push('/')">{{ productInfo.supplier.value[0].name }}</h1>
+              <UButton size="xl" variant="soft" class="w-full justify-center flex" @click="productInfo.supplier.display = true;isOpen=false">
                 <UIcon name="i-material-symbols-light-add" />
               </UButton>
             </div>
-            <UButton v-else size="xl" variant="outline" class="w-full justify-center flex" @click="productInfo.supplier.display = true">
+            <UButton v-else size="xl" variant="outline" class="w-full justify-center flex" @click="productInfo.supplier.display = true;isOpen=false">
               <UIcon  name="i-material-symbols-light-add" />
             </UButton>
           </UFormGroup>
@@ -397,7 +406,7 @@ const filteredRows = computed(() => {
       </UCard>
     </UModal>
 
-    <SideOver :productList="productList" @isOpen="isOpen=$event">
+    <SideOver v-if="productList.display" :productList="productList" @isOpen="isOpen=$event">
       <template #header>
         <h1 class="font-bold capitalize">product list</h1>
       </template>
@@ -413,7 +422,7 @@ const filteredRows = computed(() => {
             </template>
           </UInput>
           <div class="gap-1 flex my-2">
-            <UButton v-for="old in history.search" variant="ghost" :ui="{rounded:'rounded-full'}" @click="productInfo.selected.push(old);productList.display=false;isOpen=true">{{ old.name }}</UButton>
+            <UButton v-for="old in history.search.products" variant="ghost" :ui="{rounded:'rounded-full'}" @click="productInfo.selected.push(old);productList.display=false;isOpen=true">{{ old.name }}</UButton>
           </div>
           
         </div>
@@ -427,9 +436,9 @@ const filteredRows = computed(() => {
         </UTable>
       </template>
     </SideOver>
-    <SideOver :productList="productInfo.supplier" @isOpen="isOpen=$event">
+    <SideOver v-if="productInfo.supplier.display" :productList="productInfo.supplier" @isOpen="isOpen=$event">
       <template #header>
-        <h1 class="font-bold capitalize">Supplier list</h1>
+        <h1 class="font-bold capitalize">Suppliers list</h1>
       </template>
       <template #body>
         <div class="flex px-3 py-3.5 border-b border-gray-200 dark:border-gray-700 flex-col">
@@ -443,7 +452,7 @@ const filteredRows = computed(() => {
             </template>
           </UInput>
           <div class="gap-1 flex my-2">
-            <UButton v-for="old in history.search" variant="ghost" :ui="{rounded:'rounded-full'}" @click="productInfo.supplier.value.push(old);productList.display=false;isOpen=true">{{ old.name }}</UButton>
+            <UButton v-for="old in history.search.suppliers" variant="ghost" :ui="{rounded:'rounded-full'}" @click="productInfo.supplier.value.push(old);productList.display=false;isOpen=true">{{ old.name }}</UButton>
           </div>
           
         </div>
