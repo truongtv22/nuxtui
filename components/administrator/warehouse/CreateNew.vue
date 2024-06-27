@@ -2,6 +2,7 @@
 import { z } from 'zod'
 import type { FormSubmitEvent } from '#ui/types'
 import SideOver from './SideOver.vue';
+import { format } from 'date-fns'
 
 const router=useRouter()
 const history = useMyHistoryStore()
@@ -85,6 +86,10 @@ const productInfo = ref({
   supplier:{
     display:false,
     value:[]
+  },
+  date1:{
+    value:new Date(),
+    locale:null
   },
   selected: []
 })
@@ -293,7 +298,7 @@ const filteredRows = computed(() => {
 
 <template>
   <div>
-    <UModal v-if="isOpen" :ui="{ width: `sm:max-w-6xl` }" v-model="isOpen"
+    <UModal :ui="{ width: `sm:max-w-6xl` }" v-model="isOpen"
       :fullscreen="sizeScreen.w < 800 ? true : false" :prevent-close="!productList.display">
 
       <UCard :ui="{
@@ -310,7 +315,7 @@ const filteredRows = computed(() => {
               Insert new product to warehouse {{ sizeScreen.w }}{{ productInfo.name }}
             </h3>
             <UButton color="gray" variant="ghost" icon="i-heroicons-x-mark-20-solid" class="-my-1"
-              @click="isOpen = false" />
+              @click="emits('display',false)" />
           </div>
         </template>
 
@@ -365,17 +370,25 @@ const filteredRows = computed(() => {
               <UIcon  name="i-material-symbols-light-add" />
             </UButton>
           </UFormGroup>
-          <UFormGroup label="Ngày sản xuất" name="price">
-            <UInput v-model="state.email" />
+          
+          
+          <div class="grid grid-cols-4 gap-1">
+            <UFormGroup label="Ngày sản xuất" name="price">
+              
+              <VDatePicker v-model="productInfo.date1.value" :locale="locale">
+    <template v-slot="{ inputValue, inputEvents }">
+      <UInput :model-value="inputValue.length>0?inputValue:format(productInfo.date1.value,'dd/MM/yyyy')" v-on="inputEvents" />
+    </template>
+  </VDatePicker>
           </UFormGroup>
-          <UFormGroup label="Thời hạn sử dụng" name="price">
+            <UFormGroup label="Thời hạn sử dụng" name="price">
             <UInput v-model="state.email" />
           </UFormGroup>
           <UFormGroup label="Đơn vị" name="price">
             <USelectMenu
     searchable
     searchable-placeholder="Search a person..."
-    class="w-full lg:w-48"
+    class="w-full"
     placeholder="Select a person"
     :options="units"
   />
@@ -383,6 +396,9 @@ const filteredRows = computed(() => {
           <UFormGroup label="Ngày hết hạn" name="price">
             <UInput v-model="state.email" />
           </UFormGroup>
+          </div>
+          
+          
           <UFormGroup label="Lãi suất" name="price">
             <UInput v-model="state.email" />
           </UFormGroup>
@@ -406,7 +422,7 @@ const filteredRows = computed(() => {
       </UCard>
     </UModal>
 
-    <SideOver v-if="productList.display" :productList="productList" @isOpen="isOpen=$event">
+  <SideOver v-if="productList.display" :productList="productList" @isOpen="isOpen=$event">
       <template #header>
         <h1 class="font-bold capitalize">product list</h1>
       </template>
@@ -436,6 +452,7 @@ const filteredRows = computed(() => {
         </UTable>
       </template>
     </SideOver>
+
     <SideOver v-if="productInfo.supplier.display" :productList="productInfo.supplier" @isOpen="isOpen=$event">
       <template #header>
         <h1 class="font-bold capitalize">Suppliers list</h1>
@@ -468,3 +485,18 @@ const filteredRows = computed(() => {
     </SideOver>
   </div>
 </template>
+<style>
+.slide-fade-enter-active {
+  transition: all 0.3s ease-out;
+}
+
+.slide-fade-leave-active {
+  transition: all 0.8s cubic-bezier(1, 0.5, 0.8, 1);
+}
+
+.slide-fade-enter-from,
+.slide-fade-leave-to {
+  transform: translateX(20px);
+  opacity: 0;
+}
+</style>
