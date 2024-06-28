@@ -190,13 +190,50 @@ watch(date1Selected,(newVal,oldVal)=>{
   }
   if(productInfo.value.time1.value>0){
     //console.log(newVal)
-    productInfo.value.date2.value=new Date(productInfo.value.date2.value.setDate(productInfo.value.date1.value.getDate()+x*productInfo.value.time1.value))
-    productInfo.value.date1.value=new Date(productInfo.value.date1.value.setDate(productInfo.value.date2.value.getDate()-x*productInfo.value.time1.value))
+    //productInfo.value.date2.value=new Date(productInfo.value.date2.value.setDate(productInfo.value.date1.value.getDate()+x*productInfo.value.time1.value))
   }
 })
 const reformatDate2=computed({
   get(){
+    let x=0
+    switch(productInfo.value.units.time.value){
+    case 'day':
+      x=1
+      break
+    case 'week':
+      x=7
+      break
+    case 'month':
+      x=30
+      break
+    case 'year':
+      x=365
+      break
+  }
+    if(productInfo.value.time1.value>0){
+      return new Date(productInfo.value.date2.value.setDate(productInfo.value.date1.value.getDate()+x*productInfo.value.time1.value))
+    }
     return productInfo.value.date2.value
+  },
+  set(val){
+    let x=0
+  switch(productInfo.value.units.time.value){
+    case 'day':
+      x=1
+      break
+    case 'week':
+      x=7
+      break
+    case 'month':
+      x=30
+      break
+    case 'year':
+      x=365
+      break
+  }
+  if(productInfo.value.time1.value>0){
+    productInfo.value.date1.value=new Date(productInfo.value.date1.value.setDate(val.getDate()-x*productInfo.value.time1.value))
+  }
   }
 })
 watch(reformatDate2,(newVal,oldVal)=>{
@@ -496,9 +533,9 @@ function updateDate2(e){
 
           </UFormGroup>
           <UFormGroup label="Ngày hết hạn" name="time2">
-            <VDatePicker v-model="productInfo.date2.value" :locale="locale"  >
+            <VDatePicker v-model="reformatDate2" :locale="locale"  >
     <template v-slot="{ inputValue, inputEvents,togglePopover }">
-      <UInput :model-value="format(productInfo.date2.value,'dd/MM/yyyy')" @click="togglePopover" @keyup="updateDate2($event)" />
+      <UInput :model-value="format(reformatDate2,'dd/MM/yyyy')" @click="togglePopover" @keyup="updateDate2($event)" />
     </template>
   </VDatePicker>
           </UFormGroup>
