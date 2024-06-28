@@ -2,7 +2,7 @@
 import { z } from 'zod'
 import type { FormSubmitEvent } from '#ui/types'
 import SideOver from './SideOver.vue';
-import { format } from 'date-fns'
+import { format, getDate, getTime, setDate } from 'date-fns'
 
 const router=useRouter()
 const history = useMyHistoryStore()
@@ -83,11 +83,37 @@ const productInfo = ref({
   price1:null,
   price2:null,
   unit:null,
+  time1:{value:null},
+  time2:{value:null},
   supplier:{
     display:false,
     value:[]
   },
+  units:{
+    time:{
+      value:null,
+      items:[
+        { label:'Day',value:'day'},
+        {label:'week',value:'week'},
+        {label:'Month',value:'month'},
+        {label:'Year',value:'year'}
+      ]
+    },
+    quantity:{
+      value:null,
+      items:[
+        {label:'Goi',value:'goi'},
+        {label:'Day',value:'day'},
+        {label:'Cay',value:'cay'},
+        {label:'Thung',value:'thung'}
+      ]
+    }
+  },
   date1:{
+    value:new Date(),
+    locale:null
+  },
+  date2:{
     value:new Date(),
     locale:null
   },
@@ -141,7 +167,59 @@ watch(nameSelected, (newVal, oldVal) => {
     history.insertSearch('products',newVal)
   }
 })
+const date1Selected=computed({
+  get(){
+    return productInfo.value.date1.value
+  }
+})
+watch(date1Selected,(newVal,oldVal)=>{
+  let x=0
+  switch(productInfo.value.units.time.value){
+    case 'day':
+      x=1
+      break
+    case 'week':
+      x=7
+      break
+    case 'month':
+      x=30
+      break
+    case 'year':
+      x=365
+      break
+  }
+  if(productInfo.value.time1.value>0){
 
+    productInfo.value.date2.value=new Date()
+    productInfo.value.date2.value=productInfo.value.date2.value.setDate(productInfo.value.date1.value.getDate()+x*productInfo.value.time1.value)
+  }
+})
+const reformatDate2=computed({
+  get(){
+    return productInfo.value.date2.value
+  }
+})
+watch(reformatDate2,(newVal,oldVal)=>{
+  let x=0
+  switch(productInfo.value.units.time.value){
+    case 'day':
+      x=1
+      break
+    case 'week':
+      x=7
+      break
+    case 'month':
+      x=30
+      break
+    case 'year':
+      x=365
+      break
+  }
+
+  if(productInfo.value.time1.value>0){
+    productInfo.value.date1.value=productInfo.value.date1.value.setDate(productInfo.value.date2.value.getDate()-x*productInfo.value.time1.value)
+  }
+})
 const columns = [{
   key: 'id',
   label: 'ID'
@@ -294,6 +372,23 @@ const filteredRows = computed(() => {
     })
   })
 })
+const masks = ref({
+  modelValue: 'DD/MM/YYYY',
+});
+function updateDate1(e){
+  e=(e.target.value)
+  if(e.split('/')[2].length==4 && 12>=e.split('/')[1]-1>=1 && 31>=e.split('/')[0]>=1){
+    productInfo.value.date1.value=new Date(e.split('/')[2],e.split('/')[1]-1,e.split('/')[0])
+  }
+  
+}
+function updateDate2(e){
+  e=(e.target.value)
+  if(e.split('/')[2].length==4 && 12>=e.split('/')[1]-1>=1 && 31>=e.split('/')[0]>=1){
+    productInfo.value.date2.value=new Date(e.split('/')[2],e.split('/')[1]-1,e.split('/')[0])
+  }
+  
+}
 </script>
 
 <template>
@@ -374,27 +469,37 @@ const filteredRows = computed(() => {
           
           <div class="grid grid-cols-4 gap-1">
             <UFormGroup label="Ngày sản xuất" name="price">
-              
-              <VDatePicker v-model="productInfo.date1.value" :locale="locale">
-    <template v-slot="{ inputValue, inputEvents }">
-      <UInput :model-value="inputValue.length>0?inputValue:format(productInfo.date1.value,'dd/MM/yyyy')" v-on="inputEvents" />
+              <VDatePicker v-model="productInfo.date1.value" :locale="locale"  >
+    <template v-slot="{ inputValue, inputEvents,togglePopover }">
+      <UInput :model-value="format(productInfo.date1.value,'dd/MM/yyyy')" @click="togglePopover" @keyup="updateDate1($event)" />
     </template>
   </VDatePicker>
           </UFormGroup>
-            <UFormGroup label="Thời hạn sử dụng" name="price">
-            <UInput v-model="state.email" />
+            <UFormGroup label="Thời hạn sử dụng" name="time1">
+            <UInput v-model="productInfo.time1.value" />
           </UFormGroup>
-          <UFormGroup label="Đơn vị" name="price">
+          <UFormGroup label="Đơn vị" name="timeUnit">
             <USelectMenu
-    searchable
+    :searchable="productInfo.units.time.items.length>10?true:false"
     searchable-placeholder="Search a person..."
     class="w-full"
     placeholder="Select a person"
-    :options="units"
-  />
+    :options="productInfo.units.time.items" value-attribute="value" option-attribute="label" v-model="productInfo.units.time.value"
+  >
+  <template #label>
+    <span class="capitalize text-red-500" v-if="productInfo.units.time.value">{{ productInfo.time1.value&&productInfo.time1.value>1?productInfo.units.time.value+'s':productInfo.units.time.value }}</span>
+    <span v-else>Select people</span>
+  </template>
+<template #option="{option:item}"><span class="capitalize">{{ productInfo.time1.value&&productInfo.time1.value>1?item.label+'s':item.label }}</span></template>
+</USelectMenu>
+
           </UFormGroup>
-          <UFormGroup label="Ngày hết hạn" name="price">
-            <UInput v-model="state.email" />
+          <UFormGroup label="Ngày hết hạn" name="time2">
+            <VDatePicker v-model="productInfo.date2.value" :locale="locale"  >
+    <template v-slot="{ inputValue, inputEvents,togglePopover }">
+      <UInput :model-value="format(productInfo.date2.value,'dd/MM/yyyy')" @click="togglePopover" @keyup="updateDate2($event)" />
+    </template>
+  </VDatePicker>
           </UFormGroup>
           </div>
           
