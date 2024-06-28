@@ -189,9 +189,9 @@ watch(date1Selected,(newVal,oldVal)=>{
       break
   }
   if(productInfo.value.time1.value>0){
-
-    productInfo.value.date2.value=new Date()
-    productInfo.value.date2.value=productInfo.value.date2.value.setDate(productInfo.value.date1.value.getDate()+x*productInfo.value.time1.value)
+    //console.log(newVal)
+    productInfo.value.date2.value=new Date(productInfo.value.date2.value.setDate(productInfo.value.date1.value.getDate()+x*productInfo.value.time1.value))
+    productInfo.value.date1.value=new Date(productInfo.value.date1.value.setDate(productInfo.value.date2.value.getDate()-x*productInfo.value.time1.value))
   }
 })
 const reformatDate2=computed({
@@ -217,7 +217,8 @@ watch(reformatDate2,(newVal,oldVal)=>{
   }
 
   if(productInfo.value.time1.value>0){
-    productInfo.value.date1.value=productInfo.value.date1.value.setDate(productInfo.value.date2.value.getDate()-x*productInfo.value.time1.value)
+    //productInfo.value.date1.value=new Date(productInfo.value.date1.value.setDate(productInfo.value.date2.value.getDate()-x*productInfo.value.time1.value))
+    //console.log(newVal)
   }
 })
 const columns = [{
