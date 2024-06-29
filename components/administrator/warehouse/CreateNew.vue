@@ -82,6 +82,10 @@ const productInfo = ref({
   quantity:null,
   price1:null,
   price2:null,
+  laiSuat:null,
+  tongDoanhThu:null,
+  tongLoiNhuan:null,
+  tongChi:null,
   unit:null,
   time1:{value:null},
   time2:{value:null},
@@ -172,25 +176,19 @@ const date1Selected=computed({
     return productInfo.value.date1.value
   }
 })
-watch(date1Selected,(newVal,oldVal)=>{
-  let x=0
-  switch(productInfo.value.units.time.value){
-    case 'day':
-      x=1
-      break
-    case 'week':
-      x=7
-      break
-    case 'month':
-      x=30
-      break
-    case 'year':
-      x=365
-      break
-  }
-  if(productInfo.value.time1.value>0){
-    //console.log(newVal)
-    //productInfo.value.date2.value=new Date(productInfo.value.date2.value.setDate(productInfo.value.date1.value.getDate()+x*productInfo.value.time1.value))
+
+const price1=computed({
+  get(){
+    if(productInfo.value.price1){
+  
+
+      const formatter = new Intl.NumberFormat('vi-VN', {
+        style: 'currency',
+        currency: 'VND'
+      })
+      return formatter.format(productInfo.value.price1)
+    }
+    return productInfo.value.price1
   }
 })
 const reformatDate2=computed({
@@ -211,7 +209,8 @@ const reformatDate2=computed({
       break
   }
     if(productInfo.value.time1.value>0){
-      return new Date(productInfo.value.date2.value.setDate(productInfo.value.date1.value.getDate()+x*productInfo.value.time1.value))
+      let t=new Date()
+      return new Date(productInfo.value.date1.value.valueOf()+1000*60 * 60 * 24*x*productInfo.value.time1.value)
     }
     return productInfo.value.date2.value
   },
@@ -232,30 +231,43 @@ const reformatDate2=computed({
       break
   }
   if(productInfo.value.time1.value>0){
-    productInfo.value.date1.value=new Date(productInfo.value.date1.value.setDate(val.getDate()-x*productInfo.value.time1.value))
+    productInfo.value.date1.value=new Date(val.valueOf()-1000*60 * 60 * 24*x*productInfo.value.time1.value)
   }
   }
 })
-watch(reformatDate2,(newVal,oldVal)=>{
-  let x=0
-  switch(productInfo.value.units.time.value){
-    case 'day':
-      x=1
-      break
-    case 'week':
-      x=7
-      break
-    case 'month':
-      x=30
-      break
-    case 'year':
-      x=365
-      break
+const laiSuatComputed=computed({
+  get(){
+    if(productInfo.value.price2 && productInfo.value.price1){
+      return Math.ceil((productInfo.value.price2-productInfo.value.price1)*100/productInfo.value.price1)
+    }
+    return null
+  },
+  set(val){
+    if(productInfo.value.price1){
+      productInfo.value.price2=parseInt(productInfo.value.price1)+parseInt(Math.floor(val*productInfo.value.price1/100))
+    }
   }
-
-  if(productInfo.value.time1.value>0){
-    //productInfo.value.date1.value=new Date(productInfo.value.date1.value.setDate(productInfo.value.date2.value.getDate()-x*productInfo.value.time1.value))
-    //console.log(newVal)
+})
+const tongDoanhThuComputed=computed({
+  get(){
+    return productInfo.value.price2*productInfo.value.quantity
+  }
+})
+const tongChiComputed=computed({
+  get(){
+    return productInfo.value.price1*productInfo.value.quantity
+  }
+})
+const tongLoiNhuanComputed=computed({
+  get(){
+    if(tongDoanhThuComputed.value && tongChiComputed.value){
+      const formatter = new Intl.NumberFormat('vi-VN', {
+      style: 'currency',
+      currency: 'VND'
+    })
+    return formatter.format(tongDoanhThuComputed.value-tongChiComputed.value)
+    }
+    return null
   }
 })
 const columns = [{
@@ -427,21 +439,25 @@ function updateDate2(e){
   }
   
 }
+function test(e){
+  console.log(e.target.value)
+  productInfo.value.price1=e.target.value
+}
+
 </script>
 
 <template>
   <div>
     <UModal :ui="{ width: `sm:max-w-6xl` }" v-model="isOpen"
       :fullscreen="sizeScreen.w < 800 ? true : false" :prevent-close="!productList.display">
-
+      {{ productInfo.price1 }}
       <UCard :ui="{
         base: 'h-fit flex flex-col',
         rounded: '',
         divide: 'divide-y divide-gray-100 dark:divide-gray-800',
         body: {
           base: 'grow'
-        }
-      }">
+        }}">
         <template #header>
           <div class="flex items-center justify-between">
             <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">
@@ -470,13 +486,22 @@ function updateDate2(e){
             <UInput v-model="productInfo.barcode" />
           </UFormGroup>
           <UFormGroup label="Giá nhập" name="price1">
-            <UInput v-model="productInfo.price1" />
+            <UInput
+        v-model.number="productInfo.price1">
+        <template #trailing>
+      <span class="text-gray-500 dark:text-gray-400 text-xs">VND</span>
+    </template>
+      </UInput>
           </UFormGroup>
           <UFormGroup label="Giá bán" name="price2">
-            <UInput v-model="productInfo.price2" />
+            <UInput v-model.number="productInfo.price2">
+              <template #trailing>
+      <span class="text-gray-500 dark:text-gray-400 text-xs">VND</span>
+    </template>
+            </UInput>
           </UFormGroup>
           <UFormGroup label="Số lượng" name="quantity">
-            <UInput v-model="productInfo.quantity"  type="number"/>
+            <UInput v-model.number="productInfo.quantity" />
           </UFormGroup>
           <UFormGroup label="Đơn vị" name="price">
             <USelectMenu
@@ -507,7 +532,7 @@ function updateDate2(e){
           
           <div class="grid grid-cols-4 gap-1">
             <UFormGroup label="Ngày sản xuất" name="price">
-              <VDatePicker v-model="productInfo.date1.value" :locale="locale"  >
+              <VDatePicker v-model="productInfo.date1.value" >
     <template v-slot="{ inputValue, inputEvents,togglePopover }">
       <UInput :model-value="format(productInfo.date1.value,'dd/MM/yyyy')" @click="togglePopover" @keyup="updateDate1($event)" />
     </template>
@@ -533,7 +558,7 @@ function updateDate2(e){
 
           </UFormGroup>
           <UFormGroup label="Ngày hết hạn" name="time2">
-            <VDatePicker v-model="reformatDate2" :locale="locale"  >
+            <VDatePicker v-model="reformatDate2" >
     <template v-slot="{ inputValue, inputEvents,togglePopover }">
       <UInput :model-value="format(reformatDate2,'dd/MM/yyyy')" @click="togglePopover" @keyup="updateDate2($event)" />
     </template>
@@ -543,16 +568,16 @@ function updateDate2(e){
           
           
           <UFormGroup label="Lãi suất" name="price">
-            <UInput v-model="state.email" />
+            <UInput v-model="laiSuatComputed" />
           </UFormGroup>
           <UFormGroup label="Doanh thu tổng" name="price">
-            <UInput v-model="state.email" />
+            <UInput v-model="tongDoanhThuComputed" />
           </UFormGroup>
           <UFormGroup label="Tổng chi" name="price">
-            <UInput v-model="state.email" />
+            <UInput v-model="tongChiComputed" />
           </UFormGroup>
           <UFormGroup label="Lãi thực tổng" name="price">
-            <UInput v-model="state.email" />
+            <UInput v-model="tongLoiNhuanComputed" />
           </UFormGroup>
           <UFormGroup label="Ghi chú" name="price">
             <UInput v-model="state.email" />
