@@ -511,6 +511,27 @@ function onDetect(detectedCodes) {
   linear_codes: true,
   matrix_codes: true
 })
+function paintCenterText(detectedCodes, ctx) {
+  for (const detectedCode of detectedCodes) {
+    const { boundingBox, rawValue } = detectedCode
+
+    const centerX = boundingBox.x + boundingBox.width / 2
+    const centerY = boundingBox.y + boundingBox.height / 2
+
+    const fontSize = Math.max(12, (50 * boundingBox.width) / ctx.canvas.width)
+
+    ctx.font = `bold ${fontSize}px sans-serif`
+    ctx.textAlign = 'center'
+
+    ctx.lineWidth = 3
+    ctx.strokeStyle = '#35495e'
+    ctx.strokeText(detectedCode.rawValue, centerX, centerY)
+
+    ctx.fillStyle = '#5cb984'
+    ctx.fillText(rawValue, centerX, centerY)
+  }
+}
+const trackFunctionSelected = ref(  { text: 'bounding box', value: paintCenterText })
 </script>
 
 <template>
@@ -540,7 +561,7 @@ function onDetect(detectedCodes) {
           <UFormGroup label="Tên sản phẩm" name="name">
             <ClientOnly >
               {{result}}
-              <QrcodeStream :formats="barcodeFormats" camera="auto" :track="paintBoundingBox" @detect="onDetect" @error="onError"> </QrcodeStream>
+              <QrcodeStream :track="trackFunctionSelected.value" :formats="barcodeFormats" camera="auto" :track="paintBoundingBox" @detect="onDetect" @error="onError"> </QrcodeStream>
             </ClientOnly>
             
             <div v-if="productInfo.selected.length > 0"
