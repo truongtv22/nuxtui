@@ -4,6 +4,7 @@ import { ref, onMounted } from 'vue'
 import type { FormSubmitEvent } from '#ui/types'
 import SideOver from './SideOver.vue';
 import { format, getDate, getTime, setDate } from 'date-fns'
+import { QrcodeStream, QrcodeDropZone, QrcodeCapture } from 'vue-qrcode-reader'
 
 const router = useRouter()
 const history = useMyHistoryStore()
@@ -474,6 +475,10 @@ const options = {
 
         <UForm :schema="schema" :state="productInfo" class="space-y-4" @submit="onSubmit">
           <UFormGroup label="Tên sản phẩm" name="name">
+            <ClientOnly >
+              <QrcodeStream camera="auto"> </QrcodeStream>
+            </ClientOnly>
+            
             <div v-if="productInfo.selected.length > 0"
               class="w-full flex-col justify-center flex gap-y-1 border p-2 rounded-md">
               <h1 class="text-center border border-dotted border-gray-800 rounded-md p-2" @dblclick="router.push('/')">
