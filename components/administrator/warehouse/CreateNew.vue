@@ -516,6 +516,7 @@ function onDetect(detectedCodes) {
         <UForm :schema="schema" :state="productInfo" class="space-y-4" @submit="onSubmit">
           <UFormGroup label="Tên sản phẩm" name="name">
             <ClientOnly >
+              {{result}}
               <QrcodeStream camera="auto" :track="paintBoundingBox" @detect="onDetect" @error="onError"> </QrcodeStream>
             </ClientOnly>
             
