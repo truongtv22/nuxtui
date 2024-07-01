@@ -561,7 +561,7 @@ const trackFunctionSelected = ref(  { text: 'bounding box', value: paintCenterTe
           <UFormGroup label="Tên sản phẩm" name="name">
             <ClientOnly >
               {{result}}
-              <QrcodeStream :track="trackFunctionSelected.value" :formats="barcodeFormats" camera="auto" :track="paintBoundingBox" @detect="onDetect" @error="onError"> </QrcodeStream>
+              <QrcodeStream :track="trackFunctionSelected.value" :formats="barcodeFormats" camera="auto" @detect="onDetect" @error="onError"> </QrcodeStream>
             </ClientOnly>
             
             <div v-if="productInfo.selected.length > 0"
