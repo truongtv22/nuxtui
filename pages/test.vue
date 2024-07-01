@@ -1,6 +1,7 @@
 <template>
   <div>
     <ClientOnly >
+      <h1>hello</h1>
               {{result}}
               <QrcodeStream :track="trackFunctionSelected.value" :formats="barcodeFormats"  :camera="{ width: { min: 1280 }, height: { min:720 } }" @detect="onDetect" @error="onError"> </QrcodeStream>
             </ClientOnly>
@@ -8,6 +9,7 @@
 </template>
 
 <script lang="ts" setup>
+import { QrcodeStream, QrcodeDropZone, QrcodeCapture } from 'vue-qrcode-reader'
 definePageMeta({
   layout:false
 })
