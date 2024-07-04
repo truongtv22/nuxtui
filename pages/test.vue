@@ -1,59 +1,45 @@
 <template>
   <div>
-    <ClientOnly >
-      <h1>hello</h1>
-              {{result}}
-              <QrcodeStream :track="trackFunctionSelected.value" :formats="barcodeFormats"  :camera="{ width: { min: 1280 }, height: { min:720 } }" @detect="onDetect" @error="onError"> </QrcodeStream>
-            </ClientOnly>
+    <p>
+      Capture:
+      <select v-model="selected">
+        <option
+          v-for="option in options"
+          :key="option.text"
+          :value="option"
+        >
+          {{ option.text }}
+        </option>
+      </select>
+    </p>
+
+    <hr />
+
+    <p class="decode-result">
+      Last result: <b>{{ result }}</b>
+    </p>
+
+    <qrcode-capture
+      @detect="onDetect"
+      :capture="selected.value"
+       :formats="['code_128','code_39','code_93','codabar','databar','databar_expanded','data_matrix','aztec','rm_qr_code']"
+    />
   </div>
 </template>
 
-<script lang="ts" setup>
-import { QrcodeStream, QrcodeDropZone, QrcodeCapture } from 'vue-qrcode-reader'
-definePageMeta({
-  layout:false
-})
-const result = ref('')
-const error = ref('')
-function onDetect(detectedCodes) {
-    result.value = JSON.stringify(
-      detectedCodes.map(code => code.rawValue)
-    )
-  }
-  function onError(err) {
-    error.value = `[${err.name}]: `
+<script>
+import { QrcodeCapture } from 'vue-qrcode-reader';
 
-    if (err.name === 'NotAllowedError') {
-      error.value += 'you need to grant camera access permission'
-    } else if (err.name === 'NotFoundError') {
-      error.value += 'no camera on this device'
-    } else if (err.name === 'NotSupportedError') {
-      error.value += 'secure context required (HTTPS, localhost)'
-    } else if (err.name === 'NotReadableError') {
-      error.value += 'is the camera already in use?'
-    } else if (err.name === 'OverconstrainedError') {
-      error.value += 'installed cameras are not suitable'
-    } else if (err.name === 'StreamApiNotSupportedError') {
-      error.value += 'Stream API is not supported in this browser'
-    } else if (err.name === 'InsecureContextError') {
-      error.value += 'Camera access is only permitted in secure context. Use HTTPS or localhost rather than HTTP.'
-    } else {
-      error.value += err.message
-    }
-  }
-  function paintBoundingBox(detectedCodes, ctx) {
-    for (const detectedCode of detectedCodes) {
-      const {
-        boundingBox: { x, y, width, height }
-      } = detectedCode
+export default {
+  components: { QrcodeCapture },
 
-      ctx.lineWidth = 2
-      ctx.strokeStyle = '#007bff'
-      ctx.strokeRect(x, y, width, height)
-    }
-  }
-
-  const barcodeFormats = ref({
+  data() {
+    const options = [
+      { text: 'rear camera (default)', value: 'environment' },
+      { text: 'front camera', value: 'user' },
+      { text: 'force file dialog', value: null }
+    ]
+    const barcodeFormats = {
   aztec: true,
   code_128: true,
   code_39: true,
@@ -66,39 +52,30 @@ function onDetect(detectedCodes) {
   ean_13: true,
   ean_8: true,
   itf: true,
-  maxi_code: true,
-  micro_qr_code: true,
-  pdf417: true,
+  maxi_code: false,
+  micro_qr_code: false,
+  pdf417: false,
   qr_code: true,
-  rm_qr_code: true,
-  upc_a: true,
-  upc_e: true,
-  linear_codes: true,
-  matrix_codes: true
-})
-function paintCenterText(detectedCodes, ctx) {
-  for (const detectedCode of detectedCodes) {
-    const { boundingBox, rawValue } = detectedCode
+  rm_qr_code: false,
+  upc_a: false,
+  upc_e: false,
+  linear_codes: false,
+  matrix_codes: false
+}
 
-    const centerX = boundingBox.x + boundingBox.width / 2
-    const centerY = boundingBox.y + boundingBox.height / 2
+    return {
+      result: '',
+      options,
+      selected: options[0]
+    }
+  },
 
-    const fontSize = Math.max(12, (50 * boundingBox.width) / ctx.canvas.width)
+  methods: {
+    onDetect(detectedCodes) {
+      console.log(detectedCodes)
 
-    ctx.font = `bold ${fontSize}px sans-serif`
-    ctx.textAlign = 'center'
-
-    ctx.lineWidth = 3
-    ctx.strokeStyle = '#35495e'
-    ctx.strokeText(detectedCode.rawValue, centerX, centerY)
-
-    ctx.fillStyle = '#5cb984'
-    ctx.fillText(rawValue, centerX, centerY)
+      this.result = JSON.stringify(detectedCodes.map((code) => code.rawValue))
+    }
   }
 }
-const trackFunctionSelected = ref(  { text: 'bounding box', value: paintCenterText })
 </script>
-
-<style>
-
-</style>
