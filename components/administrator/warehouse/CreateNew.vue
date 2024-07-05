@@ -125,6 +125,11 @@ const productInfo = ref({
   },
   selected: []
 })
+const confirmModal=ref({
+  display:false,
+  title:'Do you want close the window?',
+  description:'Every data will clear after the window closed'
+})
 const itemSelected = computed({
   get() {
     return productInfo.value.selected.length
@@ -532,13 +537,14 @@ function paintCenterText(detectedCodes, ctx) {
   }
 }
 const trackFunctionSelected = ref(  { text: 'bounding box', value: paintCenterText })
+
+
 </script>
 
 <template>
   <div>
-    <UModal :ui="{ width: `sm:max-w-6xl` }" v-model="isOpen" :fullscreen="sizeScreen.w < 800 ? true : false"
-      :prevent-close="!productList.display">
-      {{ productInfo.price2 }}
+    <UModal :ui="{ width: `sm:max-w-6xl` ,overlay:{background:'backdrop-blur-md'}}" v-model="isOpen" :fullscreen="sizeScreen.w < 800 ? true : false"
+      :prevent-close="!productList.display" >
       <UCard :ui="{
         base: 'h-fit flex flex-col',
         rounded: '',
@@ -586,6 +592,7 @@ const trackFunctionSelected = ref(  { text: 'bounding box', value: paintCenterTe
           </UFormGroup>
           <UFormGroup label="Giá nhập" name="price1">
             <CurrencyInput v-model="productInfo.price1" :options="options" />
+            <CurrencyInput1/>
           </UFormGroup>
           <UFormGroup label="Giá bán" name="price2">
             <CurrencyInput v-model="productInfo.price2" :value="productInfo.price2" :options="options"/>
@@ -675,17 +682,22 @@ const trackFunctionSelected = ref(  { text: 'bounding box', value: paintCenterTe
             <UInput v-model="tongLoiNhuanComputed" disabled  />
           </UFormGroup>
           <UFormGroup label="Ghi chú" name="price">
-            <UInput v-model="state.email" />
+            <UTextarea model="state.email" rows="8"/>
           </UFormGroup>
-
-          <UButton type="submit">
-            Submit
+          <div class="flex justify-end gap-1">
+            <UButton type="submit" variant="soft" icon="i-material-symbols-light-check-rounded">
+            Create new record
           </UButton>
+          <UButton type="submit" variant="ghost" color="red" icon="i-material-symbols-light-close-small-outline-rounded" @click="confirmModal.display=true">
+            Cancel
+          </UButton>
+        </div>
+          
         </UForm>
       </UCard>
     </UModal>
 
-    <SideOver v-if="productList.display" :productList="productList" @isOpen="isOpen = $event">
+    <SideOver v-if="productList.display" :productList="productList" @isOpen="isOpen = $event" >
       <template #header>
         <h1 class="font-bold capitalize">product list</h1>
       </template>
@@ -750,6 +762,7 @@ const trackFunctionSelected = ref(  { text: 'bounding box', value: paintCenterTe
         </UTable>
       </template>
     </SideOver>
+    <ConfirmModal :display="confirmModal.display" @update:display="confirmModal.display=$event" @is-confirmed="isOpen=!$event" :title="confirmModal.title" :description="confirmModal.description"/>
   </div>
 </template>
 <style>

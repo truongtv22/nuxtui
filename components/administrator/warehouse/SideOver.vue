@@ -1,6 +1,6 @@
 <template>
   <USlideover v-if="productList.display" v-model="productList.display" side="bottom" @close="emits('isOpen',true)"
-      :ui="{ wrapper: 'w-full lg:w-1/2 left-25 lg:inset-x-1/4 sm:-top-2 h-full sm:h-full', height: 'max-h-screen h-full sm:h-4/5 overflow' }">
+      :ui="{overlay:{background:'backdrop-blur-xl'}, wrapper: 'w-full lg:w-1/2 left-25 lg:inset-x-1/4 sm:-top-2 h-full sm:h-full', height: 'max-h-screen h-full sm:h-4/5 overflow' }">
       <div class="p-4 flex-col flex h-full">
         <div class="flex flex-row justify-between mb-4">
           <slot name="header">
