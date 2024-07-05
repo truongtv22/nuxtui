@@ -537,8 +537,60 @@ function paintCenterText(detectedCodes, ctx) {
   }
 }
 const trackFunctionSelected = ref(  { text: 'bounding box', value: paintCenterText })
+const optionsExample = ref([
+  { id: 1, name: 'bug', color: 'd73a4a' },
+  { id: 2, name: 'documentation', color: '0075ca' },
+  { id: 3, name: 'duplicate', color: 'cfd3d7' },
+  { id: 4, name: 'enhancement', color: 'a2eeef' },
+  { id: 5, name: 'good first issue', color: '7057ff' },
+  { id: 6, name: 'help wanted', color: '008672' },
+  { id: 7, name: 'invalid', color: 'e4e669' },
+  { id: 8, name: 'question', color: 'd876e3' },
+  { id: 9, name: 'wontfix', color: 'ffffff' }
+])
+const selected1 = ref([])
+const labels = computed({
+  get: () => selected1.value,
+  set: async (labels) => {
+    labels=[labels]
+    const promises = labels.map(async (label) => {
+      if (label.id) {
+        return label
+      }
 
+      // In a real app, you would make an API call to create the label
+      const response = {
+        id: optionsExample.value.length + 1,
+        name: label.name,
+        color: generateColorFromString(label.name)
+      }
 
+      optionsExample.value.push(response)
+
+      return response
+    })
+
+    selected1.value = await Promise.all(promises)
+  }
+})
+function hashCode (str) {
+  let hash = 0
+  for (let i = 0; i < str.length; i++) {
+    hash = str.charCodeAt(i) + ((hash << 5) - hash)
+  }
+  return hash
+}
+
+function intToRGB (i) {
+  const c = (i & 0x00FFFFFF)
+    .toString(16)
+    .toUpperCase()
+
+  return '00000'.substring(0, 6 - c.length) + c
+}
+function generateColorFromString (str) {
+  return intToRGB(hashCode(str))
+}
 </script>
 
 <template>
@@ -559,7 +611,7 @@ const trackFunctionSelected = ref(  { text: 'bounding box', value: paintCenterTe
               Insert new product to warehouse {{ sizeScreen.w }}{{ productInfo.name }}
             </h3>
             <UButton color="gray" variant="ghost" icon="i-heroicons-x-mark-20-solid" class="-my-1"
-              @click="emits('display', false)" />
+              @click="confirmModal.display=true" />
           </div>
         </template>
 
@@ -588,28 +640,65 @@ const trackFunctionSelected = ref(  { text: 'bounding box', value: paintCenterTe
 
           </UFormGroup>
           <UFormGroup label="Barcode" name="barcode">
-            <UInput v-model="productInfo.barcode" />
+            <UButtonGroup class="w-full">
+              <UInput v-model="productInfo.barcode" class="w-full" disabled/>
+              <UButton icon="i-material-symbols-light-barcode-scanner-rounded" @click=""/>
+            </UButtonGroup>
           </UFormGroup>
-          <UFormGroup label="Giá nhập" name="price1">
-            <CurrencyInput v-model="productInfo.price1" :options="options" />
-            <CurrencyInput1/>
+          
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-1 gap-y-4">
+            <UFormGroup label="Giá nhập" name="price1">
+            <CurrencyInput1 v-model="productInfo.price1" @quantity="productInfo.quantity=$event"/>
           </UFormGroup>
           <UFormGroup label="Giá bán" name="price2">
-            <CurrencyInput v-model="productInfo.price2" :value="productInfo.price2" :options="options"/>
+            <CurrencyInput1 v-model="productInfo.price2" />
 
           </UFormGroup>
-          <UFormGroup label="Số lượng" name="quantity">
-            <UInput v-model.number="productInfo.quantity" />
+            <UFormGroup label="Số lượng" name="quantity">
+            <UInput v-model="productInfo.quantity" />
           </UFormGroup>
           <UFormGroup label="Đơn vị" name="price">
-            <USelectMenu searchable searchable-placeholder="Search a person..." class="w-full"
-              placeholder="Select a person" :options="units" v-model="productInfo.unit">
-              <template #option-empty="{ query }">
-                <UButton icon="i-material-symbols-light-add" @click="units.push(query); productInfo.unit = query">Create
-                  new {{ query }}</UButton>
-              </template>
-            </USelectMenu>
+            <USelectMenu
+    v-model="labels"
+    by="id"
+    name="labels"
+    :options="optionsExample"
+    option-attribute="name"
+    searchable
+    creatable
+  >
+    <template #label>
+      <template v-if="labels.length">
+        <span class="flex items-center -space-x-1">
+          <span v-for="label of labels" :key="label.id" class="flex-shrink-0 w-2 h-2 mt-px rounded-full" :style="{ background: `#${label.color}` }" />
+        </span>
+        <span>{{ labels[0].name }}</span>
+      </template>
+      <template v-else>
+        <span class="text-gray-500 dark:text-gray-400 truncate">Select labels</span>
+      </template>
+    </template>
+
+    <template #option="{ option }">
+      <span
+        class="flex-shrink-0 w-2 h-2 mt-px rounded-full"
+        :style="{ background: `#${option.color}` }"
+      />
+      <span class="truncate flex justify-between">{{ option.name }}</span>
+    </template>
+
+    <template #option-create="{ option }">
+      <span class="flex-shrink-0">New label:</span>
+      <span
+        class="flex-shrink-0 w-2 h-2 mt-px rounded-full -mx-1"
+        :style="{ background: `#${generateColorFromString(option.name)}` }"
+      />
+      <span class="block truncate">{{ option.name }}</span>
+    </template>
+  </USelectMenu>
           </UFormGroup>
+          </div>
+          
           <UFormGroup label="Nhà cung cấp" name="price">
             <div v-if="productInfo.supplier.value.length > 0"
               class="w-full flex-col justify-center flex gap-y-1 border p-2 rounded-md">
@@ -628,15 +717,7 @@ const trackFunctionSelected = ref(  { text: 'bounding box', value: paintCenterTe
           </UFormGroup>
 
 
-          <div class="grid grid-cols-4 gap-1">
-            <UFormGroup label="Ngày sản xuất" name="price">
-              <VDatePicker v-model="productInfo.date1.value">
-                <template v-slot="{ inputValue, inputEvents, togglePopover }">
-                  <UInput :model-value="format(productInfo.date1.value, 'dd/MM/yyyy')" @click="togglePopover"
-                    @keyup="updateDate1($event)" />
-                </template>
-              </VDatePicker>
-            </UFormGroup>
+          <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-x-1 gap-y-4">
             <UFormGroup label="Thời hạn sử dụng" name="time1">
               <UInput v-model="productInfo.time1.value" />
             </UFormGroup>
@@ -658,6 +739,15 @@ const trackFunctionSelected = ref(  { text: 'bounding box', value: paintCenterTe
               </USelectMenu>
 
             </UFormGroup>
+            <UFormGroup label="Ngày sản xuất" name="price">
+              <VDatePicker v-model="productInfo.date1.value">
+                <template v-slot="{ inputValue, inputEvents, togglePopover }">
+                  <UInput :model-value="format(productInfo.date1.value, 'dd/MM/yyyy')" @click="togglePopover"
+                    @keyup="updateDate1($event)" />
+                </template>
+              </VDatePicker>
+            </UFormGroup>
+            
             <UFormGroup label="Ngày hết hạn" name="time2">
               <VDatePicker v-model="reformatDate2">
                 <template v-slot="{ inputValue, inputEvents, togglePopover }">
@@ -762,7 +852,7 @@ const trackFunctionSelected = ref(  { text: 'bounding box', value: paintCenterTe
         </UTable>
       </template>
     </SideOver>
-    <ConfirmModal :display="confirmModal.display" @update:display="confirmModal.display=$event" @is-confirmed="isOpen=!$event" :title="confirmModal.title" :description="confirmModal.description"/>
+    <ConfirmModal v-model="confirmModal.display" @is-confirmed="isOpen=!$event" :title="confirmModal.title" :description="confirmModal.description"/>
   </div>
 </template>
 <style>
