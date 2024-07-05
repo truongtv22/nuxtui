@@ -24,6 +24,13 @@
 </template>
 
 <script lang="ts" setup>
+onBeforeMount(async ()=>{
+  await $fetch('/api/categories/list').then(res=>{
+    if(res.length>0){
+      table.value.data=res
+    }
+  })
+})
 const modals=ref({
   createForm:{
     display:false
@@ -43,10 +50,8 @@ const loading=ref({
 })
 const table=ref({
   columns:[
-    {key:'id',label:'ID'},
-    {key:'name',label:'Name'},
-    {key:'email',label:'Email'},
-    {key:'role',label:'Role'},
+    {key:'_id',label:'ID'},
+    {key:'title',label:'Name'},
     {key:'actions'}
   ],
   selected:[],
