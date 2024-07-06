@@ -77,7 +77,7 @@
 <script lang="ts" setup>
 import {z} from 'zod'
 const props = defineProps(['modelValue'])
-const emits = defineEmits(['update:modelValue', 'confirmWindow'])
+const emits = defineEmits(['update:modelValue', 'confirmWindow','newData'])
 const isOpen = computed({
   get() {
     return props.modelValue
@@ -161,6 +161,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
   }).then(res=>{
     disabled.value.submit=false
     if(Object.hasOwn(res[0],'_id')){
+      emits('newData',res[0])
       resetData()
     }
   })

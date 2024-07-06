@@ -1,13 +1,15 @@
 <template>
   <div>
-    
     <NuxtLayout :title="title">
       <NuxtLoadingIndicator />
       <NuxtPage/>
     </NuxtLayout>
+    <UNotifications :icon="store.icon" :ui="{wrap:'top-0 end-0',wrapper:'justify-start top-0 bottom-auto'}">
+    </UNotifications>
   </div>
 </template>
 <script setup>
+const store=useMyNotificationsStore()
 const route=useRoute()
 const pages=useMyMenuItemsStore()
 const title=computed(()=>{
