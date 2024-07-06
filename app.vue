@@ -4,14 +4,28 @@
       <NuxtLoadingIndicator />
       <NuxtPage/>
     </NuxtLayout>
-    <UNotifications :icon="store.icon" :ui="{wrap:'top-0 end-0',wrapper:'justify-start top-0 bottom-auto'}">
+    <UNotifications :icon="store.icon" :ui="{position:'top-0',wrapper:'justify-start h-fit'}">
+      <template #title="{ title }">
+      <span v-html="title" />
+    </template>
+
+    <template #description="{ description }">
+      <span v-html="description" />
+    </template>
     </UNotifications>
   </div>
 </template>
 <script setup>
 const store=useMyNotificationsStore()
+const basicStore=useMyBasicStore()
 const route=useRoute()
 const pages=useMyMenuItemsStore()
+onMounted(()=>{
+  basicStore.updateSizeScreen({w:window.innerWidth,h:window.innerHeight})
+  window.addEventListener('resize',()=>{
+    basicStore.updateSizeScreen({w:window.innerWidth,h:window.innerHeight})
+  })
+})
 const title=computed(()=>{
   let val=null
   pages.admin.forEach(item=>{

@@ -9,12 +9,15 @@ export const useMyNotificationsStore = defineStore({
       switch( data.type){
         case 'success':
           data.icon='i-material-symbols-light-check-rounded'
+          data.color='green'
           break
         case 'warning':
           data.icon='i-material-symbols-light-warning-outline-rounded'
+          data.color='orange'
           break
         case 'error':
           data.icon='i-material-symbols-light-chat-error-outline-rounded'
+          data.color='red'
           break
       }
       useToast().add(data)

@@ -32,7 +32,7 @@
       </div>
       <UDivider orientation="horizontal" :ui="{ border: { base: 'dark:border-gray-600' } }" class="block xl:hidden" />
       <UDivider orientation="vertical" :ui="{ border: { base: 'dark:border-gray-600' } }" class="hidden mdForNav:block" />
-      <div class="w-full">
+      <div class="w-full flex flex-col min-h-screen">
         <ClientOnly>
           <div class="flex justify-between xl:py-5 px-3 py-2">
             <h1 class="capitalize  font-bold flex items-center">{{ props.title }}</h1>
