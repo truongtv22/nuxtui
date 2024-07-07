@@ -33,6 +33,22 @@
       <UButton color="blue" icon="i-material-symbols-light-info-outline-rounded" variant="ghost"
         :ui="{ rounded: 'rounded-full' }" @click="table.detail = { display: true, value: row }" />
     </template>
+    <template #images-data="{row}">
+      <div class="relative flex justify-center">
+        <template v-if="row.images_small.length>=1">
+          <div class="w-12 h-12 bg-gray-400 rounded-md" v-if="row.images_small.length>1"></div>
+        <div class="absolute top-0 left-2 shadow-2xl">
+          <img :src="row['images_small'][0]" class="w-12 drop-shadow-xl rounded-md"/>
+        </div>
+        <UBadge v-if="row.images_small.length>1" :label="'+'+(row.images_small.length-1)" class="absolute right-0 top-2 " size="xs"></UBadge>
+        </template>
+        <template v-else>
+          <div class="w-12 h-12 bg-gray-400 dark:bg-gray-800 rounded-md capitalize text-xs flex justify-center items-center text-gray-800 dark:text-gray-400"> no data</div>
+        </template>
+      </div>
+      
+      
+    </template>
     <template #created_at-data="{row}">
       <UBadge variant="soft" size="md">
         {{ reformatDate(row.created_at) }}
@@ -91,6 +107,7 @@
 </template>
 
 <script lang="ts" setup>
+
 const store = useMyNotificationsStore()
 const basicStore = useMyBasicStore()
 onBeforeMount(async () => {
@@ -128,6 +145,7 @@ const table = ref({
   pageCount: 10,
   columns: [
     { key: '_id', label: 'ID' },
+    {key:'images',label:'Images'},
     { key: 'title', label: 'Name' },
     { key: 'created_at', label: 'Created at' },
     { key: 'created_by', label: 'Created by' },

@@ -34,7 +34,7 @@
     </div>
   </div>
   
-  <input type="file" class="hidden" accept=".jpg, .jpeg, .png" ref="fileSelected" @change="previewSelected"/>
+  <input type="file" class="hidden" accept=".jpg, .jpeg, .png" ref="fileSelected" @change="previewSelected" multiple/>
 </div>
 </UFormGroup>
 <UFormGroup label="Mô tả" name="description">
@@ -62,6 +62,7 @@ onMounted(()=>{
   Object.keys(category.value).forEach(item=>{
     category.value[item]=props.data[item]
   })
+  category.value.previewImages=props.data.images_small
 })
 const isOpen = computed({
   get() {
@@ -86,19 +87,21 @@ const category = ref({
   edited_at:null
 })
 const fileSelected=ref()
-function previewSelected(e){
-  const file=e.target.files[0]
-  let iss=false
-  category.value.images.forEach(item=>{
-    if(item.name==file.name){
-      iss=true
+function previewSelected(e) {
+  console.log(category.value)
+  for(let i=0;i<e.srcElement.files.length;i++){
+    const file=e.srcElement.files[i]
+    let iss = false
+    category.value.images.forEach(item => {
+      if (item.name == file.name) {
+        iss = true
+      }
+    })
+    if (!iss) {
+      category.value.previewImages.push(URL.createObjectURL(file))
+      category.value.images.push(file)
     }
-  })
-  if(!iss){
-    category.value.previewImages.push(URL.createObjectURL(file))
-  category.value.images.push(file)
   }
-  
 }
 function removeImage(val){
   category.value.previewImages.forEach((item,index)=>{

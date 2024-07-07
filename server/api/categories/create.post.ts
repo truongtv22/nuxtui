@@ -13,13 +13,14 @@ export default defineEventHandler(async (event)=>{
             {
                 title:body.title,
                 images:body.images,
+                images_small:body.imagesSmall,
                 description:body.description,
                 note:body.note,
                 tags:body.tags,
                 created_by:body.createdBy,
-                updated_by:body.updatedBy,
+                edited_by:body.updatedBy,
                 created_at:now,
-                updated_at:now
+                edited_at:now
             }
         ])
         return result

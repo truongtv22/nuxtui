@@ -7,6 +7,9 @@ const schema:mongoose.Schema=new mongoose.Schema({
     images:{
         type:Array
     },
+    images_small:{
+        type:Array
+    },
     description:{
         type:String,
     },
