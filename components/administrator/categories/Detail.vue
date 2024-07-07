@@ -5,11 +5,11 @@
   <template #hint>
 <span class="text-gray-400 dark:text-gray-500">Required</span>
 </template>
-  <UInput v-model="category.title" :model-value="props.data.title" />
+  <UInput v-model="category.title"/>
 </UFormGroup>
 <UFormGroup label="Hình ảnh" name="images">
-<div :class="'min-h-32 w-full border border-dotted border-2 rounded-md '+(category.previewImages.length<1?' cursor-pointer':'')">
-  <div v-if="category.previewImages.length==0" @click="fileSelected.click()" class="w-full min-h-32 justify-center items-center flex">
+<div :class="'min-h-32 w-full border border-dotted border-2 rounded-md '+(category.images.length<1?' cursor-pointer':'')">
+  <div v-if="category.images.length==0" @click="fileSelected.click()" class="w-full min-h-32 justify-center items-center flex">
     <UIcon  name="i-material-symbols-light-add-photo-alternate-outline-rounded" class="text-7xl text-gray-400"/>
   </div>
   
@@ -57,7 +57,12 @@
 
 import {z} from 'zod'
 const props = defineProps(['data'])
-const emits = defineEmits(['update:modelValue', 'confirmWindow','newData'])
+const emits = defineEmits(['update:modelValue', 'confirmWindow','updateData'])
+onMounted(()=>{
+  Object.keys(category.value).forEach(item=>{
+    category.value[item]=props.data[item]
+  })
+})
 const isOpen = computed({
   get() {
     return props.modelValue
@@ -75,7 +80,10 @@ const category = ref({
   categories: [],
   note: null,
   previewImages:[],
-  tags:null
+  tags:null,
+  _id:null,
+  created_at:null,
+  edited_at:null
 })
 const fileSelected=ref()
 function previewSelected(e){
@@ -109,28 +117,21 @@ const schema = z.object({
 
 type Schema = z.output<typeof schema>
   function resetData(){
-  category.value={
-        title: null,
-  description: null,
-  images: [],
-  categories: [],
-  note: null,
-  previewImages:[],
-  tags:null
-      }
+  Object.keys(category.value).forEach(item=>{
+    category.value[item]=props.data[item]
+  })
       const element =form.value
       element.$el.scrollIntoView({ behavior: 'smooth'})
 }
 async function onSubmit(event: FormSubmitEvent<Schema>) {
   disabled.value.submit=true
-  await $fetch('/api/categories/create',{
+  await $fetch('/api/categories/update',{
     body:JSON.stringify(category.value),
-    method:'POST'
+    method:'PUT'
   }).then(res=>{
     disabled.value.submit=false
-    if(Object.hasOwn(res[0],'_id')){
-      emits('newData',res[0])
-      resetData()
+    if(Object.hasOwn(res,'modifiedCount') && res.modifiedCount==1){
+      emits('updateData',category.value)
     }
   })
 }

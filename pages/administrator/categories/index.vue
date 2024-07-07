@@ -12,10 +12,10 @@
             <UIcon class="font-bold text-xl" name="i-material-symbols-light-delete" />Delete
           </UButton>
         </UChip>
-        </Transition>
-        <TransitionGroup>
-          <UDivider v-if="table.selected.length==pageCount" label="or" type="dotted"/>
-        <UChip v-if="table.selected.length==pageCount" class="transition-all"  :text="table.data.length" size="xl"
+      </Transition>
+      <TransitionGroup>
+        <UDivider v-if="table.selected.length == pageCount" label="or" type="dotted" />
+        <UChip v-if="table.selected.length == pageCount" class="transition-all" :text="table.data.length" size="xl"
           color="red">
           <UButton :loading="loading.delete" color="red" :ui="{ rounded: 'rounded-full' }"
             @click="modals.confirmDelete.display = true, loading.delete = true">
@@ -23,7 +23,7 @@
           </UButton>
         </UChip>
       </TransitionGroup>
-      
+
     </div>
     <UInput v-model="table.keyword" placeholder="Filter people..." />
   </div>
@@ -31,7 +31,21 @@
   <UTable :rows="rows" :columns="table.columns" v-model="table.selected" :loading="table.loading">
     <template #actions-data="{ row }">
       <UButton color="blue" icon="i-material-symbols-light-info-outline-rounded" variant="ghost"
-        :ui="{ rounded: 'rounded-full' }" @click="table.detail={display:true,value:row}"/>
+        :ui="{ rounded: 'rounded-full' }" @click="table.detail = { display: true, value: row }" />
+    </template>
+    <template #created_at-data="{row}">
+      <UBadge variant="soft" size="md">
+        {{ reformatDate(row.created_at) }}
+      </UBadge>
+      
+    </template>
+    <template #edited_at-data="{row}">
+      <UBadge size="md" variant="soft" color="blue" v-if="row.edited_at">
+        {{ reformatDate(row.edited_at) }}
+      </UBadge>
+      <span class="capitalize" v-else>
+        No data
+      </span>
     </template>
   </UTable>
   <UDivider class="mb-2" />
@@ -42,13 +56,13 @@
   <KeepAlive>
     <AdministratorCategoriesCreateNew v-model="modals.createForm.display"
       @confirm-window="(display, title) => { modals.confirmClose.display = display, modals.confirmClose.title = title }"
-      @newData="table.data.push($event), store.showNotification({ type: 'success', title: $event.title + ' created success', description: 'You can view in data table', timeout: 3000 })" />
+      @newData="table.data.unshift($event), store.showNotification({ type: 'success', title: $event.title + ' created success', description: 'You can view in data table', timeout: 3000 })" />
   </KeepAlive>
   <ConfirmModal v-model="modals.confirmDelete.display" :title="modals.confirmDelete.title"
     @is-confirmed="$event ? deleteSelected() : loading.delete = false" />
   <ConfirmModal v-model="modals.confirmClose.display" :title="modals.confirmClose.title"
     @is-confirmed="$event ? modals.createForm.display = false : null" />
-    <UModal :ui="{ width: `sm:max-w-6xl`, overlay: { background: 'backdrop-blur-md' } }" v-model="table.detail.display"
+  <UModal :ui="{ width: `sm:max-w-6xl`, overlay: { background: 'backdrop-blur-md' } }" v-model="table.detail.display"
     :fullscreen="basicStore.screenSize.w < 800 ? true : false" prevent-close>
     <UCard :ui="{
       base: 'h-fit flex flex-col',
@@ -56,20 +70,24 @@
       divide: 'divide-y divide-gray-100 dark:divide-gray-800',
       body: {
         base: 'grow'
+      },
+      header: {
+        base: 'bg-blue-500'
       }
     }">
       <template #header>
         <div class="flex items-center justify-between">
-          <h3 class="capitalize text-base font-semibold leading-6 text-gray-900 dark:text-white">
+          <UBadge color="blue" class="absolute -top-4 left-0">Update</UBadge>
+          <h3 class="capitalize text-base font-semibold leading-6 text-white dark:text-white">
             {{ table.detail.value.title }}
           </h3>
           <UButton color="gray" variant="ghost" icon="i-heroicons-x-mark-20-solid" class="-my-1"
-            @click="table.detail.display=false" />
+            @click="table.detail.display = false" />
         </div>
       </template>
-      <AdministratorCategoriesDetail :data="table.detail.value"/>
-      </UCard>
-    </UModal>
+      <AdministratorCategoriesDetail :data="table.detail.value" @updateData="updateData" />
+    </UCard>
+  </UModal>
 </template>
 
 <script lang="ts" setup>
@@ -79,12 +97,14 @@ onBeforeMount(async () => {
   table.value.loading = true
   await $fetch('/api/categories/list').then(res => {
     if (res.length > 0) {
-      table.value.data = res
+      table.value.data = res.sort((item1, item2) => item1.created_at < item2.created_at)
     }
     table.value.loading = false
   })
 })
-
+function reformatDate(val){
+  return new Date(Date.parse(val))
+}
 
 const modals = ref({
   createForm: {
@@ -109,15 +129,19 @@ const table = ref({
   columns: [
     { key: '_id', label: 'ID' },
     { key: 'title', label: 'Name' },
+    { key: 'created_at', label: 'Created at' },
+    { key: 'created_by', label: 'Created by' },
+    { key: 'edited_at', label: 'Edited at' },
+    { key: 'edited_by', label: 'Edited by' },
     { key: 'actions' }
   ],
   selected: [],
   keyword: null,
   data: [],
   loading: false,
-  detail:{
-    display:false,
-    value:null
+  detail: {
+    display: false,
+    value: null
   }
 })
 const rows = computed(() => {
@@ -139,6 +163,7 @@ const filteredRows = computed(() => {
   })
 })
 async function deleteSelected() {
+
   table.value.selected.forEach(async (item, index) => {
     await $fetch('/api/categories/delete', {
       method: 'DELETE',
@@ -147,20 +172,21 @@ async function deleteSelected() {
       }
     }).then(res => {
       if (Object.hasOwn(res, 'deletedCount') && res.deletedCount == 1) {
-        store.showNotification({
-          title:`${item._id} deleted success`,
-          description:`with name: <span class="text-red-500 font-bold text-xl">${item.title}</span>`,
-          type:'success'
+        const promise=new Promise((resolve,reject)=>{
+          resolve(table.value.data.findIndex(r=>r._id==item._id))
         })
-        table.value.data.forEach((item1, index1) => {
-          if (item._id == item1._id) {
-            table.value.data.splice(index1, 1)
-          }
+        promise.then(rs=>{
+          table.value.data.splice(rs, 1)
+          table.value.selected.splice(0, 1)
+          store.showNotification({
+                title: `${item._id} deleted success`,
+                description: `with name: <span class="text-red-500 font-bold text-xl">${item.title}</span>`,
+                type: 'success'
+              })
         })
       }
     })
   })
-  table.value.selected = []
   loading.value.delete = false
 }
 const confirmDeleteDisplay = computed({
@@ -174,7 +200,22 @@ watch(confirmDeleteDisplay, (newVal, oldVal) => {
   }
 
 })
-
+function updateData(data) {
+  const promise=new Promise((resolve,reject)=>{
+    resolve(table.value.data.findIndex(item=>item._id==data._id))
+  })
+  promise.then(res=>{
+    Object.keys(table.value.data[res]).forEach(key => {
+      table.value.data[res][key] = data[key]
+      })
+      table.value.data[res].edited_at=new Date()
+      console.log(table.value.data[res])
+      store.showNotification({
+        title: `${data.title} <span class="text-blue-500">updated</span> success`,
+        type: 'success'
+      })
+  })
+}
 </script>
 
 <style></style>

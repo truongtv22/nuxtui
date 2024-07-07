@@ -7,12 +7,16 @@
       divide: 'divide-y divide-gray-100 dark:divide-gray-800',
       body: {
         base: 'grow'
+      },
+      header:{
+        base:'bg-green-500'
       }
     }">
       <template #header>
         <div class="flex items-center justify-between">
-          <h3 class="capitalize text-base font-semibold leading-6 text-gray-900 dark:text-white">
-            tạo mới thể loại
+          <UBadge color="green" class="absolute -top-4 left-0 hidden xl:block">Create new</UBadge>
+          <h3 class="capitalize text-base font-semibold leading-6 text-white dark:text-white">
+            tạo mới thể loại {{myTitle}}
           </h3>
           <UButton color="gray" variant="ghost" icon="i-heroicons-x-mark-20-solid" class="-my-1"
             @click="emits('confirmWindow', true, 'Bạn có chắc muốn đóng cửa sổ này?')" />
@@ -24,7 +28,7 @@
             <template #hint>
       <span class="text-gray-400 dark:text-gray-500">Required</span>
     </template>
-            <UInput v-model="category.title"  />
+            <UInput ref="inputField" v-model="category.title" @keyup.enter="form.submit()" :disabled="disabled.submit"  />
           </UFormGroup>
         <UFormGroup label="Hình ảnh" name="images">
           <div :class="'min-h-32 w-full border border-dotted border-2 rounded-md '+(category.previewImages.length<1?' cursor-pointer':'')">
@@ -55,6 +59,7 @@
             
             <input type="file" class="hidden" accept=".jpg, .jpeg, .png" ref="fileSelected" @change="previewSelected"/>
           </div>
+          <UButton @click="uploadFile(category.images[0])">Upload</UButton>
         </UFormGroup>
         <UFormGroup label="Mô tả" name="description">
           <UTextarea v-model="category.description" rows="6"/>
@@ -66,7 +71,7 @@
           <UTextarea v-model="category.tags" rows="6" disabled/>
         </UFormGroup>
         <div class="flex justify-end gap-1">
-          <UButton type="submit" :disabled="disabled.submit" :loading="disabled.submit">Tạo mới</UButton>
+          <UButton ref="myBtn" type="submit" :disabled="disabled.submit" :loading="disabled.submit">Tạo mới</UButton>
           <UButton color="red" variant="ghost" @click="form.clear(),resetData()">Huỷ bỏ</UButton>
         </div>
       </UForm>
@@ -100,6 +105,8 @@ onMounted(async () => {
   window.addEventListener('resize', onResize)
 })
 const form=ref()
+const inputField =ref()
+const myBtn=ref()
 const category = ref({
   title: null,
   description: null,
@@ -161,8 +168,14 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
   }).then(res=>{
     disabled.value.submit=false
     if(Object.hasOwn(res[0],'_id')){
+      setTimeout(()=>{
+        inputField.value.$refs.input.focus()
+      },1)
+      
       emits('newData',res[0])
       resetData()
+      
+      
     }
   })
 }
@@ -174,6 +187,17 @@ async function onError (event: FormErrorEvent) {
   const element = document.getElementById(event.errors[0].id)
   element?.focus()
   element?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+}
+async function uploadFile(file){
+  const data=new FormData()
+  data.append('file',file)
+  console.log(data)
+  await $fetch('/api/uploads/image',{
+    method:"POST",
+    body:data
+  }).then(res=>{
+    console.log(res)
+  })
 }
 </script>
 
