@@ -5,10 +5,15 @@ const schema:mongoose.Schema=new mongoose.Schema({
         type:String
     },
     images:{
-        type:Array
-    },
-    images_small:{
-        type:Array
+        normal:{
+            type:Array
+        },
+        medium:{
+            type:Array
+        },
+        small:{
+            type:Array
+        }
     },
     description:{
         type:String,

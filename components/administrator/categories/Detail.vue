@@ -9,7 +9,7 @@
 </UFormGroup>
 <UFormGroup label="Hình ảnh" name="images">
 <div :class="'min-h-32 w-full border border-dotted border-2 rounded-md '+(category.images.length<1?' cursor-pointer':'')">
-  <div v-if="category.images.length==0" @click="fileSelected.click()" class="w-full min-h-32 justify-center items-center flex">
+  <div v-if="category.imagesOld.medium.length==0 && category.previewImages.length==0" @click="fileSelected.click()" class="w-full min-h-32 justify-center items-center flex">
     <UIcon  name="i-material-symbols-light-add-photo-alternate-outline-rounded" class="text-7xl text-gray-400"/>
   </div>
   
@@ -19,7 +19,7 @@
       <div v-for="src,index in category.previewImages" class="relative">
         <img :src class="rounded-md w-full min-h-52 max-h-52 object-cover" :key="index" @mouseover="showElement=index"/>
         <div class="w-full min-h-52 max-h-52 absolute top-0 left-0 backdrop-blur-sm flex justify-center items-center rounded-md" v-show="showElement==index" @mouseout="showElement=null">
-          <UButton variant="soft" :ui="{rounded:'rounded-full'}" icon="i-material-symbols-light-visibility-outline-rounded" color="blue"/>
+          <UButton variant="soft" :ui="{rounded:'rounded-full'}" icon="i-material-symbols-light-visibility-outline-rounded" color="blue" @click="modal.data=category.imagesOld.normal[index],modal.display=true"/>
           
         </div>
         <div class="absolute -top-2 -right-2 z-50 text-white text-xl bg-red-500 rounded-full  flex justify-center items-center cursor-pointer" @click="removeImage(src)">
@@ -51,6 +51,30 @@
 <UButton color="red" variant="ghost" @click="form.clear(),resetData()">Huỷ bỏ</UButton>
 </div>
 </UForm>
+<UModal v-model="modal.display" fullscreen>
+  <UCard :ui="{
+      base: 'h-fit flex flex-col',
+      rounded: '',
+      divide: 'divide-y divide-gray-100 dark:divide-gray-800',
+      body: {
+        base: 'grow'
+      },
+      header: {
+        base: 'bg-blue-500'
+      }
+    }">
+    <template #header>
+        <div class="flex items-center justify-between">
+          <h3 class="capitalize text-base font-semibold leading-6 text-white dark:text-white">
+            Detail photo {{ myTitle }}
+          </h3>
+          <UButton color="gray" variant="ghost" icon="i-heroicons-x-mark-20-solid" class="-my-1"
+            @click="modal.display=false" />
+        </div>
+      </template>
+    <img :src="modal.data" class="w-full"/>
+  </UCard>
+</UModal>
 </template>
 
 <script lang="ts" setup>
@@ -58,11 +82,15 @@
 import {z} from 'zod'
 const props = defineProps(['data'])
 const emits = defineEmits(['update:modelValue', 'confirmWindow','updateData'])
-onMounted(()=>{
+onBeforeMount(()=>{
   Object.keys(category.value).forEach(item=>{
-    category.value[item]=props.data[item]
+    if(item!='images'){
+      category.value[item]=props.data[item]
+    }
+    
   })
-  category.value.previewImages=props.data.images_small
+  category.value.previewImages=props.data.images.medium
+  category.value.imagesOld=props.data.images
 })
 const isOpen = computed({
   get() {
@@ -78,6 +106,7 @@ const category = ref({
   title: null,
   description: null,
   images: [],
+  imagesOld:null,
   categories: [],
   note: null,
   previewImages:[],
@@ -85,6 +114,10 @@ const category = ref({
   _id:null,
   created_at:null,
   edited_at:null
+})
+const modal=ref({
+  display:false,
+  data:null
 })
 const fileSelected=ref()
 function previewSelected(e) {

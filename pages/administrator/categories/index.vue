@@ -34,13 +34,13 @@
         :ui="{ rounded: 'rounded-full' }" @click="table.detail = { display: true, value: row }" />
     </template>
     <template #images-data="{row}">
-      <div class="relative flex justify-center">
-        <template v-if="row.images_small.length>=1">
-          <div class="w-12 h-12 bg-gray-400 rounded-md" v-if="row.images_small.length>1"></div>
-        <div class="absolute top-0 left-2 shadow-2xl">
-          <img :src="row['images_small'][0]" class="w-12 drop-shadow-xl rounded-md"/>
+      <div class="relative flex justify-center">  
+        <template v-if="row.images.small.length>=1">
+          <div class="w-12 h-12 bg-gray-400 rounded-md" v-if="row.images.small.length>1"></div>
+        <div :class="row.images.small.length>1?'absolute top-0 left-2 shadow-2xl':''">
+          <img :src="row.images.small[0]" class="w-12 drop-shadow-xl rounded-md"/>
         </div>
-        <UBadge v-if="row.images_small.length>1" :label="'+'+(row.images_small.length-1)" class="absolute right-0 top-2 " size="xs"></UBadge>
+        <UBadge v-if="row.images.small.length>1" :label="(row.images.small.length-1)+'+'" class="absolute right-0 top-0 " size="xs"></UBadge>
         </template>
         <template v-else>
           <div class="w-12 h-12 bg-gray-400 dark:bg-gray-800 rounded-md capitalize text-xs flex justify-center items-center text-gray-800 dark:text-gray-400"> no data</div>

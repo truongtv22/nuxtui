@@ -70,6 +70,7 @@
             <input type="file" class="hidden" accept=".jpg, .jpeg, .png" ref="fileSelected" @change="previewSelected"
               multiple />
           </div>
+          <UButton @click="uploadFile(category.images[0])">Upload</UButton>
         </UFormGroup>
         <UFormGroup label="Mô tả" name="description">
           <UTextarea v-model="category.description" rows="6" />
@@ -91,6 +92,7 @@
 
 <script lang="ts" setup>
 import type { _0 } from '#tailwind-config/theme/backdropBlur';
+import { readUsedSize } from 'chart.js/helpers';
 import { z } from 'zod'
 const props = defineProps(['modelValue'])
 const emits = defineEmits(['update:modelValue', 'confirmWindow', 'newData'])
@@ -130,8 +132,8 @@ const category = ref({
 })
 const fileSelected = ref()
 function previewSelected(e) {
-  for(let i=0;i<e.srcElement.files.length;i++){
-    const file=e.srcElement.files[i]
+  for (let i = 0; i < e.srcElement.files.length; i++) {
+    const file = e.srcElement.files[i]
     let iss = false
     category.value.images.forEach(item => {
       if (item.name == file.name) {
@@ -177,23 +179,36 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
   disabled.value.submit = true
   const temp = {
     normal: [],
+    medium:[],
     small: []
   }
   const promise = new Promise((resolve, reject) => {
     category.value.images.forEach(async (item, index) => {
-      const res = await uploadFile(item)
-      if (res['status'] == 'success') {
-        temp.normal.push(res['data']['normal'])
-        temp.small.push(res['data']['small'])
-      }
-      if (index == category.value.images.length - 1) {
-        resolve(temp)
-      }
+      const res = await uploadFile(item, 100)
+      res.forEach((itemUpload,indexUpload) => {
+        if (itemUpload['status'] == 'success') {
+          if(indexUpload==0){
+            temp.normal.push(itemUpload['data']['normal'])
+          }
+          else if(indexUpload==1){
+            temp.small.push(itemUpload['data']['normal'])
+          }
+          else{
+            temp.medium.push(itemUpload['data']['normal'])
+          }
+          
+        }
+        if (index == category.value.images.length - 1) {
+          resolve(temp)
+        }
+      })
+
     })
   })
   promise.then(async res => {
     category.value.images = temp.normal
     category.value.imagesSmall = temp.small
+    category.value.imagesMedium = temp.medium
     await $fetch('/api/categories/create', {
       body: JSON.stringify(category.value),
       method: 'POST'
@@ -224,8 +239,35 @@ async function onError(event: FormErrorEvent) {
   element?.focus()
   element?.scrollIntoView({ behavior: 'smooth', block: 'center' })
 }
-async function uploadFile(file) {
-  const data = new FormData()
+async function resizeImage(file, size) {
+  size ??= 100
+
+  const canvas = document.createElement('canvas')
+  const ctx = canvas.getContext('2d')
+
+  canvas.width = size
+  canvas.height = size
+
+  const bitmap = await createImageBitmap(file)
+  const { width, height } = bitmap
+
+  const ratio = Math.max(size / width, size / height)
+
+  const x = (size - (width * ratio)) / 2
+  const y = (size - (height * ratio)) / 2
+
+  ctx.drawImage(bitmap, 0, 0, width, height, x, y, width * ratio, height * ratio)
+  const res = new Promise(resolve => {
+    canvas.toBlob(blob => {
+      resolve(blob)
+    }, 'image/jpeg', 1)
+  })
+  return res
+}
+async function uploadFile(file, size) {
+  let blob = await resizeImage(file, size)
+  let resizedFile = new File([blob], file.name, file)
+  let data = new FormData()
   data.append('file', file)
   const promise = new Promise(async (resolve, reject) => {
     await $fetch('/api/uploads/image', {
@@ -235,8 +277,30 @@ async function uploadFile(file) {
       resolve(res)
     })
   })
-  return promise
-
+  data = new FormData()
+  data.append('file', resizedFile)
+  const promise1 = new Promise(async (resolve, reject) => {
+    await $fetch('/api/uploads/image', {
+      method: "POST",
+      body: data
+    }).then(res => {
+      resolve(res)
+    })
+  })
+  blob = await resizeImage(file, 200)
+  resizedFile = new File([blob], file.name, file)
+  data = new FormData()
+  data.append('file', resizedFile)
+  const promise2 = new Promise(async (resolve, reject) => {
+    await $fetch('/api/uploads/image', {
+      method: "POST",
+      body: data
+    }).then(res => {
+      resolve(res)
+    })
+  })
+  const promises = Promise.all([promise, promise1,promise2])
+  return promises
 }
 </script>
 

@@ -26,6 +26,14 @@ export default defineEventHandler(async (event) => {
         }
         resolve(obj)
       }
+      else{
+        const obj={
+          'status':'error',
+          'data':null
+        }
+        resolve(obj)
+      }
+      
       
     })
   })

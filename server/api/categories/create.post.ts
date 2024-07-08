@@ -12,8 +12,11 @@ export default defineEventHandler(async (event)=>{
         const result=await categoryModel.create([
             {
                 title:body.title,
-                images:body.images,
-                images_small:body.imagesSmall,
+                images:{
+                    normal:body.images,
+                    medium:body.imagesMedium,
+                    small:body.imagesSmall
+                },
                 description:body.description,
                 note:body.note,
                 tags:body.tags,
