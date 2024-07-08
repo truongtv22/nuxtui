@@ -181,8 +181,7 @@ const filteredRows = computed(() => {
   })
 })
 async function deleteSelected() {
-
-  table.value.selected.forEach(async (item, index) => {
+  for(const [index,item] of table.value.selected.entries()){
     await $fetch('/api/categories/delete', {
       method: 'DELETE',
       body: {
@@ -204,7 +203,7 @@ async function deleteSelected() {
         })
       }
     })
-  })
+  }
   loading.value.delete = false
 }
 const confirmDeleteDisplay = computed({

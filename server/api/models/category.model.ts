@@ -5,7 +5,7 @@ const schema:mongoose.Schema=new mongoose.Schema({
         type:String
     },
     images:{
-        normal:{
+        original:{
             type:Array
         },
         medium:{

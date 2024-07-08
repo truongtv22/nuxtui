@@ -12,7 +12,6 @@
         base: 'bg-green-500'
       }
     }">
-    {{category.images.files}}
       <template #header>
         <div class="flex items-center justify-between">
           <UBadge color="green" class="absolute -top-4 left-0 hidden xl:block">Create new</UBadge>
@@ -46,6 +45,10 @@
                 <div v-for="src, index in category.previewImages" class="relative">
                   <img :src class="rounded-md w-full min-h-52 max-h-52 object-cover" :key="index"
                     @mouseover="showElement = index" />
+                    <div class="absolute top-1/2 p-2 w-full">
+                      <UMeter :value="meter.data" v-if="meter.display==index" ></UMeter>
+                    </div>
+                  
                   <div
                     class="w-full min-h-52 max-h-52 absolute top-0 left-0 backdrop-blur-sm flex justify-center items-center rounded-md"
                     v-show="showElement == index" @mouseout="showElement = null">
@@ -71,7 +74,6 @@
             <input type="file" class="hidden" accept=".jpg, .jpeg, .png" ref="fileSelected" @change="previewSelected"
               multiple />
           </div>
-          <UButton @click="uploadFile(category.images[0])">Upload</UButton>
         </UFormGroup>
         <UFormGroup label="Mô tả" name="description">
           <UTextarea v-model="category.description" rows="6" />
@@ -135,6 +137,10 @@ const category = ref({
   previewImages: [],
   tags: null
 })
+const meter=ref({
+  display:null,
+  data:0
+})
 const fileSelected = ref()
 function previewSelected(e) {
   for (let i = 0; i < e.srcElement.files.length; i++) {
@@ -190,20 +196,30 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
   }
   const promises=[]
   const promise = new Promise(async (resolve, reject) => {
-      category.value.images.files.forEach(async (item, index) => {
-        promises.push(new Promise(async (resolve1,reject1)=>{
-          const res = await uploadFile(item, 100)
-          if(res.status=='success'){
-            temp.original.push(res['data']['original'])
-            temp.small.push(res['data']['small'])
-            temp.medium.push(res['data']['medium'])
-            resolve1()
-          }
-        }))
-    })
-    Promise.all(promises).then(res=>{
+    if(category.value.images.files.length>0){
+      for(const [index,item] of category.value.images.files.entries()){
+      meter.value.display=index
+      meter.value.data=0
+      const nums=Array.from(Array(101), (_,x) => x);
+      for(const x of nums){
+        setTimeout(()=>{meter.value.data=x},500)
+      }
+      const res = await uploadFile(item, 100)
+      if(res.status=='success'){
+        temp.original.push(res['data']['original'])
+        temp.small.push(res['data']['small'])
+        temp.medium.push(res['data']['medium'])
+        meter.value.data=100
+    }
+    if(index==category.value.images.files.length-1){
       resolve()
-    })
+    }
+  }
+    }
+    else{
+      resolve()
+    }
+    
   })
   promise.then(async res => {
     category.value.images.original = temp.original
@@ -277,7 +293,7 @@ async function uploadFile(file, size) {
         method: "POST",
         body: data
       }).then(async res1 => {
-        blob = await resizeImage(file, 200)
+        blob = await resizeImage(file, 350)
         resizedFile = new File([blob], file.name, file)
         data = new FormData()
         data.append('file', resizedFile)
@@ -289,8 +305,8 @@ async function uploadFile(file, size) {
             status:'success',
             data:{
               original:res['data']['original'],
-            medium:res1['data'].original,
-            small:res2.data.original
+            small:res1['data'].original,
+            medium:res2.data.original
             }
             
           })
