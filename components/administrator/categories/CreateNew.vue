@@ -12,6 +12,7 @@
         base: 'bg-green-500'
       }
     }">
+    {{category.images.files}}
       <template #header>
         <div class="flex items-center justify-between">
           <UBadge color="green" class="absolute -top-4 left-0 hidden xl:block">Create new</UBadge>
@@ -54,7 +55,7 @@
                   </div>
                   <div
                     class="absolute -top-2 -right-2 z-50 text-white text-xl bg-red-500 rounded-full  flex justify-center items-center cursor-pointer"
-                    @click="removeImage(src)">
+                    @click="removeImage(index)">
                     <UIcon name="i-material-symbols-light-close-small-outline-rounded" />
                   </div>
 
@@ -123,8 +124,12 @@ const myBtn = ref()
 const category = ref({
   title: null,
   description: null,
-  images: [],
-  imagesSmall: [],
+  images: {
+    original: [],
+    medium: [],
+    small: [],
+    files: []
+  },
   categories: [],
   note: null,
   previewImages: [],
@@ -135,24 +140,20 @@ function previewSelected(e) {
   for (let i = 0; i < e.srcElement.files.length; i++) {
     const file = e.srcElement.files[i]
     let iss = false
-    category.value.images.forEach(item => {
+    category.value.images.files.forEach(item => {
       if (item.name == file.name) {
         iss = true
       }
     })
     if (!iss) {
       category.value.previewImages.push(URL.createObjectURL(file))
-      category.value.images.push(file)
+      category.value.images.files.push(file)
     }
   }
 }
-function removeImage(val) {
-  category.value.previewImages.forEach((item, index) => {
-    if (val == item) {
+function removeImage(index) {
       category.value.previewImages.splice(index, 1)
-      category.value.images.splice(index, 1)
-    }
-  })
+      category.value.images.files.splice(index, 1)
 }
 const schema = z.object({
   title: z.string({
@@ -166,7 +167,12 @@ function resetData() {
   category.value = {
     title: null,
     description: null,
-    images: [],
+    images: {
+      original: [],
+      medium: [],
+      small: [],
+      files: []
+    },
     categories: [],
     note: null,
     previewImages: [],
@@ -178,37 +184,31 @@ function resetData() {
 async function onSubmit(event: FormSubmitEvent<Schema>) {
   disabled.value.submit = true
   const temp = {
-    normal: [],
-    medium:[],
+    original: [],
+    medium: [],
     small: []
   }
-  const promise = new Promise((resolve, reject) => {
-    category.value.images.forEach(async (item, index) => {
-      const res = await uploadFile(item, 100)
-      res.forEach((itemUpload,indexUpload) => {
-        if (itemUpload['status'] == 'success') {
-          if(indexUpload==0){
-            temp.normal.push(itemUpload['data']['normal'])
+  const promises=[]
+  const promise = new Promise(async (resolve, reject) => {
+      category.value.images.files.forEach(async (item, index) => {
+        promises.push(new Promise(async (resolve1,reject1)=>{
+          const res = await uploadFile(item, 100)
+          if(res.status=='success'){
+            temp.original.push(res['data']['original'])
+            temp.small.push(res['data']['small'])
+            temp.medium.push(res['data']['medium'])
+            resolve1()
           }
-          else if(indexUpload==1){
-            temp.small.push(itemUpload['data']['normal'])
-          }
-          else{
-            temp.medium.push(itemUpload['data']['normal'])
-          }
-          
-        }
-        if (index == category.value.images.length - 1) {
-          resolve(temp)
-        }
-      })
-
+        }))
+    })
+    Promise.all(promises).then(res=>{
+      resolve()
     })
   })
   promise.then(async res => {
-    category.value.images = temp.normal
-    category.value.imagesSmall = temp.small
-    category.value.imagesMedium = temp.medium
+    category.value.images.original = temp.original
+    category.value.images.small = temp.small
+    category.value.images.medium = temp.medium
     await $fetch('/api/categories/create', {
       body: JSON.stringify(category.value),
       method: 'POST'
@@ -218,11 +218,8 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
         setTimeout(() => {
           inputField.value.$refs.input.focus()
         }, 1)
-
         emits('newData', res[0])
         resetData()
-
-
       }
     })
   })
@@ -273,34 +270,35 @@ async function uploadFile(file, size) {
     await $fetch('/api/uploads/image', {
       method: "POST",
       body: data
-    }).then(res => {
-      resolve(res)
+    }).then(async res => {
+      data = new FormData()
+      data.append('file', resizedFile)
+      await $fetch('/api/uploads/image', {
+        method: "POST",
+        body: data
+      }).then(async res1 => {
+        blob = await resizeImage(file, 200)
+        resizedFile = new File([blob], file.name, file)
+        data = new FormData()
+        data.append('file', resizedFile)
+        await $fetch('/api/uploads/image', {
+          method: "POST",
+          body: data
+        }).then(res2 => {
+          resolve({
+            status:'success',
+            data:{
+              original:res['data']['original'],
+            medium:res1['data'].original,
+            small:res2.data.original
+            }
+            
+          })
+        })
+      })
     })
   })
-  data = new FormData()
-  data.append('file', resizedFile)
-  const promise1 = new Promise(async (resolve, reject) => {
-    await $fetch('/api/uploads/image', {
-      method: "POST",
-      body: data
-    }).then(res => {
-      resolve(res)
-    })
-  })
-  blob = await resizeImage(file, 200)
-  resizedFile = new File([blob], file.name, file)
-  data = new FormData()
-  data.append('file', resizedFile)
-  const promise2 = new Promise(async (resolve, reject) => {
-    await $fetch('/api/uploads/image', {
-      method: "POST",
-      body: data
-    }).then(res => {
-      resolve(res)
-    })
-  })
-  const promises = Promise.all([promise, promise1,promise2])
-  return promises
+  return promise
 }
 </script>
 

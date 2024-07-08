@@ -20,7 +20,7 @@ export default defineEventHandler(async (event) => {
         const obj={
           'status':'success',
           'data':{
-            normal:`https://cf.shopee.vn/file/${res['data']['resource_id']}`,
+            original:`https://cf.shopee.vn/file/${res['data']['resource_id']}`,
             small:`https://cf.shopee.vn/file/${res['data']['resource_id']}_tn`
           }
         }

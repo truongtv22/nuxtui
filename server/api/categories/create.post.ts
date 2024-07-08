@@ -13,9 +13,9 @@ export default defineEventHandler(async (event)=>{
             {
                 title:body.title,
                 images:{
-                    normal:body.images,
-                    medium:body.imagesMedium,
-                    small:body.imagesSmall
+                    original:body.images.original,
+                    medium:body.images.medium,
+                    small:body.images.small
                 },
                 description:body.description,
                 note:body.note,

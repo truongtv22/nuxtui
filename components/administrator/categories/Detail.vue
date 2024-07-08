@@ -1,6 +1,5 @@
 <template>
   <UForm ref="form" :schema="schema" :state="category" class="space-y-4" @submit="onSubmit" @error="onError"> 
-
 <UFormGroup label="Tên thể loại" name="title"  >
   <template #hint>
 <span class="text-gray-400 dark:text-gray-500">Required</span>
@@ -17,15 +16,24 @@
     
     <div class="grid grid-cols-2 sm:grid-cols-4 p-2 gap-2">
       <div v-for="src,index in category.previewImages" class="relative">
-        <img :src class="rounded-md w-full min-h-52 max-h-52 object-cover" :key="index" @mouseover="showElement=index"/>
-        <div class="w-full min-h-52 max-h-52 absolute top-0 left-0 backdrop-blur-sm flex justify-center items-center rounded-md" v-show="showElement==index" @mouseout="showElement=null">
+        <img :src class="rounded-md w-full min-h-52 max-h-52 object-cover" :key="index" @mouseover="showElement=src"/>
+        <div class="w-full min-h-52 max-h-52 absolute top-0 left-0 backdrop-blur-sm flex justify-center items-center rounded-md" v-show="showElement==src" @mouseout="showElement=null">
+          <UButton variant="soft" :ui="{rounded:'rounded-full'}" icon="i-material-symbols-light-visibility-outline-rounded" color="blue" @click="modal.data=src,modal.display=true"/>
+          
+        </div>
+        <div class="absolute -top-2 -right-2 z-50 text-white text-xl bg-red-500 rounded-full  flex justify-center items-center cursor-pointer" @click="removeImage(index,'temp')">
+          <UIcon name="i-material-symbols-light-close-small-outline-rounded"/>
+        </div>
+      </div>
+      <div v-for="src,index in category.imagesOld.medium" class="relative">
+        <img :src class="rounded-md w-full min-h-52 max-h-52 object-cover" :key="index" @mouseover="showElement=src"/>
+        <div class="w-full min-h-52 max-h-52 absolute top-0 left-0 backdrop-blur-sm flex justify-center items-center rounded-md" v-show="showElement==src" @mouseout="showElement=null">
           <UButton variant="soft" :ui="{rounded:'rounded-full'}" icon="i-material-symbols-light-visibility-outline-rounded" color="blue" @click="modal.data=category.imagesOld.normal[index],modal.display=true"/>
           
         </div>
-        <div class="absolute -top-2 -right-2 z-50 text-white text-xl bg-red-500 rounded-full  flex justify-center items-center cursor-pointer" @click="removeImage(src)">
+        <div class="absolute -top-2 -right-2 z-50 text-white text-xl bg-red-500 rounded-full  flex justify-center items-center cursor-pointer" @click="removeImage(index,'old')">
           <UIcon name="i-material-symbols-light-close-small-outline-rounded"/>
         </div>
-        
       </div>
     </div>
     <UDivider/>
@@ -89,8 +97,8 @@ onBeforeMount(()=>{
     }
     
   })
-  category.value.previewImages=props.data.images.medium
   category.value.imagesOld=props.data.images
+  category.value.previewImages=[]
 })
 const isOpen = computed({
   get() {
@@ -105,7 +113,11 @@ const form=ref()
 const category = ref({
   title: null,
   description: null,
-  images: [],
+  images: {
+    original:[],
+    medium:[],
+    small:[]
+  },
   imagesOld:null,
   categories: [],
   note: null,
@@ -121,7 +133,6 @@ const modal=ref({
 })
 const fileSelected=ref()
 function previewSelected(e) {
-  console.log(category.value)
   for(let i=0;i<e.srcElement.files.length;i++){
     const file=e.srcElement.files[i]
     let iss = false
@@ -136,13 +147,20 @@ function previewSelected(e) {
     }
   }
 }
-function removeImage(val){
-  category.value.previewImages.forEach((item,index)=>{
-    if(val==item){
+function removeImage(index,type){
+  switch(type){
+    case 'temp':
       category.value.previewImages.splice(index,1)
       category.value.images.splice(index,1)
-    }
-  })
+      break
+    case 'old':
+      Object.keys(category.value.imagesOld).forEach(property=>{
+        category.value.imagesOld[property].splice(index,1)
+      })
+    
+  }
+    
+
 }
 const schema = z.object({
   title: z.string({
@@ -161,6 +179,39 @@ type Schema = z.output<typeof schema>
 }
 async function onSubmit(event: FormSubmitEvent<Schema>) {
   disabled.value.submit=true
+  const temp = {
+    normal: [],
+    medium:[],
+    small: []
+  }
+  const promise = new Promise((resolve, reject) => {
+    category.value.images.forEach(async (item, index) => {
+      const res = await uploadFile(item, 100)
+      res.forEach((itemUpload,indexUpload) => {
+        if (itemUpload['status'] == 'success') {
+          if(indexUpload==0){
+            temp.normal.push(itemUpload['data']['normal'])
+          }
+          else if(indexUpload==1){
+            temp.small.push(itemUpload['data']['normal'])
+          }
+          else{
+            temp.medium.push(itemUpload['data']['normal'])
+          }
+          
+        }
+        if (index == category.value.images.length - 1) {
+          resolve(temp)
+        }
+      })
+
+    })
+  })
+  promise.then(async res => {
+    category.value.images = temp.normal
+    category.value.imagesSmall = temp.small
+    category.value.imagesMedium = temp.medium
+  })
   await $fetch('/api/categories/update',{
     body:JSON.stringify(category.value),
     method:'PUT'
@@ -170,6 +221,69 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
       emits('updateData',category.value)
     }
   })
+}
+async function resizeImage(file, size) {
+  size ??= 100
+
+  const canvas = document.createElement('canvas')
+  const ctx = canvas.getContext('2d')
+
+  canvas.width = size
+  canvas.height = size
+
+  const bitmap = await createImageBitmap(file)
+  const { width, height } = bitmap
+
+  const ratio = Math.max(size / width, size / height)
+
+  const x = (size - (width * ratio)) / 2
+  const y = (size - (height * ratio)) / 2
+
+  ctx.drawImage(bitmap, 0, 0, width, height, x, y, width * ratio, height * ratio)
+  const res = new Promise(resolve => {
+    canvas.toBlob(blob => {
+      resolve(blob)
+    }, 'image/jpeg', 1)
+  })
+  return res
+}
+async function uploadFile(file, size) {
+  let blob = await resizeImage(file, size)
+  let resizedFile = new File([blob], file.name, file)
+  let data = new FormData()
+  data.append('file', file)
+  const promise = new Promise(async (resolve, reject) => {
+    await $fetch('/api/uploads/image', {
+      method: "POST",
+      body: data
+    }).then(res => {
+      resolve(res)
+    })
+  })
+  data = new FormData()
+  data.append('file', resizedFile)
+  const promise1 = new Promise(async (resolve, reject) => {
+    await $fetch('/api/uploads/image', {
+      method: "POST",
+      body: data
+    }).then(res => {
+      resolve(res)
+    })
+  })
+  blob = await resizeImage(file, 200)
+  resizedFile = new File([blob], file.name, file)
+  data = new FormData()
+  data.append('file', resizedFile)
+  const promise2 = new Promise(async (resolve, reject) => {
+    await $fetch('/api/uploads/image', {
+      method: "POST",
+      body: data
+    }).then(res => {
+      resolve(res)
+    })
+  })
+  const promises = Promise.all([promise, promise1,promise2])
+  return promises
 }
 const showElement=ref(null)
 const disabled=ref({
