@@ -35,7 +35,16 @@
       <div class="w-full flex flex-col min-h-screen">
         <ClientOnly>
           <div class="flex justify-between xl:py-5 px-3 py-2">
-            <h1 class="capitalize  font-bold flex items-center">{{ props.title }}</h1>
+            <div class="flex flex-col">
+              <h1 class="capitalize  font-bold flex items-center" v-if="props.title">{{ props.title }}</h1>
+            <h1 class="capitalize  font-bold flex items-center" v-if="props.breadcumb">
+              <UBreadcrumb
+    divider="/"
+    :links="props.breadcumb"
+  />
+            </h1>
+            </div>
+            
             <div class="hidden xl:flex">
               <UButton icon="i-material-symbols-light-notifications-outline-sharp" color="blue" variant="ghost"
                 :ui="{ rounded: 'rounded-full' }" size="xl" @click="isOpen.left = !isOpen.left" />
@@ -116,7 +125,7 @@ import NavigationTree from '~/components/navigation/NavigationTree.vue';
 import { useMyMenuItemsStore } from '~/stores/menu-items';
 
 const menu=useMyMenuItemsStore()
-const props = defineProps(['title'])
+const props = defineProps(['title','breadcumb'])
 const ui = ref({
   constrained: 'max-w-full w-full',
   padding: 'px-0 lg:px-0',

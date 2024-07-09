@@ -40,7 +40,11 @@ export const useMyMenuItemsStore = defineStore({
        {
         label: 'Categories',
         icon: 'i-material-symbols-light-category-outline-rounded',
-        to:'/administrator/categories'
+        to:'/administrator/categories',
+        childs:[
+          {label:'Create',to:'/administrator/categories/create'},
+          {label:'Update',to:'/administrator/categories/update'}
+        ]
         //content: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed neque elit, tristique placerat feugiat ac, facilisis vitae arcu. Proin eget egestas augue. Praesent ut sem nec arcu pellentesque aliquet. Duis dapibus diam vel metus tempus vulputate.'
       }, {
         label: 'Customers',

@@ -1,27 +1,5 @@
 <template>
-  <UModal :ui="{ width: `sm:max-w-6xl`, overlay: { background: 'backdrop-blur-md' } }" v-model="isOpen"
-    :fullscreen="sizeScreen.w < 800 ? true : false" prevent-close>
-    <UCard :ui="{
-      base: 'h-fit flex flex-col',
-      rounded: '',
-      divide: 'divide-y divide-gray-100 dark:divide-gray-800',
-      body: {
-        base: 'grow'
-      },
-      header: {
-        base: 'bg-green-500'
-      }
-    }">
-      <template #header>
-        <div class="flex items-center justify-between">
-          <UBadge color="green" class="absolute -top-4 left-0 hidden xl:block">Create new</UBadge>
-          <h3 class="capitalize text-base font-semibold leading-6 text-white dark:text-white">
-            tạo mới thể loại {{ myTitle }}
-          </h3>
-          <UButton color="gray" variant="ghost" icon="i-heroicons-x-mark-20-solid" class="-my-1"
-            @click="emits('confirmWindow', true, 'Bạn có chắc muốn đóng cửa sổ này?')" />
-        </div>
-      </template>
+    
       <UForm ref="form" :schema="schema" :state="category" class="space-y-4" @submit="onSubmit" @error="onError">
 
         <UFormGroup label="Tên thể loại" name="title">
@@ -45,14 +23,14 @@
                 <div v-for="src, index in category.previewImages" class="relative">
                   <img :src class="rounded-md w-full min-h-52 max-h-52 object-cover" :key="index"
                     @mouseover="showElement = index" />
-                    <div class="absolute top-1/2 p-2 w-full">
+                    <div class="absolute top-1/2 p-2 w-full z-50">
                       <UMeter :value="meter.data" v-if="meter.display==index" ></UMeter>
                     </div>
                   
                   <div
                     class="w-full min-h-52 max-h-52 absolute top-0 left-0 backdrop-blur-sm flex justify-center items-center rounded-md"
-                    v-show="showElement == index" @mouseout="showElement = null">
-                    <UButton variant="soft" :ui="{ rounded: 'rounded-full' }"
+                    v-show="showElement == index || status.uploading.findIndex(item=>item==src)>-1" @mouseout="showElement = null">
+                    <UButton v-if="!status.uploading" variant="soft" :ui="{ rounded: 'rounded-full' }"
                       icon="i-material-symbols-light-visibility-outline-rounded" color="blue" />
 
                   </div>
@@ -89,8 +67,6 @@
           <UButton color="red" variant="ghost" @click="form.clear(), resetData()">Huỷ bỏ</UButton>
         </div>
       </UForm>
-    </UCard>
-  </UModal>
 </template>
 
 <script lang="ts" setup>
@@ -98,15 +74,7 @@ import type { _0 } from '#tailwind-config/theme/backdropBlur';
 import { readUsedSize } from 'chart.js/helpers';
 import { z } from 'zod'
 const props = defineProps(['modelValue'])
-const emits = defineEmits(['update:modelValue', 'confirmWindow', 'newData'])
-const isOpen = computed({
-  get() {
-    return props.modelValue
-  },
-  set(val) {
-    emits('update:modelValue', val)
-  }
-})
+const emits = defineEmits(['newData'])
 const sizeScreen = ref({
   w: null,
   h: null
@@ -140,6 +108,9 @@ const category = ref({
 const meter=ref({
   display:null,
   data:0
+})
+const status=ref({
+  uploading:[],
 })
 const fileSelected = ref()
 function previewSelected(e) {
@@ -189,6 +160,7 @@ function resetData() {
 }
 async function onSubmit(event: FormSubmitEvent<Schema>) {
   disabled.value.submit = true
+  status.value.uploading=category.value.previewImages
   const temp = {
     original: [],
     medium: [],
@@ -210,6 +182,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
         temp.small.push(res['data']['small'])
         temp.medium.push(res['data']['medium'])
         meter.value.data=100
+        status.value.uploading=status.value.uploading.filter(item=>item!=category.value.previewImages[index])
     }
     if(index==category.value.images.files.length-1){
       resolve()
@@ -236,6 +209,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
         }, 1)
         emits('newData', res[0])
         resetData()
+        status.value.uploading=[]
       }
     })
   })

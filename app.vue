@@ -1,6 +1,6 @@
 <template>
   <div>
-    <NuxtLayout :title="title">
+    <NuxtLayout :title="title"  :breadcumb='breadcumb'>
       <NuxtLoadingIndicator />
       <NuxtPage/>
     </NuxtLayout>
@@ -26,8 +26,18 @@ onMounted(()=>{
     basicStore.updateSizeScreen({w:window.innerWidth,h:window.innerHeight})
   })
 })
+const breadcumb=ref(null)
 const title=computed(()=>{
   let val=null
+  breadcumb.value=null
+  const st=route.fullPath.split('/').slice(1)
+  const st1=[]
+  let st2=''
+  st.forEach((item1,index)=>{
+    st2+='/'+item1
+    st1.push({label:'administrator'==item1.toLowerCase()?(st.length>1?'Dashboard':'Home'):(item1.charAt(0).toUpperCase()+item1.slice(1)),to:st2})
+  })
+  breadcumb.value=st1
   pages.admin.forEach(item=>{
     console.log(route.fullPath)
     if(item.to==route.fullPath){
@@ -45,6 +55,14 @@ const title=computed(()=>{
       })
         }
       })
+    }
+    else if(route.fullPath.indexOf(item.to)>-1 && Object.hasOwn(item,'childs')){
+      item.childs.forEach(child=>{
+        if(child.to==route.fullPath){
+          val=child.label
+        }
+      })
+      
     }
   })
   return val

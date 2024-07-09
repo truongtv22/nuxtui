@@ -153,9 +153,12 @@ labels:{
 }))
 const refDiv = ref(null);
 onMounted(()=>{
+    myElement.value.w= window.innerWidth*1/3
+    myElement.value.h= window.innerHeight
+  
   window.addEventListener('resize', ()=>{
-    myElement.value.w= refDiv.value.$el.clientWidth
-    myElement.value.h= refDiv.value.$el.clientHeight
+    myElement.value.w= window.innerWidth*1/3
+    myElement.value.h= window.innerHeight
   });
 
 })
