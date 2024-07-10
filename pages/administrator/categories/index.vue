@@ -83,9 +83,9 @@
         base: 'grow'
       },
       header: {
-        base: 'bg-green-500'
+        base: 'bg-green-500 relative'
       }
-    }">
+    }" class="relative">
       <template #header>
         <div class="flex items-center justify-between">
           <UBadge color="green" class="absolute -top-4 left-0 hidden xl:block">Create new</UBadge>
@@ -95,9 +95,12 @@
           <UButton color="gray" variant="ghost" icon="i-heroicons-x-mark-20-solid" class="-my-1"
             @click=" modals.confirmClose.display = true, modals.confirmClose.title = 'Bạn có chắc muốn đóng cửa sổ này?'" />
         </div>
+        <div class="bottom-0 absolute w-full right-0" v-if="loading.doing">
+          <UProgress animation="carousel" :ui="{progress:{rounded:'rounded-none'}}" />
+        </div>
       </template>
     <AdministratorCategoriesCreateNew
-      @newData="table.data.unshift($event), store.showNotification({ type: 'success', title: $event.title + ' created success', description: 'You can view in data table', timeout: 3000 })" />
+      @newData="table.data.unshift($event), store.showNotification({ type: 'success', title: $event.title + ' created success', description: 'You can view in data table', timeout: 3000 })" @doing="loading.doing=$event"/>
       </UCard>
   </UModal>
     
@@ -118,7 +121,7 @@
         base: 'grow'
       },
       header: {
-        base: 'bg-blue-500'
+        base: 'bg-blue-500 relative'
       }
     }">
       <template #header>
@@ -130,8 +133,11 @@
           <UButton color="gray" variant="ghost" icon="i-heroicons-x-mark-20-solid" class="-my-1"
             @click="table.detail.display = false" />
         </div>
+        <div class="bottom-0 absolute w-full right-0" v-if="loading.doing">
+          <UProgress color="blue" animation="carousel" :ui="{progress:{rounded:'rounded-none'}}" />
+        </div>
       </template>
-      <AdministratorCategoriesDetail :data="table.detail.value" @updateData="updateData" />
+      <AdministratorCategoriesDetail :data="table.detail.value" @updateData="updateData" @doing="loading.doing=$event"/>
     </UCard>
   </UModal>
 </template>
@@ -173,7 +179,8 @@ const modals = ref({
 })
 const loading = ref({
   delete: false,
-  create: false
+  create: false,
+  doing:false,
 })
 const table = ref({
   page: 1,
