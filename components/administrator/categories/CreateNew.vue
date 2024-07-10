@@ -78,7 +78,7 @@
           <UTextarea v-model="category.tags" :rows="6" disabled />
         </UFormGroup>
         <div class="flex justify-end gap-1">
-          <UButton ref="myBtn" type="submit" :disabled="disabled.submit" :loading="disabled.submit">Tạo mới</UButton>
+          <UButton :color="props.data?'blue':'green'" ref="myBtn" type="submit" :disabled="disabled.submit" :loading="disabled.submit">{{props.data?'Cap nhat':'Tạo mới'}}</UButton>
           <UButton color="red" variant="ghost" @click="form.clear(), resetData()">Huỷ bỏ</UButton>
         </div>
       </UForm>
