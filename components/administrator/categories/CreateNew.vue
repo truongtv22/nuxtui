@@ -1,7 +1,6 @@
 <template>
     
       <UForm ref="form" :schema="schema" :state="category" class="space-y-4" @submit="onSubmit" @error="onError">
-
         <UFormGroup label="Tên thể loại" name="title">
           <template #hint>
             <span class="text-gray-400 dark:text-gray-500">Required</span>
@@ -11,7 +10,7 @@
         <UFormGroup label="Hình ảnh" name="images">
           <div
             :class="'min-h-32 w-full border border-dotted border-2 rounded-md ' + (category.previewImages.length < 1 ? ' cursor-pointer' : '')">
-            <div v-if="category.previewImages.length == 0" @click="fileSelected.click()"
+            <div v-if="category.imagesOld.medium.length == 0 && category.previewImages.length == 0" @click="disabled.submit?'':fileSelected.click()"
               class="w-full min-h-32 justify-center items-center flex">
               <UIcon name="i-material-symbols-light-add-photo-alternate-outline-rounded"
                 class="text-7xl text-gray-400" />
@@ -20,30 +19,46 @@
             <div v-else class="grid grid-cols-1">
 
               <div class="grid grid-cols-2 sm:grid-cols-4 p-2 gap-2">
-                <div v-for="src, index in category.previewImages" class="relative">
-                  <img :src class="rounded-md w-full min-h-52 max-h-52 object-cover" :key="index"
-                    @mouseover="showElement = index" />
-                    <div class="absolute top-1/2 p-2 w-full z-50">
-                      <UMeter :value="meter.data" v-if="meter.display==index" ></UMeter>
-                    </div>
-                  
-                  <div
-                    class="w-full min-h-52 max-h-52 absolute top-0 left-0 backdrop-blur-sm flex justify-center items-center rounded-md"
-                    v-show="showElement == index || status.uploading.findIndex(item=>item==src)>-1" @mouseout="showElement = null">
-                    <UButton v-if="!status.uploading" variant="soft" :ui="{ rounded: 'rounded-full' }"
-                      icon="i-material-symbols-light-visibility-outline-rounded" color="blue" />
-
-                  </div>
-                  <div
-                    class="absolute -top-2 -right-2 z-50 text-white text-xl bg-red-500 rounded-full  flex justify-center items-center cursor-pointer"
-                    @click="removeImage(index)">
-                    <UIcon name="i-material-symbols-light-close-small-outline-rounded" />
-                  </div>
-
-                </div>
+            <div v-for="src, index in category.previewImages" class="relative">
+              <img :src class="rounded-md w-full min-h-52 max-h-52 object-cover" :key="index"
+                @mouseover="showElement = src" />
+              <div class="absolute top-1/2 p-2 w-full">
+                <UMeter :value="meter.data" v-if="meter.display == index"></UMeter>
               </div>
+              <div
+                class="w-full min-h-52 max-h-52 absolute top-0 left-0 backdrop-blur-sm flex justify-center items-center rounded-md"
+                v-show="showElement == src" @mouseout="showElement = null">
+                <UButton variant="soft" :ui="{ rounded: 'rounded-full' }"
+                  icon="i-material-symbols-light-visibility-outline-rounded" color="blue"
+                  @click="modal.data = src, modal.display = true" />
+
+              </div>
+              <div
+                class="absolute -top-2 -right-2 z-50 text-white text-xl bg-red-500 rounded-full  flex justify-center items-center cursor-pointer"
+                @click="removeImage(index, 'temp')">
+                <UIcon name="i-material-symbols-light-close-small-outline-rounded" />
+              </div>
+            </div>
+            <div v-for="src, index in category.imagesOld.medium" class="relative">
+              <img :src class="rounded-md w-full min-h-52 max-h-52 object-cover" :key="index"
+                @mouseover="showElement = src" />
+              <div
+                class="w-full min-h-52 max-h-52 absolute top-0 left-0 backdrop-blur-sm flex justify-center items-center rounded-md"
+                v-show="showElement == src" @mouseout="showElement = null">
+                <UButton variant="soft" :ui="{ rounded: 'rounded-full' }"
+                  icon="i-material-symbols-light-visibility-outline-rounded" color="blue"
+                  @click="modal.data = category.imagesOld.original[index], modal.display = true" />
+
+              </div>
+              <div
+                class="absolute -top-2 -right-2 z-50 text-white text-xl bg-red-500 rounded-full  flex justify-center items-center cursor-pointer"
+                @click="removeImage(index, 'old')">
+                <UIcon name="i-material-symbols-light-close-small-outline-rounded" />
+              </div>
+            </div>
+          </div>
               <UDivider />
-              <div class="flex justify-center cursor-pointer" @click="fileSelected.click()">
+              <div class="flex justify-center cursor-pointer" @click="disabled.submit?'':fileSelected.click()" >
                 <UIcon name="i-material-symbols-light-add-photo-alternate-outline-rounded"
                   class="text-7xl text-gray-400" />
               </div>
@@ -54,13 +69,13 @@
           </div>
         </UFormGroup>
         <UFormGroup label="Mô tả" name="description">
-          <UTextarea v-model="category.description" rows="6" />
+          <UTextarea v-model="category.description" :rows="6" :disabled="disabled.submit"/>
         </UFormGroup>
         <UFormGroup label="Ghi chú" name="note">
-          <UTextarea v-model="category.note" rows="6" />
+          <UTextarea v-model="category.note" :rows="6" :disabled="disabled.submit"/>
         </UFormGroup>
         <UFormGroup label="Tags" name="tags">
-          <UTextarea v-model="category.tags" rows="6" disabled />
+          <UTextarea v-model="category.tags" :rows="6" disabled />
         </UFormGroup>
         <div class="flex justify-end gap-1">
           <UButton ref="myBtn" type="submit" :disabled="disabled.submit" :loading="disabled.submit">Tạo mới</UButton>
@@ -70,11 +85,14 @@
 </template>
 
 <script lang="ts" setup>
+useSeoMeta({
+  title:'Create Category'
+})
 import type { _0 } from '#tailwind-config/theme/backdropBlur';
 import { readUsedSize } from 'chart.js/helpers';
 import { z } from 'zod'
-const props = defineProps(['modelValue'])
-const emits = defineEmits(['newData'])
+const props = defineProps(['modelValue','data'])
+const emits = defineEmits(['newData','updateData'])
 const sizeScreen = ref({
   w: null,
   h: null
@@ -83,7 +101,55 @@ function onResize() {
   sizeScreen.value.w = window.innerWidth
   sizeScreen.value.h = window.innerHeight
 }
+function resetData() {
+  if(props.data){
+    Object.keys(category.value).forEach(item => {
+    if (item != 'images' && item!='imagesOld') {
+      category.value[item] = props.data[item]
+    }
 
+  })
+  Object.keys(category.value.imagesOld).forEach(item=>{
+    category.value.imagesOld[item]=[]
+    props.data.images[item].forEach(item1=>{
+      category.value.imagesOld[item].push(item1)
+    })
+  })
+  category.value.previewImages = []
+  }
+  else{
+     category.value = {
+  title: null,
+  description: null,
+  images: {
+    original: [],
+    medium: [],
+    small: [],
+    files: []
+  },
+  imagesOld: {
+    original:[],
+    medium:[],
+    small:[]
+  },
+  categories: [],
+  note: null,
+  previewImages: [],
+  tags: null,
+  _id: null,
+  created_at: null,
+  edited_at: null
+}
+  }
+  
+}
+function scrollToForm(){
+  const element = form.value
+  element.$el.scrollIntoView({ behavior: 'smooth' })
+}
+onBeforeMount(()=>{
+  resetData()
+})
 onMounted(async () => {
   onResize()
   window.addEventListener('resize', onResize)
@@ -100,14 +166,26 @@ const category = ref({
     small: [],
     files: []
   },
+  imagesOld: {
+    original:[],
+    medium:[],
+    small:[]
+  },
   categories: [],
   note: null,
   previewImages: [],
-  tags: null
+  tags: null,
+  _id: null,
+  created_at: null,
+  edited_at: null
 })
 const meter=ref({
   display:null,
   data:0
+})
+const modal = ref({
+  display: false,
+  data: null
 })
 const status=ref({
   uploading:[],
@@ -128,9 +206,20 @@ function previewSelected(e) {
     }
   }
 }
-function removeImage(index) {
+function removeImage(index, type) {
+  switch (type) {
+    case 'temp':
       category.value.previewImages.splice(index, 1)
-      category.value.images.files.splice(index, 1)
+      category.value.images.splice(index, 1)
+      break
+    case 'old':
+      Object.keys(category.value.imagesOld).forEach(property => {
+        category.value.imagesOld[property].splice(index, 1)
+      })
+      break
+  }
+
+
 }
 const schema = z.object({
   title: z.string({
@@ -140,24 +229,6 @@ const schema = z.object({
 })
 
 type Schema = z.output<typeof schema>
-function resetData() {
-  category.value = {
-    title: null,
-    description: null,
-    images: {
-      original: [],
-      medium: [],
-      small: [],
-      files: []
-    },
-    categories: [],
-    note: null,
-    previewImages: [],
-    tags: null
-  }
-  const element = form.value
-  element.$el.scrollIntoView({ behavior: 'smooth' })
-}
 async function onSubmit(event: FormSubmitEvent<Schema>) {
   disabled.value.submit = true
   status.value.uploading=category.value.previewImages
@@ -198,19 +269,37 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
     category.value.images.original = temp.original
     category.value.images.small = temp.small
     category.value.images.medium = temp.medium
-    await $fetch('/api/categories/create', {
+    let url='/api/categories/create'
+    if(props.data){
+      Object.keys(category.value.imagesOld).forEach(property => {
+      category.value.imagesOld[property].forEach(item => {
+        category.value.images[property].push(item)
+      })
+    })
+    url='/api/categories/update'
+    }
+    await $fetch(url, {
       body: JSON.stringify(category.value),
-      method: 'POST'
+      method: props.data?'PUT':'POST'
     }).then(res => {
       disabled.value.submit = false
-      if (Object.hasOwn(res[0], '_id')) {
-        setTimeout(() => {
-          inputField.value.$refs.input.focus()
-        }, 1)
-        emits('newData', res[0])
-        resetData()
-        status.value.uploading=[]
+      if(!props.data){
+        if (Object.hasOwn(res[0], '_id')) {
+          setTimeout(() => {
+            inputField.value.$refs.input.focus()
+          }, 1)
+          emits('newData', res[0])
+          resetData()
+        }
       }
+      else{
+        if (Object.hasOwn(res, 'modifiedCount') && res.modifiedCount == 1) {
+          emits('updateData', category.value)
+        }
+      }
+      
+      scrollToForm()
+      status.value.uploading=[]
     })
   })
 

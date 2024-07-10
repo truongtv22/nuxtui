@@ -90,7 +90,7 @@
         <div class="flex items-center justify-between">
           <UBadge color="green" class="absolute -top-4 left-0 hidden xl:block">Create new</UBadge>
           <h3 class="capitalize text-base font-semibold leading-6 text-white dark:text-white">
-            tạo mới thể loại {{ myTitle }}
+            tạo mới thể loại
           </h3>
           <UButton color="gray" variant="ghost" icon="i-heroicons-x-mark-20-solid" class="-my-1"
             @click=" modals.confirmClose.display = true, modals.confirmClose.title = 'Bạn có chắc muốn đóng cửa sổ này?'" />
