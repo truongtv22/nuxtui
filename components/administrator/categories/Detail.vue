@@ -1,5 +1,5 @@
 <template>
-  <AdministratorCategoriesCreateNew :data="props.data" @updateData="emits('updateData',$event)" @doing="emits('doing',$event)"/>
+  <AdministratorCategoriesCreateNew :data="props.data" @updateData="emits('updateData',$event)" @doing="emits('doing',$event)" @modal="modal.display=$event.display,modal.data=$event.data"/>
   <UModal v-model="modal.display" fullscreen>
     <UCard :ui="{
       base: 'h-fit flex flex-col',
@@ -27,6 +27,7 @@
 </template>
 
 <script lang="ts" setup>
+const route=useRoute()
 const props = defineProps(['data'])
 const emits = defineEmits([ 'confirmWindow', 'updateData','doing'])
 const modal=ref({

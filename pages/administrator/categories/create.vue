@@ -1,5 +1,5 @@
 <template>
-  <div class="px-4">
+  <div class="grow px-4 py-5 sm:p-6">
     <CreateForm/>
   </div>
 </template>

@@ -37,6 +37,9 @@ const myAccordion=ref(null)
 function closeAll() {
   myAccordion.value[0].buttonRefs.forEach((btn) => btn.close());
 }
+onBeforeMount(()=>{
+  console.log(myRoute.value.indexOf('detail')>-1)
+})
 </script>
 
 <template>
@@ -46,7 +49,7 @@ function closeAll() {
     </div>
     <div class="flex flex-col">
       <template v-for="item in items">
-        <UButton color="red" :to="item.to" v-if="!item.hasOwnProperty('items')" :variant="myRoute==item.to?'soft':'ghost'" size="xl" :ui="{base:'border-l-2 '+(myRoute==item.to?'border-red-500':''), rounded: 'rounded-none', padding: { sm: 'p-3' } }" @click="closeAll">
+        <UButton color="red" :to="item.to" v-if="!item.hasOwnProperty('items')" :variant="myRoute==item.to||item.childs?.forEach(c=>)?'soft':'ghost'" size="xl" :ui="{base:'border-l-2 '+(myRoute==item.to?'border-red-500':''), rounded: 'rounded-none', padding: { sm: 'p-3' } }" @click="closeAll">
         <template #leading>
           <div>
             <UIcon dynamic :name="item.icon" />
@@ -66,7 +69,6 @@ function closeAll() {
         </template>
 
         <span class="font-bold">{{ item.label }}</span>
-
         <template #trailing>
           <UIcon
             name="i-heroicons-chevron-right-20-solid"
@@ -85,12 +87,6 @@ function closeAll() {
       </UAccordion>
       </template>
     </div>
-    
-    
-    
   </div>
-  
-    
-  
 </template>
 

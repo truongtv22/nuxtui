@@ -43,7 +43,8 @@ export const useMyMenuItemsStore = defineStore({
         to:'/administrator/categories',
         childs:[
           {label:'Create',to:'/administrator/categories/create'},
-          {label:'Update',to:'/administrator/categories/update'}
+          {label:'Update',to:'/administrator/categories/update'},
+          {label:'Detail',to:'/administrator/categories/detail-?'}
         ]
         //content: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed neque elit, tristique placerat feugiat ac, facilisis vitae arcu. Proin eget egestas augue. Praesent ut sem nec arcu pellentesque aliquet. Duis dapibus diam vel metus tempus vulputate.'
       }, {

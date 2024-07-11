@@ -34,7 +34,7 @@
         :ui="{ rounded: 'rounded-full' }" @click="table.detail = { display: true, value: row }" />
     </template>
     <template #images-data="{ row }">
-      <div class="relative flex justify-center">
+      <div class="relative flex justify-center" @dblclick="router.push('categories/detail-'+row._id)">
         <template v-if="row.images.small.length >= 1">
           <div class="w-12 h-12 bg-gray-400 rounded-md" v-if="row.images.small.length > 1"></div>
           <div :class="row.images.small.length > 1 ? 'absolute top-0 left-2 shadow-2xl' : ''">
@@ -49,8 +49,6 @@
             no data</div>
         </template>
       </div>
-
-
     </template>
     <template #created_at-data="{ row }">
       <UBadge variant="soft" size="md">
@@ -96,7 +94,7 @@
             @click=" modals.confirmClose.display = true, modals.confirmClose.title = 'Bạn có chắc muốn đóng cửa sổ này?'" />
         </div>
         <div class="bottom-0 absolute w-full right-0" v-if="loading.doing">
-          <UProgress animation="carousel" :ui="{progress:{rounded:'rounded-none'}}" />
+          <UProgress size="xs" animation="carousel" :ui="{progress:{rounded:'rounded-none'}}" />
         </div>
       </template>
     <AdministratorCategoriesCreateNew
@@ -134,7 +132,7 @@
             @click="table.detail.display = false" />
         </div>
         <div class="bottom-0 absolute w-full right-0" v-if="loading.doing">
-          <UProgress color="blue" animation="carousel" :ui="{progress:{rounded:'rounded-none'}}" />
+          <UProgress size="xs" color="blue" animation="carousel" :ui="{progress:{rounded:'rounded-none'}}" />
         </div>
       </template>
       <AdministratorCategoriesDetail :data="table.detail.value" @updateData="updateData" @doing="loading.doing=$event"/>
@@ -295,6 +293,19 @@ const modalCreateDisplay=computed({
 watch(modalCreateDisplay,(newVal,oldVal)=>{
   if(newVal){
     window.history.pushState({},null,route.fullPath+'/create')
+  }
+  else{
+    window.history.pushState({},null,route.fullPath)
+  }
+})
+const modalUpdateDisplay=computed({
+  get(){
+    return table.value.detail.display
+  }
+})
+watch(modalUpdateDisplay,(newVal,oldVal)=>{
+  if(newVal){
+    window.history.pushState({},null,route.fullPath+'/detail-'+table.value.detail.value._id)
   }
   else{
     window.history.pushState({},null,route.fullPath)
