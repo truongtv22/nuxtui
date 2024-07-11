@@ -90,7 +90,7 @@
           <h3 class="capitalize text-base font-semibold leading-6 text-white dark:text-white">
             tạo mới thể loại
           </h3>
-          <UButton color="gray" variant="ghost" icon="i-heroicons-x-mark-20-solid" class="-my-1"
+          <UButton :disabled="loading.doing" color="gray" variant="ghost" icon="i-heroicons-x-mark-20-solid" class="-my-1"
             @click=" modals.confirmClose.display = true, modals.confirmClose.title = 'Bạn có chắc muốn đóng cửa sổ này?'" />
         </div>
         <div class="bottom-0 absolute w-full right-0" v-if="loading.doing">
@@ -141,6 +141,7 @@
 </template>
 
 <script lang="ts" setup>
+
 const router=useRouter()
 const route=useRoute()
 const store = useMyNotificationsStore()

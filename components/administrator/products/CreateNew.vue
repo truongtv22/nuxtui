@@ -31,7 +31,15 @@
           </UFormGroup>
         </div>
         <UFormGroup label="Categories" name="categories">
-          <USelectMenu :options="[]"></USelectMenu>
+          <USelectMenu :options="product.categories" optionAttribute="title" optionValue="_id" creatable>
+            <template #option-create="{ option }">
+      <span class="flex-shrink-0">New label:</span>
+      <span
+        class="flex-shrink-0 w-2 h-2 mt-px rounded-full -mx-1"
+      />
+      <span class="block truncate">{{ option.name }}</span>
+    </template>
+          </USelectMenu>
         </UFormGroup>
         <UFormGroup label="Photos" name="images">
           <div :class="'min-h-32 w-full border border-dotted border-2 rounded-md '+(product.previewImages.length<1?' cursor-pointer':'')">
@@ -97,6 +105,11 @@ function onResize() {
   sizeScreen.value.w = window.innerWidth
   sizeScreen.value.h = window.innerHeight
 }
+onBeforeMount(async ()=>{
+  await $fetch('/api/categories/list').then(res=>{
+    product.value.categories=res
+  })
+})
 onMounted(() => {
   onResize()
   window.addEventListener('resize', onResize)

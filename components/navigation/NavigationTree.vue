@@ -38,7 +38,6 @@ function closeAll() {
   myAccordion.value[0].buttonRefs.forEach((btn) => btn.close());
 }
 onBeforeMount(()=>{
-  console.log(myRoute.value.indexOf('detail')>-1)
 })
 </script>
 
@@ -49,7 +48,7 @@ onBeforeMount(()=>{
     </div>
     <div class="flex flex-col">
       <template v-for="item in items">
-        <UButton color="red" :to="item.to" v-if="!item.hasOwnProperty('items')" :variant="myRoute==item.to||item.childs?.forEach(c=>)?'soft':'ghost'" size="xl" :ui="{base:'border-l-2 '+(myRoute==item.to?'border-red-500':''), rounded: 'rounded-none', padding: { sm: 'p-3' } }" @click="closeAll">
+        <UButton color="red" :to="item.to" v-if="!item.hasOwnProperty('items')" :variant="(myRoute==item.to||item.childs?.findIndex(c=>c.to==myRoute.replace(route.params.id,'?'))>-1)?'soft':'ghost'" size="xl" :ui="{base:'border-l-2 '+((myRoute==item.to||item.childs?.findIndex(c=>c.to==myRoute.replace(route.params.id,'?'))>-1)?'border-red-500':''), rounded: 'rounded-none', padding: { sm: 'p-3' } }" @click="closeAll">
         <template #leading>
           <div>
             <UIcon dynamic :name="item.icon" />

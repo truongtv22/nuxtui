@@ -1,5 +1,4 @@
 <template>
-
   <UForm ref="form" :schema="schema" :state="category" class="space-y-4 relative"
     @submit="onSubmit" @error="onError">
     <UFormGroup label="Tên thể loại" name="title">
@@ -39,8 +38,7 @@
               </div>
             </div>
             <div v-for="src, index in category.imagesOld.medium" class="relative">
-              <img :src class="rounded-md w-full min-h-52 max-h-52 object-cover" :key="index"
-                @mouseover="showElement = src" />
+              <NuxtImg class="rounded-md w-full min-h-52 max-h-52 object-cover"  :src loading="lazy" @mouseover="showElement = src" :key="index" quality="10" placeholder densities="x1 x2"/>
               <div
                 class="w-full min-h-52 max-h-52 absolute top-0 left-0 backdrop-blur-sm flex justify-center items-center rounded-md cursor-pointer"
                 v-show="showElement == src" @mouseout="showElement = null">
@@ -119,7 +117,6 @@ function resetData() {
     })
     category.value.previewImages = []
     oldTitle.value.data=category.value.title
-    console.log(category.value)
   }
   else {
     category.value = {
@@ -435,6 +432,17 @@ async function uploadFile(file, size) {
               original: res['data']['original'],
               small: res1['data'].original,
               medium: res2.data.original
+            }
+
+          })
+        }).catch(error=>{
+          console.log(error)
+          resolve({
+            status: 'error',
+            data: {
+              original: null,
+              small: null,
+              medium: null
             }
 
           })

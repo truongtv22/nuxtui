@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@iconify-json/material-symbols-light": "^1.1.22",
+    "@nuxt/image": "^1.7.0",
     "@nuxt/ui": "npm:@nuxt/ui-edge@latest",
     "@nuxt/ui-edge": "^2.17.0-28653769.c904604",
     "@pinia/nuxt": "^0.5.1",
