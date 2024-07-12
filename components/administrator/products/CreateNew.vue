@@ -31,13 +31,24 @@
           </UFormGroup>
         </div>
         <UFormGroup label="Categories" name="categories">
-          <USelectMenu :options="product.categories" optionAttribute="title" optionValue="_id" creatable>
+          {{selected.length>0?selectedCal:''}}
+          {{categories?categories.$refs.trigger.el.clientWidth:''}}
+            <USelectMenu multiple v-model="categoriesSelected" :options="product.categories.data" optionAttribute="title" optionValue="_id" :creatable="!status.loading" searchable :loading="status.loading"  ref="categories">
+            <template #label>
+              <div v-for="item,key in product.categories.value"  ref="selected">
+                <UBadge v-if="categories && selected.filter((item,i)=>i<=key).reduce((v1,val2)=>v1+val2.clientWidth,0)+500<categories.$refs.trigger.$el.clientWidth">{{ item.title }}</UBadge>
+                
+              </div>
+              <span>{{ product.categories.value.length }}</span>
+              
+            </template>
             <template #option-create="{ option }">
-      <span class="flex-shrink-0">New label:</span>
+                <span class="flex-shrink-0">New label:</span>
       <span
         class="flex-shrink-0 w-2 h-2 mt-px rounded-full -mx-1"
       />
-      <span class="block truncate">{{ option.name }}</span>
+      <span class="block truncate">{{ option.title }}</span>
+      
     </template>
           </USelectMenu>
         </UFormGroup>
@@ -86,6 +97,7 @@
 </template>
 
 <script lang="ts" setup>
+import { compile } from 'vue';
 import {z} from 'zod'
 const props = defineProps(['modelValue'])
 const emits = defineEmits(['update:modelValue', 'confirmWindow'])
@@ -107,7 +119,7 @@ function onResize() {
 }
 onBeforeMount(async ()=>{
   await $fetch('/api/categories/list').then(res=>{
-    product.value.categories=res
+    product.value.categories.data=res
   })
 })
 onMounted(() => {
@@ -119,11 +131,47 @@ const product = ref({
   barcode: null,
   description: null,
   images: [],
-  categories: [],
+  categories: {
+    data:[],
+    value:[]
+  },
   note: null,
   previewImages:[],
   tags:null
 })
+const categories=ref(null)
+const selected=ref([])
+const selectedCal=computed({
+  get:()=>selected.value.reduce((val1,val2)=>val1+val2.clientWidth,0)+500
+})
+const status=ref({
+  loading:false
+})
+const categoriesSelected=computed({
+  get:()=>product.value.categories.value,
+  set:async (val)=>{
+    const arr=val.map(async (item)=>{
+      if(item._id){
+        return item
+      }
+      status.value.loading=true
+      return await $fetch('/api/categories/create',{
+        method:"POST",
+        body:JSON.stringify({
+          title:item.title
+        })
+      }).then(res=>{
+        if(res.length>0){
+          product.value.categories.data.push(res[0])
+          status.value.loading=false
+          return res[0]
+        }
+      })
+    })
+    product.value.categories.value=await Promise.all(arr)
+  }
+})
+
 const fileSelected=ref()
 function previewSelected(e){
   const file=e.target.files[0]
