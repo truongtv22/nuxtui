@@ -18,6 +18,7 @@
             @click="emits('confirmWindow', true, 'hel woo')" />
         </div>
       </template>
+      
       <UForm :schema="schema" :state="product" class="space-y-4" @submit="onSubmit">
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-1 gap-y-4">
           <UFormGroup label="Tên sản phẩm" name="name">
@@ -31,15 +32,15 @@
           </UFormGroup>
         </div>
         <UFormGroup label="Categories" name="categories">
-          {{selected.length>0?selectedCal:''}}
-          {{categories?categories.$refs.trigger.el.clientWidth:''}}
-            <USelectMenu multiple v-model="categoriesSelected" :options="product.categories.data" optionAttribute="title" optionValue="_id" :creatable="!status.loading" searchable :loading="status.loading"  ref="categories">
+            <USelectMenu multiple v-model="categoriesSelected" :options="product.categories.data" optionAttribute="title" optionValue="_id" :creatable="!status.loading" searchable :loading="status.loading"  ref="categories" >
             <template #label>
-              <div v-for="item,key in product.categories.value"  ref="selected">
-                <UBadge v-if="categories && selected.filter((item,i)=>i<=key).reduce((v1,val2)=>v1+val2.clientWidth,0)+500<categories.$refs.trigger.$el.clientWidth">{{ item.title }}</UBadge>
-                
+              <div class="w-auto flex flex-row" v-if="product.categories.value.length>0">
+                <div v-for="item,key in product.categories.value" ref="selected" class="w-auto">
+                <UBadge v-if="selectedCalculator(selected.slice(0,key))<categories.$refs.trigger.el.clientWidth-220" class="mr-1">{{ item.title }}</UBadge>
               </div>
-              <span>{{ product.categories.value.length }}</span>
+              </div>
+              <span v-else class="text-gray-400">Select category</span>
+              <span class="w-auto" v-if="selected.length-selected.filter((item,index)=>{return selectedCalculator(selected.slice(0,index))<categories.$refs.trigger.el.clientWidth-220}).length>1">+{{ selected.length-selected.filter((item,index)=>{return selected.slice(0,index).reduce((val1,val2)=>val1+val2.clientWidth,0)<categories.$refs.trigger.el.clientWidth-220}).length }} items</span>
               
             </template>
             <template #option-create="{ option }">
@@ -97,6 +98,7 @@
 </template>
 
 <script lang="ts" setup>
+import type { _0 } from '#tailwind-config/theme/backdropBlur';
 import { compile } from 'vue';
 import {z} from 'zod'
 const props = defineProps(['modelValue'])
@@ -141,9 +143,6 @@ const product = ref({
 })
 const categories=ref(null)
 const selected=ref([])
-const selectedCal=computed({
-  get:()=>selected.value.reduce((val1,val2)=>val1+val2.clientWidth,0)+500
-})
 const status=ref({
   loading:false
 })
@@ -196,6 +195,9 @@ type Schema = z.output<typeof schema>
 async function onSubmit(event: FormSubmitEvent<Schema>) {
   // Do something with data
   console.log(event.data)
+}
+function selectedCalculator(arr){
+  return arr.reduce((val1,val2)=>val1+val2.clientWidth,0)
 }
 </script>
 
