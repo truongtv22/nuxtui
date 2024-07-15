@@ -12,11 +12,7 @@
           controlslist="nodownload nofullscreen"
         >
         </video>
-      <barcode-scanner  class="barcode-scanner" 
-                     :source="camera" 
-                     @bcs-scanned="scanned" >
-                     
-                    </barcode-scanner>
+
     </ClientOnly>
     
                      <h3>Detected barcodes</h3>
@@ -29,7 +25,6 @@
   </template>
 
   <script setup>
-import BarcodeScanner from '@undecaf/vue-barcode-scanner'
 //import { BarcodeDetectorPolyfill } from '@undecaf/barcode-detector-polyfill'
 const camera=ref(null)
 const videoSource=ref(null)
