@@ -15,5 +15,8 @@ const stream=await navigator.mediaDevices.getUserMedia(constraints)
 const video = document.getElementById("myVid");
 window.stream = stream;
   video.srcObject = stream;
+  video.onloadedmetadata = () => {
+      video.play();
+    };
 })
 </script>
