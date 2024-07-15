@@ -47,7 +47,8 @@ onMounted(()=>{
   navigator.mediaDevices.getUserMedia({ audio: false, video: true ,facingMode:"environment"})
       .then(stream => {
         camera.value = stream
-        videoSource.value.src=stream
+        videoSource.value.srcObject=stream
+        videoSource.value.play()
       })
 })
 </script>
