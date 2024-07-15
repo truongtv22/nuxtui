@@ -30,7 +30,7 @@
 
   <script setup>
 import BarcodeScanner from '@undecaf/vue-barcode-scanner'
-import { BarcodeDetectorPolyfill } from '@undecaf/barcode-detector-polyfill'
+//import { BarcodeDetectorPolyfill } from '@undecaf/barcode-detector-polyfill'
 const camera=ref(null)
 const videoSource=ref(null)
 const barcodes=ref([])
