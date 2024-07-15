@@ -1,7 +1,7 @@
 <template>
   <h1>hello world</h1>
   <h2>this is my video</h2>
-  <video ref="vid" id="myVid"></video>
+  <video ref="vid" id="myVid" controls></video>
 </template>
 <script setup>
 const vid=ref(null)
