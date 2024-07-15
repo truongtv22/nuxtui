@@ -17,6 +17,7 @@
     "@nuxt/ui-edge": "^2.17.0-28653769.c904604",
     "@pinia/nuxt": "^0.5.1",
     "@popperjs/core": "^2.11.8",
+    "@undecaf/vue-barcode-scanner": "^0.9.3",
     "@unovis/ts": "^1.4.1",
     "@unovis/vue": "^1.4.1",
     "apexcharts": "^3.49.1",
