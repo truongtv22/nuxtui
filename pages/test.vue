@@ -30,6 +30,7 @@
 
   <script setup>
 import BarcodeScanner from '@undecaf/vue-barcode-scanner'
+import { BarcodeDetectorPolyfill } from '@undecaf/barcode-detector-polyfill'
 const camera=ref(null)
 const videoSource=ref(null)
 const barcodes=ref([])
@@ -39,8 +40,9 @@ function scanned(barcodes) {
 onMounted(()=>{
   try {
   (new window['BarcodeDetector']()).getContext('2d')
+  console.log(22222)
 } catch {
-  console.log(1111)
+  //window['BarcodeDetector'] = BarcodeDetectorPolyfill
 }
   navigator.mediaDevices.getUserMedia({ audio: false, video: true ,facingMode:"environment"})
       .then(stream => {
