@@ -1,5 +1,6 @@
 <template>
   <h1>hello world</h1>
+  <h2>this is video</h2>
   <video ref="vid"/>
 </template>
 <script setup>
