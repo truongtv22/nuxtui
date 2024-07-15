@@ -1,6 +1,5 @@
 <template>
   <h1>hello world</h1>
-  <h2>this is video</h2>
   <video ref="vid"/>
 </template>
 <script setup>
@@ -14,9 +13,10 @@ onMounted(async ()=>{
 navigator.mediaDevices
   .getUserMedia(constraints)
   .then((mediaStream) => {
-    video.value.srcObject = mediaStream;
-    video.value.onloadedmetadata = () => {
-      video.value.play();
+    const video = document.querySelector("video");
+    video.srcObject = mediaStream;
+    video.onloadedmetadata = () => {
+      video.play();
     };
   })
   .catch((err) => {
