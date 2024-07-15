@@ -2,10 +2,7 @@
   <div>
     <h1>heloo wol</h1>
     <ClientOnly>
-      <barcode-scanner  class="barcode-scanner" 
-                     :source="camera" 
-                     @bcs-scanned="scanned" >
-                     <video
+      <video
           ref="videoSource"
           crossorigin="anonymous"
           muted
@@ -15,6 +12,10 @@
           controlslist="nodownload nofullscreen"
         >
         </video>
+      <barcode-scanner  class="barcode-scanner" 
+                     :source="camera" 
+                     @bcs-scanned="scanned" >
+                     
                     </barcode-scanner>
     </ClientOnly>
     
@@ -44,7 +45,7 @@ onMounted(()=>{
   navigator.mediaDevices.getUserMedia({ audio: false, video: true ,facingMode:"environment"})
       .then(stream => {
         camera.value = stream
-        videoSource.value=stream
+        videoSource.value.src=stream
       })
 })
 </script>
