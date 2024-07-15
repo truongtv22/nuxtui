@@ -1,22 +1,26 @@
 <template>
-  <h1>hello world</h1>
-  <h2>this is my video</h2>
-  <video ref="vid" id="myVid" controls></video>
-</template>
-<script setup>
-const vid=ref(null)
-onMounted(async ()=>{
-  const constraints = {
-  audio: true,
-  video: { width: 1280, height: 720 },
-};
+  <div>
+    <h1>heloo wol</h1>
+    <barcode-scanner  class="barcode-scanner" 
+                     :source="camera" 
+                     @bcs-scanned="scanned" ></barcode-scanner>
+                     <h3>Detected barcodes</h3>
+        
+    <ul>
+      <li v-for="(b, i) in barcodes" :key="i">{{ b.rawValue }} ({{ b.format }})</li>
+    </ul>
+  </div>
 
-const stream=await navigator.mediaDevices.getUserMedia(constraints)
-const video = document.getElementById("myVid");
-window.stream = stream;
-  video.srcObject = stream;
-  video.onloadedmetadata = () => {
-      video.play();
-    };
+  </template>
+
+  <script setup>
+const camera=ref(null)
+const barcodes=ref([])
+function scanned(barcodes) {
+      barcodes.value = barcodes
+    }
+onMounted(()=>{
+  navigator.mediaDevices.getUserMedia({ audio: false, video: true })
+      .then(stream => camera.value = stream)
 })
 </script>
