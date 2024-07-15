@@ -32,7 +32,7 @@ function scanned(barcodes) {
       barcodes.value = barcodes
     }
 onMounted(()=>{
-  navigator.mediaDevices.getUserMedia({ audio: false, video: true })
+  navigator.mediaDevices.getUserMedia({ audio: false, video: true ,facingMode:"environment"})
       .then(stream => {
         camera.value = stream
         videoSource.value=stream
