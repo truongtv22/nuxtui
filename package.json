@@ -19,6 +19,7 @@
     "@popperjs/core": "^2.11.8",
     "@undecaf/barcode-detector-polyfill": "^0.9.20",
     "@undecaf/vue-barcode-scanner": "^0.9.3",
+    "@undecaf/zbar-wasm": "^0.11.0",
     "@unovis/ts": "^1.4.1",
     "@unovis/vue": "^1.4.1",
     "apexcharts": "^3.49.1",

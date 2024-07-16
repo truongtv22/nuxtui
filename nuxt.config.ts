@@ -1,5 +1,10 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
+  app:{
+    head:{
+      script:[{src:'https://cdn.jsdelivr.net/npm/@undecaf/zbar-wasm@0.9.15/dist/index.js'},{src:'https://cdn.jsdelivr.net/npm/@undecaf/barcode-detector-polyfill@0.9.20/dist/index.js'}]
+    }
+  },
   devtools: { enabled: true },
   modules: ['@nuxt/ui', "nuxt-lodash", '@pinia/nuxt','@nuxt/image',],
   plugins:[],
