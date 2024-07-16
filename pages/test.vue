@@ -1,6 +1,6 @@
 <template>
   <div>
-    <p ref="result"></p>
+    <p>{{ result}}</p>
     <div>
       <canvas ref="canvas"></canvas>
       <video ref="video" playsinline="" autoplay></video>
@@ -68,7 +68,7 @@ function detectVideo(repeat) {
 
   if (repeat) {
     detect(video.value)
-      .then(() => requestId.value = requestAnimationFrame(() => detectVideo(true)))
+      .then(() => requestId.value = requestAnimationFrame(() => detectVideo(true))).catch(err=>result.value=err)
 
   } else {
     cancelAnimationFrame(requestId)
