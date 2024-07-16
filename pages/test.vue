@@ -36,16 +36,16 @@ function detect(source) {
       if (symbols.length > 0) {
         canvas.value.width = source.naturalWidth || source.videoWidth || source.width
         canvas.value.height = source.naturalHeight || source.videoHeight || source.height
-        ctx.clearRect(0, 0, canvas.value.width, canvas.value.height)
+        ctx.value.clearRect(0, 0, canvas.value.width, canvas.value.height)
 
         symbols.forEach(symbol => {
           const lastCornerPoint = symbol.cornerPoints[symbol.cornerPoints.length - 1]
-          ctx.moveTo(lastCornerPoint.x, lastCornerPoint.y)
-          symbol.cornerPoints.forEach(point => ctx.lineTo(point.x, point.y))
+          ctx.value.moveTo(lastCornerPoint.x, lastCornerPoint.y)
+          symbol.cornerPoints.forEach(point => ctx.value.lineTo(point.x, point.y))
 
-          ctx.lineWidth = 3
-          ctx.strokeStyle = '#00e000ff'
-          ctx.stroke()
+          ctx.value.lineWidth = 3
+          ctx.value.strokeStyle = '#00e000ff'
+          ctx.value.stroke()
           canvas.value.style.position = 'absolute'
           canvas.value.style.top = '0'
         })
@@ -57,7 +57,7 @@ function detect(source) {
         result.value = JSON.stringify(symbols, null, 2)
       }
       else {
-        ctx.clearRect(0, 0, canvas.width, canvas.height)
+        ctx.value.clearRect(0, 0, canvas.width, canvas.height)
       }
 
     }).catch(err=>{
