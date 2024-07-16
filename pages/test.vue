@@ -25,8 +25,8 @@ const constrains = {
   }
 }
 async function createDetector() {
-      const supportedFormats = await window['BarcodeDetector'].getSupportedFormats()
-      detector.value = new window['BarcodeDetector']({ formats: supportedFormats, zbar: { encoding: 'utf-8' } })
+      const supportedFormats = await BarcodeDetector.getSupportedFormats()
+      detector.value = new BarcodeDetector({ formats: supportedFormats, zbar: { encoding: 'utf-8' } })
     }
 function detect(source) {
   result.value='222222'
