@@ -24,6 +24,10 @@ const constrains = {
     facingMode: 'environment'
   }
 }
+async function createDetector() {
+      const supportedFormats = await BarcodeDetectorPolyfill.getSupportedFormats()
+      detector.value = new BarcodeDetectorPolyfill({ formats: supportedFormats, zbar: { encoding: 'utf-8' } })
+    }
 function detect(source) {
   return detector.value
     .detect(source)
@@ -77,6 +81,7 @@ function detectVideo(repeat) {
 }
 onMounted(() => {
   ctx.value = canvas.value.getContext('2d')
+  createDetector()
   try {
     window['BarcodeDetector'].getSupportedFormats()
   } catch {
