@@ -17,7 +17,7 @@ const canvas = ref(null),
   detector = ref(null),
   result = ref(null),
   requestId=ref(null),
-ctx = canvas.value.getContext('2d')
+ctx = ref(null)
 const constrains = {
   audio: false,
   video: {
@@ -76,6 +76,7 @@ function detectVideo(repeat) {
   }
 }
 onMounted(() => {
+  ctx.value = canvas.value.getContext('2d')
   try {
     window['BarcodeDetector'].getSupportedFormats()
   } catch {
