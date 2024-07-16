@@ -59,7 +59,7 @@ function detect(source) {
 }
 function detectVideo(repeat) {
   if (!repeat) {
-    ctx.clearRect(0, 0, canvas.width, canvas.height)
+    ctx.value.clearRect(0, 0, canvas.width, canvas.height)
   }
 
   if (typeof repeat === 'undefined') {
@@ -67,7 +67,7 @@ function detectVideo(repeat) {
   }
 
   if (repeat) {
-    detect(video)
+    detect(video.value)
       .then(() => requestId.value = requestAnimationFrame(() => detectVideo(true)))
 
   } else {
