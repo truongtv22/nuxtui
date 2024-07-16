@@ -1,6 +1,6 @@
 <template>
   <div>
-    <video ref="video"></video>
+    <video ref="video" playsinline="" autoplay></video>
 
 
   </div>
