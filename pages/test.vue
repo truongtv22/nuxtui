@@ -25,8 +25,8 @@ const constrains = {
   }
 }
 async function createDetector() {
-      const supportedFormats = await BarcodeDetectorPolyfill.getSupportedFormats()
-      detector.value = new BarcodeDetectorPolyfill({ formats: supportedFormats, zbar: { encoding: 'utf-8' } })
+      const supportedFormats = await window['BarcodeDetector'].getSupportedFormats()
+      detector.value = new window['BarcodeDetector']({ formats: supportedFormats, zbar: { encoding: 'utf-8' } })
     }
 function detect(source) {
   return detector.value
@@ -79,14 +79,15 @@ function detectVideo(repeat) {
     requestId.value = null
   }
 }
-onMounted(() => {
-  ctx.value = canvas.value.getContext('2d')
-  createDetector()
+onMounted(async () => {
   try {
     window['BarcodeDetector'].getSupportedFormats()
   } catch {
     window['BarcodeDetector'] = barcodeDetectorPolyfill.BarcodeDetectorPolyfill
   }
+  ctx.value = canvas.value.getContext('2d')
+  await createDetector()
+  
   navigator.mediaDevices.getUserMedia(constrains).then(stream => {
     video.value.srcObject = stream
     detectVideo()
