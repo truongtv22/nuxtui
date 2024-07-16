@@ -89,7 +89,9 @@ onMounted(async () => {
   } catch {
     window['BarcodeDetector'] = barcodeDetectorPolyfill.BarcodeDetectorPolyfill
   }
+  result.value=5555555
   ctx.value = canvas.value.getContext('2d')
+  result.value=333333
   await createDetector()
   
   navigator.mediaDevices.getUserMedia(constrains).then(stream => {
