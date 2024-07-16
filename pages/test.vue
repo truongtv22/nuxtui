@@ -53,12 +53,14 @@ function detect(source) {
           delete symbol.boundingBox
           delete symbol.cornerPoints
         })
-        result.value.innerText = JSON.stringify(symbols, null, 2)
+        result.value = JSON.stringify(symbols, null, 2)
       }
       else {
         ctx.clearRect(0, 0, canvas.width, canvas.height)
       }
 
+    }).catch(err=>{
+      result.value=err
     })
 }
 function detectVideo(repeat) {
