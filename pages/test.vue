@@ -29,6 +29,7 @@ async function createDetector() {
       detector.value = new window['BarcodeDetector']({ formats: supportedFormats, zbar: { encoding: 'utf-8' } })
     }
 function detect(source) {
+  result.value='222222'
   return detector.value
     .detect(source)
     .then(symbols => {
@@ -73,6 +74,7 @@ function detectVideo(repeat) {
   }
 
   if (repeat) {
+    result.value='1111111'
     detect(video.value)
       .then(() => requestId.value = requestAnimationFrame(() => detectVideo(true))).catch(err=>result.value=err)
 
