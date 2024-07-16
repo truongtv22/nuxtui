@@ -16,7 +16,7 @@ const video = ref(null)
 const canvas = ref(null),
   detector = ref(null),
   result = ref(null),
-  requestId=ref(null)
+  requestId=ref(null),
 ctx = canvas.value.getContext('2d')
 const constrains = {
   audio: false,
