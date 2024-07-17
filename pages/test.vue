@@ -58,23 +58,30 @@ function detect(source) {
           canvas.value.style.position = 'absolute'
           canvas.value.style.top = '0'
         })
-        var w = video.value.videoWidth;
-        var h = video.value.videoHeight;
-        var canvas1 = document.createElement('canvas');
-        canvas1.width = w;
-        canvas1.height = h;
-        var ctx1 = canvas1.getContext('2d');
-        ctx1.drawImage(video.value, 0, 0, w, h);
-        var data = canvas1.toDataURL("image/jpg");
-        arr.value.push(data)
-        detectVideo(false)
-        display.value.video=false 
-
-        symbols.forEach(symbol => {
-          delete symbol.boundingBox
-          delete symbol.cornerPoints
+        const promise=new Promise((resolve,reject)=>{
+          var w = video.value.videoWidth;
+          var h = video.value.videoHeight;
+          var canvas1 = document.createElement('canvas');
+          canvas1.width = w;
+          canvas1.height = h;
+          var ctx1 = canvas1.getContext('2d');
+          ctx1.drawImage(video.value, 0, 0, w, h);
+          var data = canvas1.toDataURL("image/jpg");
+          arr.value.push(data)
+          detectVideo(false)
+          display.value.video=false 
+          resolve()
         })
-        result.value = JSON.stringify(symbols, null, 2)
+        promise.then(rs=>{
+          symbols.forEach(symbol => {
+            delete symbol.boundingBox
+            delete symbol.cornerPoints
+          })
+          result.value = JSON.stringify(symbols, null, 2)
+        })
+        
+
+        
       }
       else {
         ctx.value.clearRect(0, 0, canvas.value.width, canvas.value.height)
