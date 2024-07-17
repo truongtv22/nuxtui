@@ -42,7 +42,7 @@ function detect(source) {
   return detector.value
     .detect(source)
     .then(symbols => {
-      if (symbols.length == 1) {
+      if (symbols.length > 0) {
         canvas.value.width = source.naturalWidth || source.videoWidth || source.width
         canvas.value.height = source.naturalHeight || source.videoHeight || source.height
         ctx.value.clearRect(0, 0, canvas.value.width, canvas.value.height)
@@ -58,14 +58,6 @@ function detect(source) {
           canvas.value.style.position = 'absolute'
           canvas.value.style.top = '0'
         })
-
-        symbols.forEach(symbol => {
-          delete symbol.boundingBox
-          delete symbol.cornerPoints
-        })
-        result.value = JSON.stringify(symbols, null, 2)
-      }
-      else if(symbols.length>1){
         var w = video.value.videoWidth;
         var h = video.value.videoHeight;
         var canvas1 = document.createElement('canvas');
@@ -76,7 +68,13 @@ function detect(source) {
         var data = canvas1.toDataURL("image/jpg");
         arr.value.push(data)
         detectVideo(false)
-        display.value.video=false
+        display.value.video=false 
+
+        symbols.forEach(symbol => {
+          delete symbol.boundingBox
+          delete symbol.cornerPoints
+        })
+        result.value = JSON.stringify(symbols, null, 2)
       }
       else {
         ctx.value.clearRect(0, 0, canvas.value.width, canvas.value.height)
