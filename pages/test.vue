@@ -3,7 +3,9 @@
     <p>{{ result}}</p>
     <div style="position: relative;width: 1000px;height: 1000px;">
       <canvas style="position: absolute;top:0;right:0px;width:100%" ref="canvas"></canvas>
-      <video ref="video" playsinline="" autoplay></video>
+      
+      <video v-if="display.video" ref="video" playsinline="" autoplay></video>
+      <img v-for="item in arr" :src="item" />
     </div>
 
 
@@ -12,7 +14,13 @@
 </template>
 
 <script setup>
+  const arr=ref([])
+  const display=ref({
+    video:true,
+    image:false
+  })
 const video = ref(null)
+  const image=ref(null)
 const canvas = ref(null),
   detector = ref(null),
   result = ref(null),
@@ -34,7 +42,7 @@ function detect(source) {
   return detector.value
     .detect(source)
     .then(symbols => {
-      if (symbols.length > 0) {
+      if (symbols.length == 1) {
         canvas.value.width = source.naturalWidth || source.videoWidth || source.width
         canvas.value.height = source.naturalHeight || source.videoHeight || source.height
         ctx.value.clearRect(0, 0, canvas.value.width, canvas.value.height)
@@ -57,8 +65,21 @@ function detect(source) {
         })
         result.value = JSON.stringify(symbols, null, 2)
       }
+      else if(symbols.length>1){
+        var w = video.value.videoWidth;
+        var h = video.value.videoHeight;
+        var canvas1 = document.createElement('canvas');
+        canvas1.width = w;
+        canvas1.height = h;
+        var ctx1 = canvas1.getContext('2d');
+        ctx1.drawImage(video.value, 0, 0, w, h);
+        var data = canvas1.toDataURL("image/jpg");
+        arr.value.push(data)
+        detectVideo(false)
+        display.value.video=false
+      }
       else {
-        ctx.value.clearRect(0, 0, canvas.width, canvas.height)
+        ctx.value.clearRect(0, 0, canvas.value.width, canvas.value.height)
       }
 
     }).catch(err=>{
