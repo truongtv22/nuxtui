@@ -1,8 +1,8 @@
 <template>
   <div>
     <p>{{ result}}</p>
-    <div>
-      <canvas ref="canvas"></canvas>
+    <div style="position: relative;width: 1000px;height: 1000px;">
+      <canvas style="position: absolute;top:0;right:0px;width:100%" ref="canvas"></canvas>
       <video ref="video" playsinline="" autoplay></video>
     </div>
 
@@ -21,6 +21,8 @@ ctx = ref(null)
 const constrains = {
   audio: false,
   video: {
+    width:1000,
+    height:1000,
     facingMode: 'environment'
   }
 }
@@ -29,7 +31,6 @@ async function createDetector() {
       detector.value = new BarcodeDetector({ formats: supportedFormats, zbar: { encoding: 'utf-8' } })
     }
 function detect(source) {
-  result.value='222222'
   return detector.value
     .detect(source)
     .then(symbols => {
@@ -74,7 +75,6 @@ function detectVideo(repeat) {
   }
 
   if (repeat) {
-    result.value='1111111'
     detect(video.value)
       .then(() => requestId.value = requestAnimationFrame(() => detectVideo(true))).catch(err=>result.value=err)
 
@@ -89,9 +89,7 @@ onMounted(async () => {
   } catch {
     window['BarcodeDetector'] = barcodeDetectorPolyfill.BarcodeDetectorPolyfill
   }
-  result.value=5555555
   ctx.value = canvas.value.getContext('2d')
-  result.value=333333
   await createDetector()
   
   navigator.mediaDevices.getUserMedia(constrains).then(stream => {
