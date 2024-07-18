@@ -77,7 +77,7 @@ function detect(source) {
             delete symbol.boundingBox
             delete symbol.cornerPoints
           })
-          result.value = JSON.stringify(symbols, null, 2)
+          result.value = JSON.stringify(symbols)
         })
         
 
