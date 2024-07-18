@@ -128,12 +128,12 @@ onMounted(async () => {
   }
   ctx.value = canvas.value.getContext('2d')
   await createDetector()
-  /*
+  
   navigator.mediaDevices.getUserMedia(constrains).then(stream => {
     video.value.srcObject = stream
     detectVideo()
   })
-    */
+    
 })
 
 </script>
