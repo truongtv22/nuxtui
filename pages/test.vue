@@ -61,7 +61,7 @@ function detect(source) {
             canvas.value.style.position = 'absolute'
             canvas.value.style.top = '0'
             if(i==symbols.length-1){
-              resolve()
+              //resolve()
             }
           })
         })
