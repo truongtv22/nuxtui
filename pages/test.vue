@@ -58,7 +58,7 @@ function detect(source) {
               symbol.cornerPoints.forEach((point,i) => {
               ctx.value.lineTo(point.x, point.y)
               if(i=symbol.cornerPoints.length-1){
-                resolve1
+                resolve1()
               }
             })
             })
