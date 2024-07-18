@@ -46,42 +46,51 @@ function detect(source) {
         canvas.value.width = source.naturalWidth || source.videoWidth || source.width
         canvas.value.height = source.naturalHeight || source.videoHeight || source.height
         ctx.value.clearRect(0, 0, canvas.value.width, canvas.value.height)
+        const pro=new Promise((resolve,reject)=>{
+          symbols.forEach(symbol,i => {
+            const lastCornerPoint = symbol.cornerPoints[symbol.cornerPoints.length - 1]
+            ctx.value.moveTo(lastCornerPoint.x, lastCornerPoint.y)
+            symbol.cornerPoints.forEach(point => ctx.value.lineTo(point.x, point.y))
 
-        symbols.forEach(symbol => {
-          const lastCornerPoint = symbol.cornerPoints[symbol.cornerPoints.length - 1]
-          ctx.value.moveTo(lastCornerPoint.x, lastCornerPoint.y)
-          symbol.cornerPoints.forEach(point => ctx.value.lineTo(point.x, point.y))
-
-          ctx.value.lineWidth = 3
-          ctx.value.strokeStyle = '#00e000ff'
-          ctx.value.stroke()
-          canvas.value.style.position = 'absolute'
-          canvas.value.style.top = '0'
-        })
-        const promise=new Promise((resolve,reject)=>{
-          var w = video.value.videoWidth;
-          var h = video.value.videoHeight;
-          var canvas1 = document.createElement('canvas');
-          canvas1.width = w;
-          canvas1.height = h;
-          var ctx1 = canvas1.getContext('2d');
-          ctx1.drawImage(video.value, 0, 0, w, h);
-          var data = canvas1.toDataURL("image/jpg");
-          arr.value.push(data)
-          detectVideo(false)
-          display.value.video=false 
-          resolve()
-        })
-        promise.then(rs=>{
-          symbols.forEach(symbol => {
-            delete symbol.boundingBox
-            delete symbol.cornerPoints
+            ctx.value.lineWidth = 3
+            ctx.value.strokeStyle = '#00e000ff'
+            ctx.value.stroke()
+            canvas.value.style.position = 'absolute'
+            canvas.value.style.top = '0'
+            if(i==symbols.length-1){
+              resolve()
+            }
           })
-          result.value = JSON.stringify(symbols)
         })
-        
-
-        
+        pro.then(res=>{
+          
+          const promise=new Promise((resolve,reject)=>{
+            if(symbols.length>1){
+              var w = video.value.videoWidth;
+              var h = video.value.videoHeight;
+              var canvas1 = document.createElement('canvas');
+              canvas1.width = w;
+              canvas1.height = h;
+              var ctx1 = canvas1.getContext('2d');
+              ctx1.drawImage(video.value, 0, 0, w, h);
+              var data = canvas1.toDataURL("image/jpg");
+              arr.value.push(data)
+              detectVideo(false)
+              display.value.video=false 
+              resolve()
+            }
+            else{
+              resolve()
+            }
+          })
+          promise.then(rs=>{
+            symbols.forEach(symbol => {
+              delete symbol.boundingBox
+              delete symbol.cornerPoints
+            })
+            result.value = JSON.stringify(symbols)
+          })
+        })
       }
       else {
         ctx.value.clearRect(0, 0, canvas.value.width, canvas.value.height)
