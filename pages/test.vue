@@ -2,7 +2,7 @@
   <div>
     <p>{{ result}}</p>
     <input type="file" ref="inputFile" @change="updateFile($event)"/>
-    <button @click="detectVideo(true)">resume</button>
+    <button @click="detectVideo(true),display.video=true">resume</button>
     <div style="position: relative;width: 1000px;height: 1000px;">
     
       <canvas style="position: absolute;top:0;right:0px;width:100%" ref="canvas"></canvas>
@@ -54,15 +54,25 @@ function detect(source) {
           symbols.forEach((symbol,i) => {
             const lastCornerPoint = symbol.cornerPoints[symbol.cornerPoints.length - 1]
             ctx.value.moveTo(lastCornerPoint.x, lastCornerPoint.y)
-            symbol.cornerPoints.forEach(point => ctx.value.lineTo(point.x, point.y))
-            ctx.value.lineWidth = 3
-            ctx.value.strokeStyle = '#00e000ff'
-            ctx.value.stroke()
-            canvas.value.style.position = 'absolute'
-            canvas.value.style.top = '0'
-            if(i==symbols.length-1){
-              //resolve()
-            }
+            const promise1=new Promise((resolve1,reject1)=>{
+              symbol.cornerPoints.forEach((point,i) => {
+              ctx.value.lineTo(point.x, point.y)
+              if(i=symbol.cornerPoints.length-1){
+                resolve1
+              }
+            })
+            })
+            promise1.then(rs=>{
+              ctx.value.lineWidth = 3
+              ctx.value.strokeStyle = '#00e000ff'
+              ctx.value.stroke()
+              canvas.value.style.position = 'absolute'
+              canvas.value.style.top = '0'
+              if(i==symbols.length-1){
+                resolve()
+              }
+            })
+            
           })
         })
         pro.then(res=>{
