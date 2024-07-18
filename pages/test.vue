@@ -2,6 +2,7 @@
   <div>
     <p>{{ result}}</p>
     <div style="position: relative;width: 1000px;height: 1000px;">
+    
       <canvas style="position: absolute;top:0;right:0px;width:100%" ref="canvas"></canvas>
       
       <video v-if="display.video" ref="video" playsinline="" autoplay></video>
@@ -42,12 +43,13 @@ function detect(source) {
   return detector.value
     .detect(source)
     .then(symbols => {
+      console.log(symbols)
       if (symbols.length > 0) {
         canvas.value.width = source.naturalWidth || source.videoWidth || source.width
         canvas.value.height = source.naturalHeight || source.videoHeight || source.height
         ctx.value.clearRect(0, 0, canvas.value.width, canvas.value.height)
         const pro=new Promise((resolve,reject)=>{
-          symbols.forEach(symbol,i => {
+          symbols.forEach((symbol,i) => {
             const lastCornerPoint = symbol.cornerPoints[symbol.cornerPoints.length - 1]
             ctx.value.moveTo(lastCornerPoint.x, lastCornerPoint.y)
             symbol.cornerPoints.forEach(point => ctx.value.lineTo(point.x, point.y))
@@ -126,12 +128,12 @@ onMounted(async () => {
   }
   ctx.value = canvas.value.getContext('2d')
   await createDetector()
-  
+  /*
   navigator.mediaDevices.getUserMedia(constrains).then(stream => {
     video.value.srcObject = stream
     detectVideo()
   })
+    */
 })
-
 
 </script>
