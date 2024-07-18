@@ -1,6 +1,8 @@
 <template>
   <div>
     <p>{{ result}}</p>
+    <input type="file" ref="inputFile" @change="updateFile($event)"/>
+    <button @click="detectVideo(true)">resume</button>
     <div style="position: relative;width: 1000px;height: 1000px;">
     
       <canvas style="position: absolute;top:0;right:0px;width:100%" ref="canvas"></canvas>
@@ -15,6 +17,7 @@
 </template>
 
 <script setup>
+const inputFile=ref(null)
   const arr=ref([])
   const display=ref({
     video:true,
@@ -43,17 +46,17 @@ function detect(source) {
   return detector.value
     .detect(source)
     .then(symbols => {
-      console.log(symbols)
       if (symbols.length > 0) {
         canvas.value.width = source.naturalWidth || source.videoWidth || source.width
         canvas.value.height = source.naturalHeight || source.videoHeight || source.height
+        var data = canvas.toDataURL("image/jpg");
+        arr.value.push(data)
         ctx.value.clearRect(0, 0, canvas.value.width, canvas.value.height)
         const pro=new Promise((resolve,reject)=>{
           symbols.forEach((symbol,i) => {
             const lastCornerPoint = symbol.cornerPoints[symbol.cornerPoints.length - 1]
             ctx.value.moveTo(lastCornerPoint.x, lastCornerPoint.y)
             symbol.cornerPoints.forEach(point => ctx.value.lineTo(point.x, point.y))
-
             ctx.value.lineWidth = 3
             ctx.value.strokeStyle = '#00e000ff'
             ctx.value.stroke()
@@ -65,33 +68,12 @@ function detect(source) {
           })
         })
         pro.then(res=>{
-          
-          const promise=new Promise((resolve,reject)=>{
-            if(symbols.length>1){
-              var w = video.value.videoWidth;
-              var h = video.value.videoHeight;
-              var canvas1 = document.createElement('canvas');
-              canvas1.width = w;
-              canvas1.height = h;
-              var ctx1 = canvas1.getContext('2d');
-              ctx1.drawImage(video.value, 0, 0, w, h);
-              var data = canvas1.toDataURL("image/jpg");
-              arr.value.push(data)
-              detectVideo(false)
-              display.value.video=false 
-              resolve()
-            }
-            else{
-              resolve()
-            }
-          })
-          promise.then(rs=>{
             symbols.forEach(symbol => {
               delete symbol.boundingBox
               delete symbol.cornerPoints
             })
             result.value = JSON.stringify(symbols)
-          })
+
         })
       }
       else {
@@ -135,5 +117,13 @@ onMounted(async () => {
   })
     
 })
-
+async function updateFile(e){
+  //detect(e.target.files[0])
+  const supportedFormats = await BarcodeDetector.getSupportedFormats()
+  const t=new BarcodeDetector({ formats: supportedFormats, zbar: { encoding: 'utf-8' } })
+  t.detect(e.target.files[0]).then(rs=>{
+    console.log(rs)
+  })
+  console.log(e.target.files)
+}
 </script>
