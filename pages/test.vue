@@ -36,14 +36,14 @@ const canvas = ref(null),
   result = ref(null),
   requestId=ref(null),
 ctx = ref(null)
-const constrains = {
+const constrains = ref({
   audio: false,
   video: {
     width:1000,
     height:1000,
     facingMode: 'environment'
   }
-}
+})
 async function createDetector() {
       const supportedFormats = await BarcodeDetector.getSupportedFormats()
       detector.value = new BarcodeDetector({ formats: supportedFormats, zbar: { encoding: 'utf-8' } })
@@ -205,6 +205,8 @@ function loadSound(){
 		document.removeEventListener('touchend', loadSound);     
 }
 onMounted(async () => {
+  constrains.value.video.width=screen.width
+  constrains.value.video.height=screen.width
   window.AudioContext = window.AudioContext || window.webkitAudioContext;
 	if (window.AudioContext) {
 		window.audioContext = new window.AudioContext();
@@ -220,7 +222,7 @@ onMounted(async () => {
   ctx.value = canvas.value.getContext('2d')
   await createDetector()
   
-  navigator.mediaDevices.getUserMedia(constrains).then(stream => {
+  navigator.mediaDevices.getUserMedia(constrains.value).then(stream => {
     video.value.srcObject = stream
     detectVideo()
   })
@@ -230,7 +232,7 @@ function activeCam(){
   canvas.value=null
   result.value=null
   createDetector()
-  navigator.mediaDevices.getUserMedia(constrains).then(stream => {
+  navigator.mediaDevices.getUserMedia(constrains.value).then(stream => {
     video.value.srcObject = stream
     detectVideo()
   })
