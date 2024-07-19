@@ -158,6 +158,7 @@ function detectVideo(repeat) {
 }
 onMounted(async () => {
   audio=new Audio(sound)
+  audio.load()
   try {
     window['BarcodeDetector'].getSupportedFormats()
   } catch {
