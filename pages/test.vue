@@ -117,7 +117,6 @@ function detect(source) {
               delete symbol.cornerPoints
             })
             result.value = JSON.stringify(symbols)
-            context.close()
            return 'Done'
           }).catch(err=>{console.log(err)})
           return r
@@ -133,7 +132,10 @@ function detect(source) {
     })
     const st=rs1.then(rs=>{
       const rss=new Promise((res,rej)=>{
-        setTimeout(()=>{res(rs)},500)
+        setTimeout(()=>{
+          playSound(false)
+          res(rs)
+        },500)
       })
       return rss
     })
@@ -164,7 +166,9 @@ function playSound(status){
   if(typeof content!='undefined'){
     context.close()
   }
-				context = window.audioContext;
+  else{
+    context = window.audioContext;
+  }
 				var request = new XMLHttpRequest();
 				request.open('GET', sound, true);
 				request.responseType = 'arraybuffer';
@@ -177,7 +181,7 @@ function playSound(status){
 					});
 				}, false);
         if(status==false){
-          //context.close()
+          context.close()
         }
 				request.send();
 }
