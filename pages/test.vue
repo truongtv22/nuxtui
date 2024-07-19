@@ -53,7 +53,6 @@ function detect(source) {
     const rs1=rs.then(symbols => {
       
       if (symbols.length > 0) {
-        playSound(false)
         arr.value=[]
         corns.value=[]
         let temp=0
@@ -104,6 +103,10 @@ function detect(source) {
               detectVideo(false)
               display.value.video=false 
               playSound(false)
+              setTimeout(()=>{
+                context.close()
+              },1000)
+              
               resolve()
             }
             else{
@@ -132,7 +135,7 @@ function detect(source) {
     })
     const st=rs1.then(rs=>{
       const rss=new Promise((res,rej)=>{
-        setTimeout(()=>{res(rs)},100)
+        setTimeout(()=>{res(rs)},500)
       })
       return rss
     })
