@@ -208,7 +208,7 @@ function loadSound(){
 onMounted(async () => {
   
   constrains.value.video.width=container.value.innerWidth
-  constrains.value.video.height=container.value.innerHeight
+  constrains.value.video.height=window.innerHeight
   window.AudioContext = window.AudioContext || window.webkitAudioContext;
 	if (window.AudioContext) {
 		window.audioContext = new window.AudioContext();
