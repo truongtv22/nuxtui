@@ -164,7 +164,7 @@ function detectVideo(repeat) {
 var context 
 function playSound(status){
   if(typeof content!='undefined'){
-    context.close()
+    context.suspend()
   }
   else{
     context = window.audioContext;
@@ -181,7 +181,7 @@ function playSound(status){
 					});
 				}, false);
         if(status==false){
-          context.close()
+          context.suspend()
         }
 				request.send();
 }
