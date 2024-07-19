@@ -2,7 +2,7 @@
   <div>
     <p>{{ result}}</p>
     <input type="file" ref="inputFile" @change="updateFile($event)"/>
-    <button @click="detectVideo(true),display.video=true">resume</button>
+    <UButton @click="detectVideo(true),display.video=true" label="Resume"/>
     <div style="position: relative;width: 1000px;height: 1000px;">
     
       <canvas style="position: absolute;top:0;right:0px;width:100%" ref="canvas"></canvas>
