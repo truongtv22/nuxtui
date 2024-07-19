@@ -76,16 +76,18 @@ function detect(source) {
                 ctx.value.lineWidth = 3
                 ctx.value.strokeStyle = '#00e000ff'
                 ctx.value.stroke()
+                
                 resolve1()
                 
               }
-              playSound(true)
+              
             })
             })
             promise1.then(rs=>{
               canvas.value.style.position = 'absolute'
               canvas.value.style.top = '0'
               if(i==symbols.length-1){
+                playSound(true)
                 resolve()
               }
             })
@@ -123,7 +125,6 @@ function detect(source) {
           }).catch(err=>{console.log(err)})
           return r
         })
-        playSound(false)
         return st
       }
       else {
@@ -179,12 +180,6 @@ function playSound(status){
             source.start(0);
 					});
 				}, false);
-        if(status==false && context.state!='closed'){
-          context.close()
-          window.audioContext = new window.AudioContext();
-          loadSound()
-          
-        }
 				request.send();
 }
 function loadSound(){
