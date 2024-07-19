@@ -58,14 +58,15 @@ function detect(source) {
               symbol.cornerPoints.forEach((point,i1) => {
               ctx.value.lineTo(point.x, point.y)
               if(i1==symbol.cornerPoints.length-1){
+                ctx.value.lineWidth = 3
+                ctx.value.strokeStyle = '#00e000ff'
+                ctx.value.stroke()
                 resolve1()
               }
             })
             })
             promise1.then(rs=>{
-              ctx.value.lineWidth = 3
-              ctx.value.strokeStyle = '#00e000ff'
-              ctx.value.stroke()
+              
               canvas.value.style.position = 'absolute'
               canvas.value.style.top = '0'
               if(i==symbols.length-1){
