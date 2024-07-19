@@ -51,10 +51,10 @@ async function createDetector() {
 function detect(source) {
   const rs=detector.value.detect(source)
     const rs1=rs.then(symbols => {
-      audio.pause()
-      audio.currentTime=0
+      
       if (symbols.length > 0) {
-        
+        audio.pause()
+      audio.currentTime=0
         arr.value=[]
         corns.value=[]
         let temp=0
