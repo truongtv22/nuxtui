@@ -43,10 +43,10 @@ async function createDetector() {
       detector.value = new BarcodeDetector({ formats: supportedFormats, zbar: { encoding: 'utf-8' } })
     }
 function detect(source) {
-  return detector.value
-    .detect(source)
-    .then(symbols => {
+  const rs=detector.value.detect(source)
+    const rs1=rs.then(symbols => {
       if (symbols.length > 0) {
+        
         canvas.value.width = source.naturalWidth || source.videoWidth || source.width
         canvas.value.height = source.naturalHeight || source.videoHeight || source.height
         ctx.value.clearRect(0, 0, canvas.value.width, canvas.value.height)
@@ -69,18 +69,15 @@ function detect(source) {
             })
             })
             promise1.then(rs=>{
-              
               canvas.value.style.position = 'absolute'
               canvas.value.style.top = '0'
               if(i==symbols.length-1){
                 resolve()
               }
             })
-            
           })
         })
-        pro.then(res=>{
-          
+        const st=pro.then(res=>{
           const promise=new Promise((resolve,reject)=>{
             if(symbols.length>1){
               var w = video.value.videoWidth;
@@ -100,22 +97,29 @@ function detect(source) {
               resolve()
             }
           })
-          promise.then(rs=>{
+          const r=promise.then(rs=>{
             symbols.forEach(symbol => {
               delete symbol.boundingBox
               delete symbol.cornerPoints
             })
             result.value = JSON.stringify(symbols)
+           return 'Done'
           })
+          return r
         })
+        return st
       }
       else {
         ctx.value.clearRect(0, 0, canvas.value.width, canvas.value.height)
       }
-
+      
     }).catch(err=>{
       result.value=err
     })
+    const st=rs1.then(rs=>{
+      return rs
+    })
+    return st
 }
 function detectVideo(repeat) {
   if (!repeat) {
@@ -128,7 +132,9 @@ function detectVideo(repeat) {
 
   if (repeat) {
     detect(video.value)
-      .then(() => requestId.value = requestAnimationFrame(() => detectVideo(true))).catch(err=>result.value=err)
+      .then(() => {
+        requestId.value = requestAnimationFrame(() => detectVideo(true))
+      }).catch(err=>result.value=err)
 
   } else {
     cancelAnimationFrame(requestId)
@@ -154,7 +160,7 @@ async function updateFile(e){
   //detect(e.target.files[0])
   const supportedFormats = await BarcodeDetector.getSupportedFormats()
   const t=new BarcodeDetector({ formats: supportedFormats, zbar: { encoding: 'utf-8' } })
-  t.detect(e.target.files[0]).then(rs=>{
+  detect(e.target.files[0]).then(rs=>{
     console.log(rs)
   })
   console.log(e.target.files)
