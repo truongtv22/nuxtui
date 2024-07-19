@@ -104,6 +104,7 @@ function detect(source) {
               arr.value.push(data)
               detectVideo(false)
               display.value.video=false 
+              playSound(false)
               resolve()
             }
             else{
