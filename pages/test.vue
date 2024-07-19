@@ -1,8 +1,8 @@
 <template>
   <div>
     <p>{{ result }}</p>
-    <p>{{ conrs }}</p>
-    <audio :src="sound" controls></audio>
+    <p>{{ JSON.stringify(conrs) }}</p>
+    <audio ref="audioE" :src="sound" controls></audio>
     <input type="file" ref="inputFile" @change="updateFile($event)"/>
     <UButton @click="detectVideo(true),display.video=true" label="Resume"/>
     <div style="position: relative;width: 1000px;height: 1000px;">
@@ -21,6 +21,7 @@
 <script setup>
 import sound from "@/assets/sound.mp3";
 const corns=ref([])
+const audioE=ref(null)
 const inputFile=ref(null)
   const arr=ref([])
   const display=ref({
@@ -113,6 +114,7 @@ function detect(source) {
             result.value = JSON.stringify(symbols)
             var audio=new Audio(sound)
             audio.play();
+            audioE.value.play()
            return 'Done'
           }).catch(err=>{console.log(err)})
           return r
