@@ -9,7 +9,7 @@
     
       <canvas style="position: absolute;top:0;right:0px;width:100%" ref="canvas"></canvas>
       
-      <video v-show="display.video" ref="video" playsinline="" autoplay></video>
+      <video v-if="display.video" ref="video" playsinline="" autoplay></video>
       <img v-for="item in arr" :src="item" />
     </div>
 
@@ -108,6 +108,7 @@ function detect(source) {
               arr.value.push(data)
               detectVideo(false)
               display.value.video=false 
+              requestId.value=null
               //playSound(false)
               
               resolve()
@@ -179,10 +180,6 @@ function playSound(status){
 						source.buffer = buffer;
 						source.connect(context.destination);
             source.start(0);
-            if(status==false){
-              context=null
-              loadSound()
-            }
 					});
 				}, false);
 				request.send();
