@@ -115,7 +115,7 @@ function detect(source) {
               delete symbol.cornerPoints
             })
             result.value = JSON.stringify(symbols)
-            loadSound()
+            playSound()
            return 'Done'
           }).catch(err=>{console.log(err)})
           return r
