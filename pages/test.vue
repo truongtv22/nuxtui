@@ -180,7 +180,6 @@ function playSound(status){
 						source.connect(context.destination);
             source.start(0);
             if(status==false){
-              context.close()
               context=null
               loadSound()
             }
