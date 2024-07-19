@@ -53,8 +53,8 @@ function detect(source) {
     const rs1=rs.then(symbols => {
       
       if (symbols.length > 0) {
-        audio.pause()
-        audio.currentTime=0
+        audioE.value.pause()
+        audioE.value.currentTime=0
         arr.value=[]
         corns.value=[]
         let temp=0
@@ -116,8 +116,7 @@ function detect(source) {
               delete symbol.cornerPoints
             })
             result.value = JSON.stringify(symbols)
-            audio.autoplay = true;
-            audio.play();
+            audioE.value.play();
            return 'Done'
           }).catch(err=>{console.log(err)})
           return r
