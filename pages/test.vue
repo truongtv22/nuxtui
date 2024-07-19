@@ -1,5 +1,7 @@
 <template>
   <div>
+    <p>{{ result }}</p>
+    <p>{{ arr }}</p>
     <input type="file" ref="inputFile" @change="updateFile($event)"/>
     <UButton @click="detectVideo(true),display.video=true" label="Resume"/>
     <div style="position: relative;width: 1000px;height: 1000px;">
