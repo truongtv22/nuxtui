@@ -53,8 +53,7 @@ function detect(source) {
     const rs1=rs.then(symbols => {
       
       if (symbols.length > 0) {
-        audio.pause()
-        audio.seek(0)
+        audio.stop()
         arr.value=[]
         corns.value=[]
         let temp=0
