@@ -18,7 +18,7 @@
 </template>
 
 <script setup>
-import sound from "@/assets/sound.wav";
+import sound from "@/assets/sound.mp3";
 const corns=ref([])
 const inputFile=ref(null)
   const arr=ref([])
