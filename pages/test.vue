@@ -96,7 +96,6 @@ function detect(source) {
         const st=pro.then(res=>{
           const promise=new Promise((resolve,reject)=>{
             if(temp>1){
-              playSound(false)
               var w = video.value.videoWidth;
               var h = video.value.videoHeight;
               var canvas1 = document.createElement('canvas');
