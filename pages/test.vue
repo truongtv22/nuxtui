@@ -53,7 +53,8 @@ function detect(source) {
     const rs1=rs.then(symbols => {
       
       if (symbols.length > 0) {
-        playSound(true)
+        console.log(symbols.length)
+        
         arr.value=[]
         corns.value=[]
         let temp=0
@@ -78,6 +79,7 @@ function detect(source) {
                 resolve1()
                 
               }
+              playSound(true)
             })
             })
             promise1.then(rs=>{
@@ -121,6 +123,7 @@ function detect(source) {
           }).catch(err=>{console.log(err)})
           return r
         })
+        playSound(false)
         return st
       }
       else {
@@ -133,7 +136,7 @@ function detect(source) {
     const st=rs1.then(rs=>{
       const rss=new Promise((res,rej)=>{
         setTimeout(()=>{
-          playSound(false)
+          
           res(rs)
         },500)
       })
@@ -176,12 +179,11 @@ function playSound(status){
             source.start(0);
 					});
 				}, false);
-        if(status==false && context.state=='running'){
+        if(status==false && context.state!='closed'){
           context.close()
+          window.audioContext = new window.AudioContext();
+          loadSound()
           
-        }
-        if(context.state=='closed'){
-          context=new window.AudioContext()
         }
 				request.send();
 }
