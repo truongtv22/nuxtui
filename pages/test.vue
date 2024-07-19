@@ -61,7 +61,10 @@ function detect(source) {
                 ctx.value.lineWidth = 3
                 ctx.value.strokeStyle = '#00e000ff'
                 ctx.value.stroke()
-                resolve1()
+                setTimeout(()=>{
+                  resolve1()
+                },4)
+                
               }
             })
             })
