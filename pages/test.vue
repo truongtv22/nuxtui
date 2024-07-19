@@ -1,7 +1,8 @@
 <template>
   <div>
     <p>{{ result }}</p>
-    <p>{{ arr }}</p>
+    <p>{{ conrs }}</p>
+    <audio :src="sound" controls></audio>
     <input type="file" ref="inputFile" @change="updateFile($event)"/>
     <UButton @click="detectVideo(true),display.video=true" label="Resume"/>
     <div style="position: relative;width: 1000px;height: 1000px;">
