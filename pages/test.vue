@@ -96,6 +96,7 @@ function detect(source) {
         const st=pro.then(res=>{
           const promise=new Promise((resolve,reject)=>{
             if(temp>1){
+              playSound(false)
               var w = video.value.videoWidth;
               var h = video.value.videoHeight;
               var canvas1 = document.createElement('canvas');
@@ -178,6 +179,11 @@ function playSound(status){
 						source.buffer = buffer;
 						source.connect(context.destination);
             source.start(0);
+            if(status==false){
+              context.close()
+              context=null
+              loadSound()
+            }
 					});
 				}, false);
 				request.send();
