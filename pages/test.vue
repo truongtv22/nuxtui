@@ -63,7 +63,7 @@ function detect(source) {
                 ctx.value.stroke()
                 setTimeout(()=>{
                   resolve1()
-                },4)
+                },1000)
                 
               }
             })
