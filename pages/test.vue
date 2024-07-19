@@ -140,7 +140,7 @@ function detect(source) {
         setTimeout(()=>{
           
           res(rs)
-        },500)
+        },100)
       })
       return rss
     })
