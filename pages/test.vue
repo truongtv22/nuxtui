@@ -53,6 +53,7 @@ function detect(source) {
     const rs1=rs.then(symbols => {
       
       if (symbols.length > 0) {
+        playSound(true)
         arr.value=[]
         corns.value=[]
         let temp=0
@@ -116,7 +117,7 @@ function detect(source) {
               delete symbol.cornerPoints
             })
             result.value = JSON.stringify(symbols)
-            playSound(true)
+            
            return 'Done'
           }).catch(err=>{console.log(err)})
           return r
