@@ -103,9 +103,6 @@ function detect(source) {
               detectVideo(false)
               display.value.video=false 
               playSound(false)
-              setTimeout(()=>{
-                context.close()
-              },1000)
               
               resolve()
             }
@@ -178,6 +175,9 @@ function playSound(status){
             source.start(0);
 					});
 				}, false);
+        if(status==false){
+          context.close()
+        }
 				request.send();
 }
 function loadSound(){
