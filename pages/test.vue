@@ -1,6 +1,7 @@
 <template>
   <div>
     <p>{{ result}}</p>
+    <p>{{ JSON.stringify(corns) }}</p>
     <input type="file" ref="inputFile" @change="updateFile($event)"/>
     <UButton @click="detectVideo(true),display.video=true" label="Resume"/>
     <div style="position: relative;width: 1000px;height: 1000px;">
@@ -17,6 +18,7 @@
 </template>
 
 <script setup>
+const corns=ref([])
 const inputFile=ref(null)
   const arr=ref([])
   const display=ref({
@@ -46,12 +48,18 @@ function detect(source) {
   const rs=detector.value.detect(source)
     const rs1=rs.then(symbols => {
       if (symbols.length > 0) {
-        
+        arr.value=[]
+        corns.value=[]
+        let temp=0
         canvas.value.width = source.naturalWidth || source.videoWidth || source.width
         canvas.value.height = source.naturalHeight || source.videoHeight || source.height
         ctx.value.clearRect(0, 0, canvas.value.width, canvas.value.height)
         const pro=new Promise((resolve,reject)=>{
           symbols.forEach((symbol,i) => {
+            if(symbol.cornerPoints[1].x-symbol.cornerPoints[0].x>5){
+              temp+=1
+            }
+            corns.value.push(symbol.cornerPoints)
             const lastCornerPoint = symbol.cornerPoints[symbol.cornerPoints.length - 1]
             ctx.value.moveTo(lastCornerPoint.x, lastCornerPoint.y)
             const promise1=new Promise((resolve1,reject1)=>{
@@ -77,7 +85,7 @@ function detect(source) {
         })
         const st=pro.then(res=>{
           const promise=new Promise((resolve,reject)=>{
-            if(symbols.length>1){
+            if(temp>1){
               var w = video.value.videoWidth;
               var h = video.value.videoHeight;
               var canvas1 = document.createElement('canvas');
