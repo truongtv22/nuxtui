@@ -20,6 +20,7 @@
 
 <script setup>
 import sound from "@/assets/sound.mp3";
+var audio=new Audio(sound)
 const corns=ref([])
 const audioE=ref(null)
 const inputFile=ref(null)
@@ -50,9 +51,10 @@ async function createDetector() {
 function detect(source) {
   const rs=detector.value.detect(source)
     const rs1=rs.then(symbols => {
+      audio.pause()
+      audio.currentTime=0
       if (symbols.length > 0) {
-        audioE.value.pause()
-        audioE.value.currentTime=0
+        
         arr.value=[]
         corns.value=[]
         let temp=0
@@ -114,9 +116,8 @@ function detect(source) {
               delete symbol.cornerPoints
             })
             result.value = JSON.stringify(symbols)
-            var audio=new Audio(sound)
+            
             audio.play();
-            audioE.value.play()
            return 'Done'
           }).catch(err=>{console.log(err)})
           return r
