@@ -2,7 +2,7 @@
 export default defineNuxtConfig({
   app:{
     head:{
-      script:[{src:'https://cdn.jsdelivr.net/npm/@undecaf/zbar-wasm@0.9.15/dist/index.js'},{src:'https://cdn.jsdelivr.net/npm/@undecaf/barcode-detector-polyfill@0.9.20/dist/index.js'}]
+      script:[{src:'https://cdn.jsdelivr.net/npm/@undecaf/zbar-wasm@0.9.15/dist/index.js'},{src:'https://cdn.jsdelivr.net/npm/@undecaf/barcode-detector-polyfill@0.9.20/dist/index.js'},{src:'https://cdnjs.cloudflare.com/ajax/libs/howler/2.2.4/howler.js'}]
     }
   },
   devtools: { enabled: true },

@@ -53,8 +53,8 @@ function detect(source) {
     const rs1=rs.then(symbols => {
       
       if (symbols.length > 0) {
-        audioE.value.pause()
-        audioE.value.currentTime=0
+        audio.pause()
+        audio.seek(0)
         arr.value=[]
         corns.value=[]
         let temp=0
@@ -116,7 +116,7 @@ function detect(source) {
               delete symbol.cornerPoints
             })
             result.value = JSON.stringify(symbols)
-            audioE.value.play();
+            audio.play();
            return 'Done'
           }).catch(err=>{console.log(err)})
           return r
@@ -156,12 +156,11 @@ function detectVideo(repeat) {
   }
 }
 function loadSound(){
-  audio=new Audio(sound)
-  audio.load()
-  audio.volume=1
+  audio=new Howl({
+    src: ['https://upload.wikimedia.org/wikipedia/commons/5/56/Aplausos.ogg']
+  })
 }
 onMounted(async () => {
-  
   try {
     window['BarcodeDetector'].getSupportedFormats()
   } catch {
