@@ -155,11 +155,18 @@ function detectVideo(repeat) {
   }
 }
 function loadSound(){
-  audio=new Howl({
-    src: ['https://upload.wikimedia.org/wikipedia/commons/5/56/Aplausos.ogg']
-  })
+  audio = new Audio(sound);
+
+  audio.play();
+  audio.pause();
+  audio.currentTime = 0;
+
+    document.body.removeEventListener('click', unlockAudio)
+    document.body.removeEventListener('touchstart', unlockAudio)
 }
 onMounted(async () => {
+  document.body.addEventListener('click', loadSound);
+  document.body.addEventListener('touchstart', loadSound);
   try {
     window['BarcodeDetector'].getSupportedFormats()
   } catch {
