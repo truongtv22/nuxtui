@@ -7,7 +7,7 @@
     
       <canvas style="position: absolute;top:0;right:0px;width:100%" ref="canvas"></canvas>
       
-      <video v-if="display.video" ref="video" playsinline="" autoplay></video>
+      <video v-show="display.video" ref="video" playsinline="" autoplay></video>
       <img v-for="item in arr" :src="item" />
     </div>
 
