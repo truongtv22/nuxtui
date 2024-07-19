@@ -20,7 +20,7 @@
 
 <script setup>
 import sound from "@/assets/sound.mp3";
-var audio=new Audio(sound)
+var audio=null
 const corns=ref([])
 const audioE=ref(null)
 const inputFile=ref(null)
@@ -157,6 +157,7 @@ function detectVideo(repeat) {
   }
 }
 onMounted(async () => {
+  audio=new Audio(sound)
   try {
     window['BarcodeDetector'].getSupportedFormats()
   } catch {
