@@ -53,8 +53,7 @@ function detect(source) {
     const rs1=rs.then(symbols => {
       
       if (symbols.length > 0) {
-        audio.pause()
-        audio.currentTime=0
+        audio=new Audio(sound)
         arr.value=[]
         corns.value=[]
         let temp=0
@@ -166,8 +165,6 @@ function loadSound(){
     document.body.removeEventListener('touchstart', loadSound)
 }
 onMounted(async () => {
-  document.body.addEventListener('click', loadSound);
-  document.body.addEventListener('touchstart', loadSound);
   try {
     window['BarcodeDetector'].getSupportedFormats()
   } catch {
