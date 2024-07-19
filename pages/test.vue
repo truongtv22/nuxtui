@@ -55,9 +55,9 @@ function detect(source) {
             const lastCornerPoint = symbol.cornerPoints[symbol.cornerPoints.length - 1]
             ctx.value.moveTo(lastCornerPoint.x, lastCornerPoint.y)
             const promise1=new Promise((resolve1,reject1)=>{
-              symbol.cornerPoints.forEach((point,i) => {
+              symbol.cornerPoints.forEach((point,i1) => {
               ctx.value.lineTo(point.x, point.y)
-              if(i=symbol.cornerPoints.length-1){
+              if(i1==symbol.cornerPoints.length-1){
                 resolve1()
               }
             })
