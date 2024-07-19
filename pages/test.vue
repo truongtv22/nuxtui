@@ -103,7 +103,7 @@ function detect(source) {
               arr.value.push(data)
               detectVideo(false)
               display.value.video=false 
-              playSound(false)
+              //playSound(false)
               
               resolve()
             }
@@ -177,7 +177,7 @@ function playSound(status){
 					});
 				}, false);
         if(status==false){
-          context.close()
+          //context.close()
         }
 				request.send();
 }
