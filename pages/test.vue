@@ -19,7 +19,7 @@
 </template>
 
 <script setup>
-import sound from "@/assets/sound.mp3";
+import sound from "@/assets/sound2.mp3";
 var audio=null
 const corns=ref([])
 const audioE=ref(null)
