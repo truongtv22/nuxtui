@@ -161,8 +161,8 @@ function loadSound(){
   audio.pause();
   audio.currentTime = 0;
 
-    document.body.removeEventListener('click', unlockAudio)
-    document.body.removeEventListener('touchstart', unlockAudio)
+    document.body.removeEventListener('click', loadSound)
+    document.body.removeEventListener('touchstart', loadSound)
 }
 onMounted(async () => {
   document.body.addEventListener('click', loadSound);
