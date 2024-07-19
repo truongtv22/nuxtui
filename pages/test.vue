@@ -4,7 +4,7 @@
     <p>{{ JSON.stringify(conrs) }}</p>
     <audio ref="audioE" :src="sound" controls></audio>
     <input type="file" ref="inputFile" @change="updateFile($event)"/>
-    <UButton @click="detectVideo(true),display.video=true" label="Resume"/><Ubutton label="load sound" @click="loadSound()"/>
+    <UButton @click="detectVideo(true),display.video=true" label="Resume"/><UButton label="load sound" @click="loadSound()"/>
     <div style="position: relative;width: 1000px;height: 1000px;">
     
       <canvas style="position: absolute;top:0;right:0px;width:100%" ref="canvas"></canvas>
