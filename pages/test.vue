@@ -131,7 +131,9 @@ function detect(source) {
       result.value=err
     })
     const st=rs1.then(rs=>{
-      const rss=setTimeout(()=>{return rs},1000)
+      const rss=new Promise((res,rej)=>{
+        setTimeout(()=>{res(rs)},1000)
+      })
       return rss
     })
     return st
