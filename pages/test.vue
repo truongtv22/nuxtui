@@ -163,8 +163,8 @@ function detectVideo(repeat) {
 }
 var context 
 function playSound(status){
-  loadSound()
-  context = window.audioContext;
+  context = new window.AudioContext();
+  console.log(context)
 				var request = new XMLHttpRequest();
 				request.open('GET', sound, true);
 				request.responseType = 'arraybuffer';
@@ -176,7 +176,7 @@ function playSound(status){
             source.start(0);
 					});
 				}, false);
-        if(status==false && context.state!='closed'){
+        if(status==false && context.state!='suspended'){
           context.close()
         }
 				request.send();
