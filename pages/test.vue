@@ -19,7 +19,7 @@
 </template>
 
 <script setup>
-import sound from "@/assets/sound.mp3";
+import sound from "@/assets/sound1.mp3";
 var audio=null
 const corns=ref([])
 const audioE=ref(null)
@@ -53,8 +53,8 @@ function detect(source) {
     const rs1=rs.then(symbols => {
       
       if (symbols.length > 0) {
-        audio.pause()
-      audio.currentTime=0
+        audioE.value.pause()
+        audioE.value.currentTime=0
         arr.value=[]
         corns.value=[]
         let temp=0
@@ -117,7 +117,7 @@ function detect(source) {
             })
             result.value = JSON.stringify(symbols)
             
-            audio.play();
+            audioE.value.play();
            return 'Done'
           }).catch(err=>{console.log(err)})
           return r
