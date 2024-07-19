@@ -5,7 +5,7 @@
     <audio ref="audioE" :src="sound" controls></audio>
     <input type="file" ref="inputFile" @change="updateFile($event)"/>
     <UButton @click="activeCam(),display.video=true" label="Resume"/><UButton label="load sound" @click="playSound()"/>
-    <div :style="`position: relative;width: ${constrains.video.width}px;height: ${constrains.video.height}px;`">
+    <div :style="`position: relative;width: 100%;height: ${constrains.video.height}px;`" ref="container">
     
       <canvas style="position: absolute;top:0;right:0px;width:100%" ref="canvas"></canvas>
       
@@ -20,6 +20,7 @@
 
 <script setup>
 import sound from "@/assets/sound4.mp3";
+const container=ref(null)
 var audio=null
 const corns=ref([])
 const audioE=ref(null)
@@ -205,9 +206,9 @@ function loadSound(){
 		document.removeEventListener('touchend', loadSound);     
 }
 onMounted(async () => {
-  console.log(window.innerWidth)
-  constrains.value.video.width=window.innerWidth
-  constrains.value.video.height=window.innerHeight
+  
+  constrains.value.video.width=container.value.innerWidth
+  constrains.value.video.height=container.value.innerHeight
   window.AudioContext = window.AudioContext || window.webkitAudioContext;
 	if (window.AudioContext) {
 		window.audioContext = new window.AudioContext();
