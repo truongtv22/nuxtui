@@ -216,11 +216,13 @@ function loadSound(){
 }
 onMounted(async () => {
   setTimeout(()=>{
+    
     const rect=container.value.getBoundingClientRect()
+    console.log(window.innerHeight,rect)
     constrains.value.video.width=container.value.innerWidth
     constrains.value.video.height=window.innerHeight-rect.top
     const space=el1.value.offsetHeight-el2.value.offsetHeight
-  console.log(el1.value.offsetHeight,el2.value.offsetHeight)
+  //console.log(el1.value.offsetHeight,el2.value.offsetHeight)
   let x=0
   let turn=false
   setInterval(()=>{
