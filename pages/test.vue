@@ -1,18 +1,21 @@
 <template>
     <div :style="`position: relative;width: 100%;height: ${constrains.video.height}px;`" ref="container">
-    
+    {{ JSON.stringify(devices) }}
       <canvas style="position: absolute;top:0;right:0px;width:100%;height: 100%;" ref="canvas"></canvas>
       <div v-if="display.video" style="" class="absolute w-full h-full flex items-center justify-center" >
         <div class="relative flex items-center justify-center w-3/4 h-3/4 border-2 rounded-md" ref="el1">
-          <div class="w-full h-2 border-8 top-0 absolute backdrop-blur-xl opacity-50" ref="el2"></div>
+          <div class="w-full h-8 bg-white top-0 absolute backdrop-blur-3xl opacity-50" ref="el2" style="transition: all ease-in-out 1s;"></div>
         </div>
         
       </div>
       <video v-if="display.video" ref="video" playsinline="" autoplay style="width:100%;height:100%;object-fit: cover;"></video>
       <div class="w-full absolute bottom-0 p-4">
-        <UInput disabled class="w-full" size="xl" v-model="result">
+        <UInput disabled class="w-full" size="xl" v-model="result" :ui="{ icon: { trailing: { pointer: '' } } }">
           <template #leading>
-            <span>Result</span>
+            <UIcon name="i-material-symbols-light-bookmark-check-rounded"></UIcon>
+          </template>
+          <template #trailing>
+            <UIcon name="i-material-symbols-light-photo-camera-rounded" @click="console.log(11111)" class="cursor-pointer"></UIcon>
           </template>
         </UInput>
       </div>
@@ -26,6 +29,7 @@
 <script setup>
 import sound from "@/assets/sound4.mp3";
 const notiStore=useMyNotificationsStore()
+const devices=ref(null)
 const el1=ref(null),
 el2=ref(null)
 const container=ref(null)
@@ -216,7 +220,7 @@ function loadSound(){
 }
 
 onMounted(async () => {
-  
+  devices.value = await navigator.mediaDevices.enumerateDevices();
   setTimeout(()=>{
     
     const rect=container.value.getBoundingClientRect()
@@ -224,25 +228,25 @@ onMounted(async () => {
     constrains.value.video.width=container.value.innerWidth
     constrains.value.video.height=window.innerHeight-rect.top
     setTimeout(()=>{
-      const space=el1.value.offsetHeight-el2.value.offsetHeight
-  console.log(el1.value.offsetHeight,el2.value.offsetHeight)
+      const space=Math.floor(el1.value.offsetHeight)-Math.floor(el2.value.offsetHeight)-2
+  console.log(el1.value.clientHeight,el2.value.offsetHeight)
   let x=0
   let turn=false
   setInterval(()=>{
-    el2.value.style.top=x+'px'
+    el2.value.style.transform=`translateY(${x}px)`
     if(turn==false){
-      x+=1
+      x=space
       if(x==space){
         turn=true
       }
     }
     else{
-      x-=1
+      x=0
       if(x==0){
         turn=false
       }
     }
-  },1)
+  },1000)
     },1)
     
   },1)
