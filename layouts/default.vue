@@ -32,7 +32,7 @@
       </div>
       <UDivider orientation="horizontal" :ui="{ border: { base: 'dark:border-gray-600' } }" class="block xl:hidden" />
       <UDivider orientation="vertical" :ui="{ border: { base: 'dark:border-gray-600' } }" class="hidden mdForNav:block" />
-      <div class="w-full flex flex-col min-h-screen">
+      <div class="w-full flex flex-col" :style="`min-height:${testVal}px;`" ref="rightContent">
         <ClientOnly>
           <div class="flex justify-between xl:py-5 px-3 py-2">
             <div class="flex flex-col">
@@ -124,8 +124,13 @@
 import NavigationTree from '~/components/navigation/NavigationTree.vue';
 import { useMyMenuItemsStore } from '~/stores/menu-items';
 
+const rightContent=ref(null)
+const testVal=ref(null)
 const menu=useMyMenuItemsStore()
 const props = defineProps(['title','breadcumb'])
+onMounted(()=>{
+  testVal.value=window.innerHeight-rightContent.value.getBoundingClientRect()['top']
+})
 const ui = ref({
   constrained: 'max-w-full w-full',
   padding: 'px-0 lg:px-0',
