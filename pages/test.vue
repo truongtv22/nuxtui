@@ -1,6 +1,5 @@
 <template>
-    <div :style="`position: relative;width: 100%;height: ${constrains.video.height}px;`" ref="container">
-    {{ JSON.stringify(devices) }}
+    <div :style="`position: relative;width: 100%;`+(display.video?`height: ${constrains.video.height}px;`:'')" ref="container">
       <canvas style="position: absolute;top:0;right:0px;width:100%;height: 100%;" ref="canvas"></canvas>
       <div v-if="display.video" style="" class="absolute w-full h-full flex items-center justify-center" >
         <div class="relative flex items-center justify-center w-3/4 h-3/4 border-2 rounded-md" ref="el1">
@@ -9,13 +8,15 @@
         
       </div>
       <video v-if="display.video" ref="video" playsinline="" autoplay style="width:100%;height:100%;object-fit: cover;"></video>
+      <img v-else :src="previewImage" class="w-full h-full object-scale-down" ref="imgEl"/>
       <div class="w-full absolute bottom-0 p-4">
         <UInput disabled class="w-full" size="xl" v-model="result" :ui="{ icon: { trailing: { pointer: '' } } }">
           <template #leading>
             <UIcon name="i-material-symbols-light-bookmark-check-rounded"></UIcon>
           </template>
           <template #trailing>
-            <UIcon name="i-material-symbols-light-photo-camera-rounded" @click="console.log(11111)" class="cursor-pointer"></UIcon>
+            <UIcon name="i-material-symbols-light-photo-camera-rounded" @click="fileSelect.click()" class="cursor-pointer"></UIcon>
+            <input type="file" class="hidden" ref="fileSelect" @change="previewSelected($event)"/>
           </template>
         </UInput>
       </div>
@@ -29,9 +30,13 @@
 <script setup>
 import sound from "@/assets/sound4.mp3";
 const notiStore=useMyNotificationsStore()
-const devices=ref(null)
-const el1=ref(null),
-el2=ref(null)
+const fileSelect=ref(null),
+myLoop=ref(null),
+imgEl=ref(null),
+shapes=ref([])
+const previewImage=ref(null)
+const el1=ref(null)
+const el2=ref(null)
 const container=ref(null)
 var audio=null
 const corns=ref([])
@@ -64,18 +69,19 @@ async function createDetector() {
 function detect(source) {
   const rs=detector.value.detect(source)
     const rs1=rs.then(symbols => {
-      
       if (symbols.length > 0) {
-        
-        
+        shapes.value=[]
         arr.value=[]
         corns.value=[]
         let temp=0
+        console.log(source.naturalWidth || source.videoWidth || source.width)
         canvas.value.width = source.naturalWidth || source.videoWidth || source.width
         canvas.value.height = source.naturalHeight || source.videoHeight || source.height
         ctx.value.clearRect(0, 0, canvas.value.width, canvas.value.height)
         const pro=new Promise((resolve,reject)=>{
           symbols.forEach((symbol,i) => {
+            console.log(JSON.stringify(symbol))
+            shapes.value.push(symbol.boundingBox)
             notiStore.showNotification({type:'success',title:symbol.format,description:symbol.rawValue})
             if(symbol.cornerPoints[1].x-symbol.cornerPoints[0].x>5){
               temp+=1
@@ -90,7 +96,6 @@ function detect(source) {
                 ctx.value.lineWidth = 3
                 ctx.value.strokeStyle = '#00e000ff'
                 ctx.value.stroke()
-                
                 resolve1()
                 
               }
@@ -109,9 +114,9 @@ function detect(source) {
         })
         const st=pro.then(res=>{
           const promise=new Promise((resolve,reject)=>{
-            if(temp>1){
-              var w = video.value.videoWidth;
-              var h = video.value.videoHeight;
+            if(temp>1 && display.value.video){
+              var w = video.value.videoWidth || source.naturalWidth || source.videoWidth || source.width;
+              var h = video.value.videoHeight || source.naturalWidth || source.videoWidth || source.width;
               var canvas1 = document.createElement('canvas');
               canvas1.width = w;
               canvas1.height = h;
@@ -122,8 +127,6 @@ function detect(source) {
               detectVideo(false)
               display.value.video=false 
               requestId.value=null
-              //playSound(false)
-              
               resolve()
             }
             else{
@@ -135,7 +138,6 @@ function detect(source) {
               delete symbol.boundingBox
               delete symbol.cornerPoints
             })
-            //result.value = JSON.stringify(symbols)
            return 'Done'
           }).catch(err=>{console.log(err)})
           return r
@@ -220,9 +222,16 @@ function loadSound(){
 }
 
 onMounted(async () => {
-  devices.value = await navigator.mediaDevices.enumerateDevices();
+  canvas.value.addEventListener('click',(e)=>{
+    var rect = collides(shapes.value, e.offsetX, e.offsetY);
+    console.log(e.offsetX,e.offsetY,shapes.value[0].x)
+        if (rect) {
+            console.log('collision: ' + rect.x + '/' + rect.y);
+        } else {
+            console.log('no collision');
+        }
+  })
   setTimeout(()=>{
-    
     const rect=container.value.getBoundingClientRect()
     console.log(window.innerHeight,rect)
     constrains.value.video.width=container.value.innerWidth
@@ -232,7 +241,7 @@ onMounted(async () => {
   console.log(el1.value.clientHeight,el2.value.offsetHeight)
   let x=0
   let turn=false
-  setInterval(()=>{
+  myLoop.value=setInterval(()=>{
     el2.value.style.transform=`translateY(${x}px)`
     if(turn==false){
       x=space
@@ -290,13 +299,32 @@ function activeCam(){
     detectVideo()
   })
 }
-async function updateFile(e){
-  //detect(e.target.files[0])
-  const supportedFormats = await BarcodeDetector.getSupportedFormats()
-  const t=new BarcodeDetector({ formats: supportedFormats, zbar: { encoding: 'utf-8' } })
-  detect(e.target.files[0]).then(rs=>{
-    console.log(rs)
-  })
-  console.log(e.target.files)
+
+function previewSelected(e) {
+  clearInterval(myLoop.value)
+  display.value.video=false
+  for (let i = 0; i < e.srcElement.files.length; i++) {
+    const file = e.srcElement.files[i]
+    previewImage.value=URL.createObjectURL(file)
+    setTimeout(()=>{
+      imgEl.value.decode().then(()=>{
+        detect(imgEl.value)
+      })
+    },100)
+  }
+}
+function collides(rects, x, y) {
+  var isCollision = false;
+    for (var i = 0, len = rects.length; i < len; i++) {
+        var left = rects[i].x, right = rects[i].x+rects[i].width;
+        var top = rects[i].y, bottom = rects[i].y+rects[i].height;
+        if (right >= x
+            && left <= x
+            && bottom >= y
+            && top <= y) {
+            isCollision = rects[i];
+        }
+    }
+    return isCollision;
 }
 </script>
