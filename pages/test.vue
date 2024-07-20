@@ -1,7 +1,7 @@
 <template>
     <div :style="`position: relative;width: 100%;height: ${constrains.video.height}px;`" ref="container">
     
-      <canvas style="position: absolute;top:0;right:0px;width:100%" ref="canvas"></canvas>
+      <canvas style="position: absolute;top:0;right:0px;width:100%;height: 100%;" ref="canvas"></canvas>
       <div style="" class="absolute w-full h-full flex items-center justify-center" >
         <div class="relative flex items-center justify-center w-3/4 h-3/4 border-2 rounded-md" ref="el1">
           <div class="w-full h-2 border-8 top-0 absolute backdrop-blur-xl opacity-50" ref="el2"></div>
@@ -216,6 +216,9 @@ function loadSound(){
 }
 onMounted(async () => {
   setTimeout(()=>{
+    const rect=container.value.getBoundingClientRect()
+    constrains.value.video.width=container.value.innerWidth
+    constrains.value.video.height=window.innerHeight-rect.top
     const space=el1.value.offsetHeight-el2.value.offsetHeight
   console.log(el1.value.offsetHeight,el2.value.offsetHeight)
   let x=0
@@ -237,9 +240,7 @@ onMounted(async () => {
   },1)
   },1)
   
-  constrains.value.video.width=container.value.innerWidth
-  constrains.value.video.height=window.innerHeight//-container.value.offsetTop
-  console.log(constrains.value.video.height)
+  
   setTimeout(()=>{
     video.value.scrollIntoView({
             behavior: 'auto',
