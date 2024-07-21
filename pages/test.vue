@@ -226,12 +226,10 @@ function loadSound(){
 onMounted(async () => {
   setTimeout(()=>{
     const rect=container.value.getBoundingClientRect()
-    console.log(window.innerHeight,rect)
     constrains.value.video.width=container.value.innerWidth
     constrains.value.video.height=window.innerHeight-rect.top
     setTimeout(()=>{
       const space=Math.floor(el1.value.offsetHeight)-Math.floor(el2.value.offsetHeight)-2
-  console.log(el1.value.clientHeight,el2.value.offsetHeight)
   let x=0
   let turn=false
   myLoop.value=setInterval(()=>{
@@ -284,10 +282,31 @@ onMounted(async () => {
     
 })
 function activeCam(){
+  ctx.value.clearRect(0,0,canvas.value.width,canvas.value.height)
   canvas.value=null
   result.value=null
   createDetector()
   display.value.video=true
+  setTimeout(()=>{
+      const space=Math.floor(el1.value.offsetHeight)-Math.floor(el2.value.offsetHeight)-2
+  let x=0
+  let turn=false
+  myLoop.value=setInterval(()=>{
+    el2.value.style.transform=`translateY(${x}px)`
+    if(turn==false){
+      x=space
+      if(x==space){
+        turn=true
+      }
+    }
+    else{
+      x=0
+      if(x==0){
+        turn=false
+      }
+    }
+  },1000)
+    },1)
   navigator.mediaDevices.getUserMedia(constrains.value).then(stream => {
     video.value.srcObject = stream
     detectVideo()
