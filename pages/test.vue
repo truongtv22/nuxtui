@@ -11,7 +11,7 @@
       </div>
       <video v-if="display.video" ref="video" playsinline="" autoplay style="width:100%;height:100%;object-fit: cover;"></video>
       <img v-else :src="previewImage" class=" object-constain w-full" ref="imgEl"/>
-      <UButton v-if="!display.video" class="absolute top-0 right-0" variant="soft" @click="activeCam"><UIcon name="i-material-symbols-light-close-rounded"></UIcon></UButton>
+      <UButton size="xl" class="absolute top-0 right-0" variant="soft" @click="activeCam"><UIcon name="i-material-symbols-light-close-rounded" ></UIcon></UButton>
       </div>
       
       <div class="w-full absolute bottom-0 p-4">
@@ -81,8 +81,8 @@ function detect(source) {
         arr.value=[]
         corns.value=[]
         let temp=0
-        canvas.value.width = display.video?(source.naturalWidth || source.videoWidth || source.width):imgEl.value.clientWidth
-        canvas.value.height = display.video?(source.naturalHeight || source.videoHeight || source.height):imgEl.value.clientHeight
+        canvas.value.width = display.value.video?(source.naturalWidth || source.videoWidth || source.width):imgEl.value.clientWidth
+        canvas.value.height = display.value.video?(source.naturalHeight || source.videoHeight || source.height):imgEl.value.clientHeight
         ctx.value.clearRect(0, 0, canvas.value.width, canvas.value.height)
         const pro=new Promise((resolve,reject)=>{
           symbols.forEach((symbol,i) => {
@@ -283,9 +283,8 @@ onMounted(async () => {
 })
 function activeCam(){
   ctx.value.clearRect(0,0,canvas.value.width,canvas.value.height)
-  
+  result.value=null
   createDetector()
-  display.value.video=true
   setTimeout(()=>{
       const space=Math.floor(el1.value.offsetHeight)-Math.floor(el2.value.offsetHeight)-2
   let x=0
@@ -306,6 +305,7 @@ function activeCam(){
     }
   },1000)
     },1)
+    display.value.video=true
   navigator.mediaDevices.getUserMedia(constrains.value).then(stream => {
     video.value.srcObject = stream
     detectVideo()
