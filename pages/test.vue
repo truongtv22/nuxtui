@@ -11,7 +11,7 @@
       </div>
       <video v-if="display.video" ref="video" playsinline="" autoplay style="width:100%;height:100%;object-fit: cover;"></video>
       <img v-else :src="previewImage" class=" object-constain w-full" ref="imgEl"/>
-      <UButton size="xl" class="absolute top-0 right-0" variant="soft" @click="activeCam"><UIcon name="i-material-symbols-light-close-rounded" ></UIcon></UButton>
+      <UButton v-if="!display.video" size="xl" class="absolute top-0 right-0" variant="soft" @click="activeCam"><UIcon name="i-material-symbols-light-close-rounded" ></UIcon></UButton>
       </div>
       
       <div class="w-full absolute bottom-0 p-4">
@@ -99,13 +99,12 @@ function detect(source) {
             ctx.value.strokeStyle='red'
             ctx.value.lineWidth=6
             ctx.value.stroke(rect)
-            if(!display.value.video){
-              canvas.value.addEventListener('click',(e)=>{
-              if(ctx.value.isPointInPath(rect,e.offsetX,e.offsetY)){
-                notiStore.showNotification({type:'success',title:symbol.format,description:symbol.rawValue})
-              }
-            })
+            canvas.value.addEventListener('click',(e)=>{
+            if(ctx.value.isPointInPath(rect,e.offsetX,e.offsetY)){
+              notiStore.showNotification({type:'success',title:symbol.format,description:symbol.rawValue})
             }
+            })
+            
               if(i==symbols.length-1){
                 playSound(true)
                 resolve()
