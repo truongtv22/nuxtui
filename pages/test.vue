@@ -287,7 +287,7 @@ function activeCam(){
   canvas.value=null
   result.value=null
   createDetector()
-  display.video=true
+  display.value.video=true
   navigator.mediaDevices.getUserMedia(constrains.value).then(stream => {
     video.value.srcObject = stream
     detectVideo()
