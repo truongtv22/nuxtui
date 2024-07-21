@@ -79,35 +79,33 @@ function detect(source) {
       if (symbols.length > 0) {
         shapes.value=[]
         arr.value=[]
-        corns.value=[]
         let temp=0
-        canvas.value.width = display.value.video?(source.naturalWidth || source.videoWidth || source.width):imgEl.value.clientWidth
-        canvas.value.height = display.value.video?(source.naturalHeight || source.videoHeight || source.height):imgEl.value.clientHeight
+        canvas.value.width = display.value.video?video.value.clientWidth:imgEl.value.clientWidth
+        canvas.value.height = display.value.video?video.value.clientHeight:imgEl.value.clientHeight
         ctx.value.clearRect(0, 0, canvas.value.width, canvas.value.height)
         const pro=new Promise((resolve,reject)=>{
           symbols.forEach((symbol,i) => {
-            shapes.value.push(symbol.boundingBox)
             notiStore.showNotification({type:'success',title:symbol.format,description:symbol.rawValue})
             if(symbol.cornerPoints[1].x-symbol.cornerPoints[0].x>5){
               temp+=1
             }
-            corns.value.push(symbol.cornerPoints)
             const lastCornerPoint = symbol.cornerPoints[symbol.cornerPoints.length - 1]
             //ctx.value.moveTo(lastCornerPoint.x, lastCornerPoint.y)
             const rect=new Path2D()
-            const rate=canvas.value.width/(source.naturalWidth || source.videoWidth || source.width)
-            console.log(symbol.boundingBox.x*rate,symbol.boundingBox.y*rate,symbol.boundingBox.width*rate,symbol.boundingBox.height*rate)
-            rect.rect(symbol.boundingBox.x*rate,symbol.boundingBox.y*rate,symbol.boundingBox.width*rate,symbol.boundingBox.height*rate)
+            const rateW=canvas.value.width/(source.naturalWidth || source.videoWidth || source.width)
+            const rateH=canvas.value.height/(source.naturalHeight || source.videoHeight|| source.height)
+            result.value=rateW+'/'+canvas.value.width+'/'+(source.naturalWidth || source.videoWidth || source.width)+'/'+(canvas.value.height/(source.naturalHeight || source.videoHeight|| source.height))+'/'+canvas.value.height+'/'+(source.naturalHeight || source.videoHeight|| source.height)
+            rect.rect(symbol.boundingBox.x*rateW,symbol.boundingBox.y*rateH,symbol.boundingBox.width*rateW,symbol.boundingBox.height*rateH)
             ctx.value.strokeStyle='red'
             ctx.value.lineWidth=6
             ctx.value.stroke(rect)
-            canvas.value.addEventListener('click',(e)=>{
+            if(!display.value.video){
+              canvas.value.addEventListener('click',(e)=>{
               if(ctx.value.isPointInPath(rect,e.offsetX,e.offsetY)){
                 notiStore.showNotification({type:'success',title:symbol.format,description:symbol.rawValue})
               }
             })
-              canvas.value.style.position = 'absolute'
-              canvas.value.style.top = '0'
+            }
               if(i==symbols.length-1){
                 playSound(true)
                 resolve()
