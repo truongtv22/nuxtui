@@ -1,7 +1,7 @@
 <template>
   <div class="flex justify-center">
     <div :style="(display.video?`height: ${constrains.video.height}px;`:'')" ref="container" class="flex justify-center relative w-full">
-      <div class="w-3/4 relative">
+      <div :class="`w-${display.video?'full':'3/4'} relative`">
         <canvas style="position: absolute;top:0;left:0px;" ref="canvas" ></canvas>
       <div v-if="display.video" style="" class="absolute w-full h-full flex items-center justify-center" >
         <div class="relative flex items-center justify-center w-3/4 h-3/4 border-2 rounded-md" ref="el1">
