@@ -283,8 +283,7 @@ onMounted(async () => {
 })
 function activeCam(){
   ctx.value.clearRect(0,0,canvas.value.width,canvas.value.height)
-  canvas.value=null
-  result.value=null
+  
   createDetector()
   display.value.video=true
   setTimeout(()=>{
