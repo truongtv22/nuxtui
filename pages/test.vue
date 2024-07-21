@@ -11,6 +11,7 @@
       </div>
       <video v-if="display.video" ref="video" playsinline="" autoplay style="width:100%;height:100%;object-fit: cover;"></video>
       <img v-else :src="previewImage" class=" object-constain w-full" ref="imgEl"/>
+      <UButton class="absolute top-0 right-0" variant="soft" @click="activeCam"><UIcon name="i-material-symbols-light-close-rounded"></UIcon></UButton>
       </div>
       
       <div class="w-full absolute bottom-0 p-4">
@@ -286,6 +287,7 @@ function activeCam(){
   canvas.value=null
   result.value=null
   createDetector()
+  display.video=true
   navigator.mediaDevices.getUserMedia(constrains.value).then(stream => {
     video.value.srcObject = stream
     detectVideo()
