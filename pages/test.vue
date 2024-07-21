@@ -1,6 +1,8 @@
 <template>
-    <div :style="`position: relative;width: 100%;`+(display.video?`height: ${constrains.video.height}px;`:'')" ref="container">
-      <canvas style="position: absolute;top:0;right:0px;width:100%;height: 100%;" ref="canvas"></canvas>
+  <div class="flex justify-center">
+    <div :style="(display.video?`height: ${constrains.video.height}px;`:'')" ref="container" class="flex justify-center relative w-full">
+      <div class="w-3/4 relative">
+        <canvas style="position: absolute;top:0;left:0px;" ref="canvas" ></canvas>
       <div v-if="display.video" style="" class="absolute w-full h-full flex items-center justify-center" >
         <div class="relative flex items-center justify-center w-3/4 h-3/4 border-2 rounded-md" ref="el1">
           <div class="w-full h-8 bg-white top-0 absolute backdrop-blur-3xl opacity-50" ref="el2" style="transition: all ease-in-out 1s;"></div>
@@ -8,7 +10,9 @@
         
       </div>
       <video v-if="display.video" ref="video" playsinline="" autoplay style="width:100%;height:100%;object-fit: cover;"></video>
-      <img v-else :src="previewImage" class="w-full h-full object-scale-down" ref="imgEl"/>
+      <img v-else :src="previewImage" class=" object-constain w-full" ref="imgEl"/>
+      </div>
+      
       <div class="w-full absolute bottom-0 p-4">
         <UInput disabled class="w-full" size="xl" v-model="result" :ui="{ icon: { trailing: { pointer: '' } } }">
           <template #leading>
@@ -22,6 +26,8 @@
       </div>
       <img v-for="item in arr" :src="item" />
     </div>
+  </div>
+    
 
 
 
@@ -74,13 +80,11 @@ function detect(source) {
         arr.value=[]
         corns.value=[]
         let temp=0
-        console.log(source.naturalWidth || source.videoWidth || source.width)
-        canvas.value.width = source.naturalWidth || source.videoWidth || source.width
-        canvas.value.height = source.naturalHeight || source.videoHeight || source.height
+        canvas.value.width = display.video?(source.naturalWidth || source.videoWidth || source.width):imgEl.value.clientWidth
+        canvas.value.height = display.video?(source.naturalHeight || source.videoHeight || source.height):imgEl.value.clientHeight
         ctx.value.clearRect(0, 0, canvas.value.width, canvas.value.height)
         const pro=new Promise((resolve,reject)=>{
           symbols.forEach((symbol,i) => {
-            console.log(JSON.stringify(symbol))
             shapes.value.push(symbol.boundingBox)
             notiStore.showNotification({type:'success',title:symbol.format,description:symbol.rawValue})
             if(symbol.cornerPoints[1].x-symbol.cornerPoints[0].x>5){
@@ -88,28 +92,25 @@ function detect(source) {
             }
             corns.value.push(symbol.cornerPoints)
             const lastCornerPoint = symbol.cornerPoints[symbol.cornerPoints.length - 1]
-            ctx.value.moveTo(lastCornerPoint.x, lastCornerPoint.y)
-            const promise1=new Promise((resolve1,reject1)=>{
-              symbol.cornerPoints.forEach((point,i1) => {
-              ctx.value.lineTo(point.x, point.y)
-              if(i1==symbol.cornerPoints.length-1){
-                ctx.value.lineWidth = 3
-                ctx.value.strokeStyle = '#00e000ff'
-                ctx.value.stroke()
-                resolve1()
-                
+            //ctx.value.moveTo(lastCornerPoint.x, lastCornerPoint.y)
+            const rect=new Path2D()
+            const rate=canvas.value.width/(source.naturalWidth || source.videoWidth || source.width)
+            console.log(symbol.boundingBox.x*rate,symbol.boundingBox.y*rate,symbol.boundingBox.width*rate,symbol.boundingBox.height*rate)
+            rect.rect(symbol.boundingBox.x*rate,symbol.boundingBox.y*rate,symbol.boundingBox.width*rate,symbol.boundingBox.height*rate)
+            ctx.value.strokeStyle='red'
+            ctx.value.lineWidth=6
+            ctx.value.stroke(rect)
+            canvas.value.addEventListener('click',(e)=>{
+              if(ctx.value.isPointInPath(rect,e.offsetX,e.offsetY)){
+                notiStore.showNotification({type:'success',title:symbol.format,description:symbol.rawValue})
               }
-              
             })
-            })
-            promise1.then(rs=>{
               canvas.value.style.position = 'absolute'
               canvas.value.style.top = '0'
               if(i==symbols.length-1){
                 playSound(true)
                 resolve()
               }
-            })
           })
         })
         const st=pro.then(res=>{
@@ -222,15 +223,6 @@ function loadSound(){
 }
 
 onMounted(async () => {
-  canvas.value.addEventListener('click',(e)=>{
-    var rect = collides(shapes.value, e.offsetX, e.offsetY);
-    console.log(e.offsetX,e.offsetY,shapes.value[0].x)
-        if (rect) {
-            console.log('collision: ' + rect.x + '/' + rect.y);
-        } else {
-            console.log('no collision');
-        }
-  })
   setTimeout(()=>{
     const rect=container.value.getBoundingClientRect()
     console.log(window.innerHeight,rect)
