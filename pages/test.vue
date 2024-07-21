@@ -121,8 +121,8 @@ function detect(source) {
               canvas1.height = h;
               var ctx1 = canvas1.getContext('2d');
               ctx1.drawImage(video.value, 0, 0, w, h);
-              var data = canvas1.toDataURL("image/jpg");
-              arr.value.push(data)
+              previewImage.value = canvas1.toDataURL("image/jpg");
+              //arr.value.push(data)
               detectVideo(false)
               display.value.video=false 
               requestId.value=null
