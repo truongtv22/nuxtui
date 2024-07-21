@@ -1,7 +1,7 @@
 <template>
   <div class="flex justify-center">
     <div :style="(display.video?`height: ${constrains.video.height}px;`:'')" ref="container" class="flex justify-center relative w-full">
-      <div :class="`w-${display.video?'full':'3/4'} relative`">
+      <div :class="`w-${display.video?'full':'3/4'} relative h-full`">
         <canvas style="position: absolute;top:0;left:0px;" ref="canvas" ></canvas>
       <div v-if="display.video" style="" class="absolute w-full h-full flex items-center justify-center" >
         <div class="relative flex items-center justify-center w-3/4 h-3/4 border-2 rounded-md" ref="el1">
@@ -10,7 +10,7 @@
         
       </div>
       <video v-if="display.video" ref="video" playsinline="" autoplay style="width:100%;height:100%;object-fit: cover;"></video>
-      <img v-else :src="previewImage" class=" object-constain w-full" ref="imgEl"/>
+      <img v-else :src="previewImage" class=" object-constain w-full h-full" ref="imgEl"/>
       <UButton v-if="!display.video" size="xl" class="absolute top-0 right-0" variant="soft" @click="activeCam"><UIcon name="i-material-symbols-light-close-rounded" ></UIcon></UButton>
       </div>
       
@@ -303,6 +303,9 @@ function activeCam(){
   },1000)
     },1)
     display.value.video=true
+    container.value.style.height=constrains.value.video.height+'px'
+    canvas.value.width=0
+    canvas.value.height=0
   navigator.mediaDevices.getUserMedia(constrains.value).then(stream => {
     video.value.srcObject = stream
     detectVideo()
