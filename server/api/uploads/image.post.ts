@@ -35,6 +35,12 @@ export default defineEventHandler(async (event) => {
       }
       
       
+    }).catch(error=>{
+      const obj={
+        'status':'error',
+        'data':error
+      }
+      resolve(obj)
     })
   })
   return promise

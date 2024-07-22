@@ -20,7 +20,7 @@
             <div v-for="src, index in category.previewImages" class="relative">
               <img :src class="rounded-md w-full min-h-52 max-h-52 object-cover" :key="index"
                 @mouseover="showElement = src" />
-              <div class="absolute top-1/2 p-2 w-full">
+              <div class="absolute top-1/2 p-2 w-full z-50">
                 <UMeter :value="meter.data" v-if="meter.display == index"></UMeter>
               </div>
               <div
@@ -83,6 +83,8 @@
 </template>
 
 <script lang="ts" setup>
+const notiStore=useMyNotificationsStore()
+const shopee=useMyShopeeStore()
 const props = defineProps(['data'])
 useSeoMeta({
   title: `${props.data ? `${props.data.title} >` : 'Create'} Category`
@@ -152,6 +154,9 @@ onBeforeMount(() => {
   resetData()
 })
 onMounted(async () => {
+  if(!shopee.header){
+    shopee.login()
+  }
   onResize()
   window.addEventListener('resize', onResize)
 })
@@ -306,6 +311,9 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
               temp.medium.push(res['data']['medium'])
               meter.value.data = 100
               status.value.uploading = status.value.uploading.filter(item => item != category.value.previewImages[index])
+            }
+            else{
+              notiStore.showNotification({type:'error',title:'Error: '+res.data,description:'Can\'t upload image. Please try again!'})
             }
             if (index == category.value.images.files.length - 1) {
               meter.value.display = null
