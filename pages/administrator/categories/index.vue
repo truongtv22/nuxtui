@@ -141,7 +141,6 @@
 </template>
 
 <script lang="ts" setup>
-
 const router=useRouter()
 const route=useRoute()
 const store = useMyNotificationsStore()

@@ -1,7 +1,11 @@
 import {Nitro} from 'nitropack'
 import mongoose from 'mongoose'
-
+import login from './login'
 export default async(_nitroApp:Nitro)=>{
+    const rs=await login()
+    if(rs){
+        await useStorage().setItem('headers',rs)
+    }
     const config=useRuntimeConfig()
     const DB_OPTIONS={
         dbName:config.name,
