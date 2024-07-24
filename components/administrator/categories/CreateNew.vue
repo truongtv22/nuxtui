@@ -1,6 +1,5 @@
 <template>
-  <UForm ref="form" :schema="schema" :state="category" class="space-y-4 relative"
-    @submit="onSubmit" @error="onError">
+  <UForm ref="form" :schema="schema" :state="category" class="space-y-4 relative" @submit="onSubmit" @error="onError">
     <UFormGroup label="Tên thể loại" name="title">
       <template #hint>
         <span class="text-gray-400 dark:text-gray-500">Required</span>
@@ -33,12 +32,13 @@
               </div>
               <div
                 class="absolute -top-2 -right-2 z-50 text-white text-xl bg-red-500 rounded-full  flex justify-center items-center cursor-pointer"
-                @click="removeImage(index, 'temp')">
+                @click="removeImage(index, 'temp', category)">
                 <UIcon name="i-material-symbols-light-close-small-outline-rounded" />
               </div>
             </div>
             <div v-for="src, index in category.imagesOld.medium" class="relative">
-              <NuxtImg class="rounded-md w-full min-h-52 max-h-52 object-cover"  :src loading="lazy" @mouseover="showElement = src" :key="index" quality="10" placeholder densities="x1 x2"/>
+              <NuxtImg class="rounded-md w-full min-h-52 max-h-52 object-cover" :src loading="lazy"
+                @mouseover="showElement = src" :key="index" quality="10" placeholder densities="x1 x2" />
               <div
                 class="w-full min-h-52 max-h-52 absolute top-0 left-0 backdrop-blur-sm flex justify-center items-center rounded-md cursor-pointer"
                 v-show="showElement == src" @mouseout="showElement = null">
@@ -49,7 +49,7 @@
               </div>
               <div
                 class="absolute -top-2 -right-2 z-50 text-white text-xl bg-red-500 rounded-full  flex justify-center items-center cursor-pointer"
-                @click="removeImage(index, 'old')">
+                @click="removeImage(index, 'old', category)">
                 <UIcon name="i-material-symbols-light-close-small-outline-rounded" />
               </div>
             </div>
@@ -60,8 +60,8 @@
           </div>
         </div>
 
-        <input type="file" class="hidden" accept=".jpg, .jpeg, .png" ref="fileSelected" @change="previewSelected"
-          multiple />
+        <input type="file" class="hidden" accept=".jpg, .jpeg, .png" ref="fileSelected"
+          @change="previewSelected($event, category)" multiple />
       </div>
     </UFormGroup>
     <UFormGroup label="Mô tả" name="description">
@@ -73,6 +73,104 @@
     <UFormGroup label="Tags" name="tags">
       <UTextarea v-model="category.tags" :rows="6" disabled />
     </UFormGroup>
+
+    <!-------------------create form----------------------------------------------------->
+    <div class="w-full border px-1 rounded-md border-gray-400 py-4 relative" v-for="item, index in createForm.value"
+      :ref="skipUnwrap.wrapForm">
+      <UBadge class="absolute -top-3 -left-3">#{{ index + 1 }}</UBadge>
+      <UButton @click="createForm.value.splice(index, 1)" color="red" class="absolute -top-3 -right-3"
+        :ui="{ rounded: 'rounded-full' }" icon="i-material-symbols-light-close-small" square size="2xs"></UButton>
+      <UForm ref="form1" :schema="schema" :state="item">
+        <UFormGroup label="Tên thể loại" name="title">
+          <template #hint>
+            <span class="text-gray-400 dark:text-gray-500">Required</span>
+          </template>
+          <UInput ref="inputField" v-model="item.title" @keyup.enter="form.submit()" :disabled="disabled.submit" />
+        </UFormGroup>
+        <UFormGroup label="Hình ảnh" name="images">
+          <div :class="'min-h-32 w-full border border-dotted border-2 rounded-md '">
+            <div v-if="item.imagesOld.medium.length == 0 && item.previewImages.length == 0"
+              @click="disabled.submit ? '' : fileSelected1[index].click()"
+              class="w-full min-h-32 justify-center items-center flex">
+              <UIcon name="i-material-symbols-light-add-photo-alternate-outline-rounded"
+                class="text-7xl text-gray-400" />
+            </div>
+
+            <div v-else class="grid grid-cols-1">
+
+              <div class="grid grid-cols-2 sm:grid-cols-4 xl:grid-cols-6 p-2 gap-2">
+                <div v-for="src, index in item.previewImages" class="relative">
+                  <img :src class="rounded-md w-full min-h-52 max-h-52 object-cover" :key="index"
+                    @mouseover="showElement = src" />
+                  <div class="absolute top-1/2 p-2 w-full z-50">
+                    <UMeter :value="meter.data" v-if="meter.display == index"></UMeter>
+                  </div>
+                  <div
+                    class="w-full min-h-52 max-h-52 absolute top-0 left-0 backdrop-blur-sm flex justify-center items-center rounded-md cursor-pointer"
+                    v-show="showElement == index || status.uploading.findIndex(item => item == src) > -1"
+                    @mouseout="showElement = null">
+                    <UButton v-if="!status.uploading" variant="soft" :ui="{ rounded: 'rounded-full' }"
+                      icon="i-material-symbols-light-visibility-outline-rounded" color="blue" />
+
+                  </div>
+                  <div
+                    class="absolute -top-2 -right-2 z-50 text-white text-xl bg-red-500 rounded-full  flex justify-center items-center cursor-pointer"
+                    @click="removeImage(index, 'temp', item)">
+                    <UIcon name="i-material-symbols-light-close-small-outline-rounded" />
+                  </div>
+                </div>
+                <div v-for="src, index in item.imagesOld.medium" class="relative">
+                  <NuxtImg class="rounded-md w-full min-h-52 max-h-52 object-cover" :src loading="lazy"
+                    @mouseover="showElement = src" :key="index" quality="10" placeholder densities="x1 x2" />
+                  <div
+                    class="w-full min-h-52 max-h-52 absolute top-0 left-0 backdrop-blur-sm flex justify-center items-center rounded-md cursor-pointer"
+                    v-show="showElement == src" @mouseout="showElement = null">
+                    <UButton variant="soft" :ui="{ rounded: 'rounded-full' }"
+                      icon="i-material-symbols-light-visibility-outline-rounded" color="blue"
+                      @click="emits('modal', { data: item.imagesOld.original[index], display: true })" />
+
+                  </div>
+                  <div
+                    class="absolute -top-2 -right-2 z-50 text-white text-xl bg-red-500 rounded-full  flex justify-center items-center cursor-pointer"
+                    @click="removeImage(index, 'old', item)">
+                    <UIcon name="i-material-symbols-light-close-small-outline-rounded" />
+                  </div>
+                </div>
+              </div>
+              <UDivider />
+              <div class="flex justify-center cursor-pointer"
+                @click="disabled.submit ? '' : fileSelected1[index].click()">
+                <UIcon name="i-material-symbols-light-add-photo-alternate-outline-rounded"
+                  class="text-7xl text-gray-400" />
+              </div>
+            </div>
+
+            <input type="file" class="hidden" accept=".jpg, .jpeg, .png" ref="fileSelected1"
+              @change="previewSelected($event, item)" multiple />
+          </div>
+        </UFormGroup>
+        <UFormGroup label="Mô tả" name="description">
+          <UTextarea v-model="item.description" :rows="6" :disabled="disabled.submit" />
+        </UFormGroup>
+        <UFormGroup label="Ghi chú" name="note">
+          <UTextarea v-model="item.note" :rows="6" :disabled="disabled.submit" />
+        </UFormGroup>
+        <UFormGroup label="Tags" name="tags">
+          <UTextarea v-model="item.tags" :rows="6" disabled />
+        </UFormGroup>
+      </UForm>
+    </div>
+
+    <!--end create form-->
+
+    <UTooltip v-if="!props.data" text="Add more category" :popper="{ arrow: true }" class="w-full">
+      <div ref="createFormBtn"
+        class="w-full border border-dotted cursor-pointer rounded-md flex justify-center py-1 dark:border-gray-700 border-gray-300"
+        @click="insertCreateForm">
+        <UIcon class="text-3xl text-gray-500" name="i-material-symbols-light-exposure-plus-1-rounded"></UIcon>
+      </div>
+    </UTooltip>
+
     <div class="flex justify-end gap-1">
       <UButton :color="props.data ? 'blue' : 'green'" ref="myBtn" type="submit" :disabled="disabled.submit"
         :loading="disabled.submit">{{ props.data ? 'Cap nhat' : 'Tạo mới' }}</UButton>
@@ -83,18 +181,23 @@
 </template>
 
 <script lang="ts" setup>
-const notiStore=useMyNotificationsStore()
-const shopee=useMyShopeeStore()
-const props = defineProps(['data'])
-useSeoMeta({
-  title: `${props.data ? `${props.data.title} >` : 'Create'} Category`
-})
 import type { _0 } from '#tailwind-config/theme/backdropBlur';
 import type { FormError, FormErrorEvent, FormSubmitEvent } from '#ui/types'
 import { readUsedSize } from 'chart.js/helpers';
-import { z } from 'zod'
+import { Schema, z } from 'zod'
 
+const notiStore = useMyNotificationsStore()
+const props = defineProps(['data'])
 const emits = defineEmits(['newData', 'updateData', 'doing', 'modal'])
+useSeoMeta({
+  title: `${props.data ? `${props.data.title} >` : 'Create'} Category`
+})
+
+const createFormBtn = ref(null)
+const createForm = ref({
+  value: []
+})
+
 const sizeScreen = ref({
   w: null,
   h: null
@@ -118,7 +221,7 @@ function resetData() {
       })
     })
     category.value.previewImages = []
-    oldTitle.value.data=category.value.title
+    oldTitle.value.data = category.value.title
   }
   else {
     category.value = {
@@ -154,13 +257,14 @@ onBeforeMount(() => {
   resetData()
 })
 onMounted(async () => {
-  if(!shopee.header){
-    shopee.login()
-  }
   onResize()
   window.addEventListener('resize', onResize)
 })
-const form = ref()
+const form = ref(),
+  form1 = ref([]),
+  wrapForm = ref([]),
+  skipUnwrap = { wrapForm },
+  fileSelected1 = ref([])
 const inputField = ref()
 const myBtn = ref()
 const category = ref({
@@ -197,30 +301,30 @@ const status = ref({
   uploading: [],
 })
 const fileSelected = ref()
-function previewSelected(e) {
+function previewSelected(e, root) {
   for (let i = 0; i < e.srcElement.files.length; i++) {
     const file = e.srcElement.files[i]
     let iss = false
-    category.value.images.files.forEach(item => {
+    root.images.files.forEach(item => {
       if (item.name == file.name) {
         iss = true
       }
     })
     if (!iss) {
-      category.value.previewImages.push(URL.createObjectURL(file))
-      category.value.images.files.push(file)
+      root.previewImages.push(URL.createObjectURL(file))
+      root.images.files.push(file)
     }
   }
 }
-function removeImage(index, type) {
+function removeImage(index, type, root) {
   switch (type) {
     case 'temp':
-      category.value.previewImages.splice(index, 1)
-      category.value.images.splice(index, 1)
+      root.previewImages.splice(index, 1)
+      root.images.files.splice(index, 1)
       break
     case 'old':
       Object.keys(category.value.imagesOld).forEach(property => {
-        category.value.imagesOld[property].splice(index, 1)
+        root.imagesOld[property].splice(index, 1)
       })
       break
   }
@@ -263,116 +367,151 @@ const validate = async (state: any): FormError[] => {
 
 type Schema = z.output<typeof schema>
 async function onSubmit(event: FormSubmitEvent<Schema>) {
-  disabled.value.submit = true
-  emits('doing', disabled.value.submit)
-  status.value.uploading = category.value.previewImages
-  const temp = {
-    original: [],
-    medium: [],
-    small: []
-  }
-  const promises = []
-  const errors=[]
-  const checking = new Promise(async (resolve, reject) => {
-      if (oldTitle.value.data != category.value.title) {
-        //disabled.value.submit=true
-        await $fetch('/api/categories/get?' + new URLSearchParams({ title: category.value.title })).then(res => {
-          if (res.length > 0) {
-            
-            errors.push({ path: 'title', message: 'Title is existed' })
-            oldTitle.value.error = { path: 'title', message: 'Title is existed' }
-            form.value.setErrors([oldTitle.value.error])
+  const promise = new Promise(async (resolve, reject) => {
+    let isCorrect = true
+    let firstPoint = null
+    if (createForm.value.value.length > 0) {
+      for await (const item of createForm.value.value) {
+        const index = createForm.value.value.indexOf(item)
+        const res = await schema.safeParse(createForm.value.value[index])
+        if (res.success == false) {
+          if (firstPoint == null) {
+            firstPoint = index
           }
-          else {
-            oldTitle.value.error = null
+          const err = JSON.parse(res.error)[0]
+          isCorrect = false
+          form1.value[index].setErrors([{ path: err.path[0], message: err.message }])
+        }
+        if (index == createForm.value.value.length - 1) {
+          if (firstPoint) {
+            skipUnwrap.wrapForm.value[firstPoint].scrollIntoView({ behavior: 'smooth', block: 'start' })
           }
-          resolve(errors)
-        })
+          resolve(isCorrect)
+        }
       }
-      else{
-        resolve(errors)
-      }
-    })
-  checking.then(res => {
-    if (res.length < 1) {
-      const promise = new Promise(async (resolve, reject) => {
-        if (category.value.images.files.length > 0) {
-          for (const [index, item] of category.value.images.files.entries()) {
-            meter.value.display = index
-            meter.value.data = 0
-            const nums = Array.from(Array(101), (_, x) => x);
-            for (const x of nums) {
-              setTimeout(() => { meter.value.data = x }, 500)
-            }
-            const res = await uploadFile(item, 100)
-            if (res.status == 'success') {
-              temp.original.push(res['data']['original'])
-              temp.small.push(res['data']['small'])
-              temp.medium.push(res['data']['medium'])
-              meter.value.data = 100
-              status.value.uploading = status.value.uploading.filter(item => item != category.value.previewImages[index])
-            }
-            else{
-              notiStore.showNotification({type:'error',title:'Error: '+res.data,description:'Can\'t upload image. Please try again!'})
-            }
-            if (index == category.value.images.files.length - 1) {
-              meter.value.display = null
-              resolve()
-            }
-          }
-        }
-        else {
-          resolve()
-        }
-
-      })
-      promise.then(async res => {
-        category.value.images.original = temp.original
-        category.value.images.small = temp.small
-        category.value.images.medium = temp.medium
-        let url = '/api/categories/create'
-        if (props.data) {
-          Object.keys(category.value.imagesOld).forEach(property => {
-            category.value.imagesOld[property].forEach(item => {
-              category.value.images[property].push(item)
-            })
-          })
-          url = '/api/categories/update'
-        }
-        await $fetch(url, {
-          body: JSON.stringify(category.value),
-          method: props.data ? 'PUT' : 'POST'
-        }).then(res => {
-          disabled.value.submit = false
-          if (!props.data) {
-            if (Object.hasOwn(res[0], '_id')) {
-              setTimeout(() => {
-                inputField.value.$refs.input.focus()
-              }, 1)
-              emits('newData', res[0])
-              resetData()
-            }
-          }
-          else {
-            if (Object.hasOwn(res, 'modifiedCount') && res.modifiedCount == 1) {
-              emits('updateData', category.value)
-            }
-          }
-
-          scrollToForm()
-          status.value.uploading = []
-          emits('doing', disabled.value.submit)
-          oldTitle.value.data=category.value.title
-        })
-      })
     }
-    else{
-      disabled.value.submit=false
-      emits('doing', disabled.value.submit)
+    else {
+      resolve(isCorrect)
     }
   })
+  promise.then(async (res) => {
+    if (res) {
+      const items = []
+      items.push(category.value)
+      createForm.value.value.forEach(item => items.push(item))
+      disabled.value.submit = true
+      emits('doing', disabled.value.submit)
+      for await (const itemRoot of items) {
+        status.value.uploading = itemRoot.previewImages
+        const temp = {
+          original: [],
+          medium: [],
+          small: []
+        }
+        const promises = []
+        const errors = []
+        const checking = new Promise(async (resolve, reject) => {
+          if (oldTitle.value.data != itemRoot.title) {
+            //disabled.value.submit=true
+            await $fetch('/api/categories/get?' + new URLSearchParams({ title: itemRoot.title })).then(res => {
+              if (res.length > 0) {
 
+                errors.push({ path: 'title', message: 'Title is existed' })
+                oldTitle.value.error = { path: 'title', message: 'Title is existed' }
+                form.value.setErrors([oldTitle.value.error])
+              }
+              else {
+                oldTitle.value.error = null
+              }
+              resolve(errors)
+            })
+          }
+          else {
+            resolve(errors)
+          }
+        })
+        checking.then(res => {
+          if (res.length < 1) {
+            const promise = new Promise(async (resolve, reject) => {
+              if (category.value.images.files.length > 0) {
+                for (const [index, item] of itemRoot.images.files.entries()) {
+                  meter.value.display = index
+                  meter.value.data = 0
+                  const nums = Array.from(Array(101), (_, x) => x);
+                  for (const x of nums) {
+                    setTimeout(() => { meter.value.data = x }, 500)
+                  }
+                  const res = await uploadFile(item, 100)
+                  if (res.status == 'success') {
+                    temp.original.push(res['data']['original'])
+                    temp.small.push(res['data']['small'])
+                    temp.medium.push(res['data']['medium'])
+                    meter.value.data = 100
+                    status.value.uploading = status.value.uploading.filter(item => item != itemRoot.previewImages[index])
+                  }
+                  else {
+                    notiStore.showNotification({ type: 'error', title: 'Error: ' + res.data, description: 'Can\'t upload image. Please try again!' })
+                  }
+                  if (index == itemRoot.images.files.length - 1) {
+                    meter.value.display = null
+                    resolve()
+                  }
+                }
+              }
+              else {
+                resolve()
+              }
 
+            })
+            promise.then(async res => {
+              itemRoot.images.original = temp.original
+              itemRoot.images.small = temp.small
+              itemRoot.images.medium = temp.medium
+              let url = '/api/categories/create'
+              if (props.data) {
+                Object.keys(itemRoot.imagesOld).forEach(property => {
+                  itemRoot.imagesOld[property].forEach(item => {
+                    itemRoot.images[property].push(item)
+                  })
+                })
+                url = '/api/categories/update'
+              }
+              await $fetch(url, {
+                body: JSON.stringify(itemRoot),
+                method: props.data ? 'PUT' : 'POST'
+              }).then(res => {
+                disabled.value.submit = false
+                if (!props.data) {
+                  if (Object.hasOwn(res[0], '_id')) {
+                    setTimeout(() => {
+                      inputField.value.$refs.input.focus()
+                    }, 1)
+                    emits('newData', res[0])
+                    resetData()
+                  }
+                }
+                else {
+                  if (Object.hasOwn(res, 'modifiedCount') && res.modifiedCount == 1) {
+                    emits('updateData', category.value)
+                  }
+                }
+
+                scrollToForm()
+                status.value.uploading = []
+                emits('doing', disabled.value.submit)
+                oldTitle.value.data = category.value.title
+              })
+            })
+          }
+          else {
+            disabled.value.submit = false
+            emits('doing', disabled.value.submit)
+          }
+        })
+      }
+
+    }
+  })
 
 
 }
@@ -443,8 +582,7 @@ async function uploadFile(file, size) {
             }
 
           })
-        }).catch(error=>{
-          console.log(error)
+        }).catch(error => {
           resolve({
             status: 'error',
             data: {
@@ -465,7 +603,32 @@ const oldTitle = ref({
   error: null,
   data: null
 })
-
+function insertCreateForm() {
+  const form = {
+    title: null,
+    description: null,
+    images: {
+      original: [],
+      medium: [],
+      small: [],
+      files: []
+    },
+    imagesOld: {
+      original: [],
+      medium: [],
+      small: []
+    },
+    categories: [],
+    note: null,
+    previewImages: [],
+    tags: null,
+    _id: null,
+    created_at: null,
+    edited_at: null,
+    fileSelected: null
+  }
+  createForm.value.value.push(form)
+}
 </script>
 
 <style></style>

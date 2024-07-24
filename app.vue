@@ -41,11 +41,13 @@ const title = computed(() => {
   let st2 = ''
   st.forEach((item1, index) => {
     st2 += '/' + item1
+    if(index ==st.length-1 && item1.indexOf('detail')==-1){
+      item1=item1.split('?')[0]
+    }
     st1.push({ label: 'administrator' == item1.toLowerCase() ? (st.length > 1 ? 'Dashboard' : 'Home') : (item1.charAt(0).toUpperCase() + item1.slice(1)), to: st2 })
   })
   breadcumb.value = st1
   pages.admin.forEach(item => {
-    console.log(route.fullPath)
     if (item.to == route.fullPath) {
       val = item.label
       useSeoMeta({

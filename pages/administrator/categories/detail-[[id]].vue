@@ -62,6 +62,7 @@ onBeforeMount(async ()=>{
  //console.log(category.value)
 })
 function updateData(data){
+  
   notification.showNotification({
       title: `${data.title} <span class="text-blue-500">updated</span> success`,
       type: 'success'
