@@ -20,7 +20,7 @@
               <img :src class="rounded-md w-full min-h-52 max-h-52 object-cover" :key="index"
                 @mouseover="showElement = src" />
               <div class="absolute top-1/2 p-2 w-full z-50">
-                <UMeter :value="meter.data" v-if="meter.display == index"></UMeter>
+                <UMeter :value="meter.data" v-if="meter.display == index && formProcessing.index == 0"></UMeter>
               </div>
               <div
                 class="w-full min-h-52 max-h-52 absolute top-0 left-0 backdrop-blur-sm flex justify-center items-center rounded-md cursor-pointer"
@@ -77,6 +77,7 @@
     <!-------------------create form----------------------------------------------------->
     <div class="w-full border px-1 rounded-md border-gray-400 py-4 relative" v-for="item, index in createForm.value"
       :ref="skipUnwrap.wrapForm">
+      {{ index+1 }}
       <UBadge class="absolute -top-3 -left-3">#{{ index + 1 }}</UBadge>
       <UButton @click="createForm.value.splice(index, 1)" color="red" class="absolute -top-3 -right-3"
         :ui="{ rounded: 'rounded-full' }" icon="i-material-symbols-light-close-small" square size="2xs"></UButton>
@@ -99,15 +100,15 @@
             <div v-else class="grid grid-cols-1">
 
               <div class="grid grid-cols-2 sm:grid-cols-4 xl:grid-cols-6 p-2 gap-2">
-                <div v-for="src, index in item.previewImages" class="relative">
-                  <img :src class="rounded-md w-full min-h-52 max-h-52 object-cover" :key="index"
+                <div v-for="src, indexC in item.previewImages" class="relative">
+                  <img :src class="rounded-md w-full min-h-52 max-h-52 object-cover" :key="indexC"
                     @mouseover="showElement = src" />
                   <div class="absolute top-1/2 p-2 w-full z-50">
-                    <UMeter :value="meter.data" v-if="meter.display == index"></UMeter>
+                    <UMeter :value="meter.data" v-if="meter.display == indexC && formProcessing.index == (index + 1)"></UMeter>
                   </div>
                   <div
                     class="w-full min-h-52 max-h-52 absolute top-0 left-0 backdrop-blur-sm flex justify-center items-center rounded-md cursor-pointer"
-                    v-show="showElement == index || status.uploading.findIndex(item => item == src) > -1"
+                    v-show="showElement == indexC || status.uploading.findIndex(item => item == src) > -1"
                     @mouseout="showElement = null">
                     <UButton v-if="!status.uploading" variant="soft" :ui="{ rounded: 'rounded-full' }"
                       icon="i-material-symbols-light-visibility-outline-rounded" color="blue" />
@@ -115,24 +116,24 @@
                   </div>
                   <div
                     class="absolute -top-2 -right-2 z-50 text-white text-xl bg-red-500 rounded-full  flex justify-center items-center cursor-pointer"
-                    @click="removeImage(index, 'temp', item)">
+                    @click="removeImage(indexC, 'temp', item)">
                     <UIcon name="i-material-symbols-light-close-small-outline-rounded" />
                   </div>
                 </div>
-                <div v-for="src, index in item.imagesOld.medium" class="relative">
+                <div v-for="src, indexC in item.imagesOld.medium" class="relative">
                   <NuxtImg class="rounded-md w-full min-h-52 max-h-52 object-cover" :src loading="lazy"
-                    @mouseover="showElement = src" :key="index" quality="10" placeholder densities="x1 x2" />
+                    @mouseover="showElement = src" :key="indexC" quality="10" placeholder densities="x1 x2" />
                   <div
                     class="w-full min-h-52 max-h-52 absolute top-0 left-0 backdrop-blur-sm flex justify-center items-center rounded-md cursor-pointer"
                     v-show="showElement == src" @mouseout="showElement = null">
                     <UButton variant="soft" :ui="{ rounded: 'rounded-full' }"
                       icon="i-material-symbols-light-visibility-outline-rounded" color="blue"
-                      @click="emits('modal', { data: item.imagesOld.original[index], display: true })" />
+                      @click="emits('modal', { data: item.imagesOld.original[indexC], display: true })" />
 
                   </div>
                   <div
                     class="absolute -top-2 -right-2 z-50 text-white text-xl bg-red-500 rounded-full  flex justify-center items-center cursor-pointer"
-                    @click="removeImage(index, 'old', item)">
+                    @click="removeImage(indexC, 'old', item)">
                     <UIcon name="i-material-symbols-light-close-small-outline-rounded" />
                   </div>
                 </div>
@@ -187,6 +188,7 @@ import { readUsedSize } from 'chart.js/helpers';
 import { Schema, z } from 'zod'
 
 const notiStore = useMyNotificationsStore()
+const basicStore=useMyBasicStore()
 const props = defineProps(['data'])
 const emits = defineEmits(['newData', 'updateData', 'doing', 'modal'])
 useSeoMeta({
@@ -198,14 +200,7 @@ const createForm = ref({
   value: []
 })
 
-const sizeScreen = ref({
-  w: null,
-  h: null
-})
-function onResize() {
-  sizeScreen.value.w = window.innerWidth
-  sizeScreen.value.h = window.innerHeight
-}
+
 function resetData() {
   if (props.data) {
     Object.keys(category.value).forEach(item => {
@@ -222,6 +217,7 @@ function resetData() {
     })
     category.value.previewImages = []
     oldTitle.value.data = category.value.title
+    console.log(category.value)
   }
   else {
     category.value = {
@@ -257,14 +253,18 @@ onBeforeMount(() => {
   resetData()
 })
 onMounted(async () => {
-  onResize()
-  window.addEventListener('resize', onResize)
+
 })
+
 const form = ref(),
   form1 = ref([]),
   wrapForm = ref([]),
   skipUnwrap = { wrapForm },
-  fileSelected1 = ref([])
+  fileSelected1 = ref([]),
+  formProcessing = ref({
+    index: null,
+    length: null
+  })
 const inputField = ref()
 const myBtn = ref()
 const category = ref({
@@ -371,7 +371,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
     let isCorrect = true
     let firstPoint = null
     if (createForm.value.value.length > 0) {
-      for await (const item of createForm.value.value) {
+      for (const item of createForm.value.value) {
         const index = createForm.value.value.indexOf(item)
         const res = await schema.safeParse(createForm.value.value[index])
         if (res.success == false) {
@@ -401,119 +401,138 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
       createForm.value.value.forEach(item => items.push(item))
       disabled.value.submit = true
       emits('doing', disabled.value.submit)
-      for await (const itemRoot of items) {
-        status.value.uploading = itemRoot.previewImages
-        const temp = {
-          original: [],
-          medium: [],
-          small: []
-        }
-        const promises = []
-        const errors = []
-        const checking = new Promise(async (resolve, reject) => {
-          if (oldTitle.value.data != itemRoot.title) {
-            //disabled.value.submit=true
-            await $fetch('/api/categories/get?' + new URLSearchParams({ title: itemRoot.title })).then(res => {
-              if (res.length > 0) {
-
-                errors.push({ path: 'title', message: 'Title is existed' })
-                oldTitle.value.error = { path: 'title', message: 'Title is existed' }
-                form.value.setErrors([oldTitle.value.error])
-              }
-              else {
-                oldTitle.value.error = null
-              }
-              resolve(errors)
-            })
-          }
-          else {
-            resolve(errors)
-          }
-        })
-        checking.then(res => {
-          if (res.length < 1) {
-            const promise = new Promise(async (resolve, reject) => {
-              if (category.value.images.files.length > 0) {
-                for (const [index, item] of itemRoot.images.files.entries()) {
-                  meter.value.display = index
-                  meter.value.data = 0
-                  const nums = Array.from(Array(101), (_, x) => x);
-                  for (const x of nums) {
-                    setTimeout(() => { meter.value.data = x }, 500)
-                  }
-                  const res = await uploadFile(item, 100)
-                  if (res.status == 'success') {
-                    temp.original.push(res['data']['original'])
-                    temp.small.push(res['data']['small'])
-                    temp.medium.push(res['data']['medium'])
-                    meter.value.data = 100
-                    status.value.uploading = status.value.uploading.filter(item => item != itemRoot.previewImages[index])
-                  }
-                  else {
-                    notiStore.showNotification({ type: 'error', title: 'Error: ' + res.data, description: 'Can\'t upload image. Please try again!' })
-                  }
-                  if (index == itemRoot.images.files.length - 1) {
-                    meter.value.display = null
-                    resolve()
-                  }
-                }
-              }
-              else {
-                resolve()
-              }
-
-            })
-            promise.then(async res => {
-              itemRoot.images.original = temp.original
-              itemRoot.images.small = temp.small
-              itemRoot.images.medium = temp.medium
-              let url = '/api/categories/create'
-              if (props.data) {
-                Object.keys(itemRoot.imagesOld).forEach(property => {
-                  itemRoot.imagesOld[property].forEach(item => {
-                    itemRoot.images[property].push(item)
-                  })
-                })
-                url = '/api/categories/update'
-              }
-              await $fetch(url, {
-                body: JSON.stringify(itemRoot),
-                method: props.data ? 'PUT' : 'POST'
-              }).then(res => {
-                disabled.value.submit = false
-                if (!props.data) {
-                  if (Object.hasOwn(res[0], '_id')) {
-                    setTimeout(() => {
-                      inputField.value.$refs.input.focus()
-                    }, 1)
-                    emits('newData', res[0])
-                    resetData()
-                  }
-                }
-                else {
-                  if (Object.hasOwn(res, 'modifiedCount') && res.modifiedCount == 1) {
-                    emits('updateData', category.value)
-                  }
-                }
-
-                scrollToForm()
-                status.value.uploading = []
-                emits('doing', disabled.value.submit)
-                oldTitle.value.data = category.value.title
-              })
-            })
-          }
-          else {
-            disabled.value.submit = false
-            emits('doing', disabled.value.submit)
-          }
-        })
+      formProcessing.value.length = items.length
+      for (let i = 0; i < items.length; i++) {
+        const itemRoot = items[i]
+        await singleUpload(itemRoot, items)
       }
-
     }
   })
 
 
+}
+function singleUpload(itemRoot, items) {
+  return new Promise((resolveRoot) => {
+    const indexRoot = items.indexOf(itemRoot)
+    formProcessing.value.index = indexRoot
+    status.value.uploading = itemRoot.previewImages
+    const temp = {
+      original: [],
+      medium: [],
+      small: []
+    }
+    const promises = []
+    const errors = []
+    const checking = new Promise(async (resolve, reject) => {
+      if (oldTitle.value.data != itemRoot.title) {
+        await $fetch('/api/categories/get?' + new URLSearchParams({ title: itemRoot.title })).then(res => {
+          if (res.length > 0) {
+            errors.push({ path: 'title', message: 'Title is existed' })
+            oldTitle.value.error = { path: 'title', message: 'Title is existed' }
+            form.value.setErrors([oldTitle.value.error])
+          }
+          else {
+            oldTitle.value.error = null
+          }
+          resolve(errors)
+        })
+      }
+      else {
+        resolve(errors)
+      }
+    })
+    checking.then(res => {
+      if (res.length < 1) {
+        const promise = new Promise(async (resolve, reject) => {
+          if (itemRoot.images.files.length > 0) {
+            for await (const [index, item] of itemRoot.images.files.entries()) {
+              meter.value.display = index
+              console.log(index)
+              meter.value.data = 0
+              const nums = Array.from(Array(101), (_, x) => x);
+              for (const x of nums) {
+                setTimeout(() => { meter.value.data = x }, 500)
+              }
+              let res = await uploadFile(item)
+              if (res.status == 'success') {
+                meter.value.data = 100 / 3
+                temp.original.push(res['data']['original'])
+              }
+              res = await uploadFile(item, 300)
+              if (res.status == 'success') {
+                meter.value.data = 200 / 3
+                temp.medium.push(res['data']['medium'])
+              }
+              res = await uploadFile(item, 100)
+              if (res.status == 'success') {
+                meter.value.data = 100
+                temp.small.push(res['data']['small'])
+                status.value.uploading = status.value.uploading.filter(item => item != itemRoot.previewImages[index])
+
+              }
+              if (meter.value.data < 100) {
+                notiStore.showNotification({ type: 'error', title: 'Error: ' + res.data, description: 'Can\'t upload image. Please try again!' })
+
+              }
+              if (index == itemRoot.images.files.length - 1) {
+                meter.value.display = null
+                resolve()
+              }
+            }
+          }
+          else {
+            resolve()
+          }
+        })
+        promise.then(async res => {
+          itemRoot.images.original = temp.original
+          itemRoot.images.small = temp.small
+          itemRoot.images.medium = temp.medium
+          let url = '/api/categories/create'
+          if (props.data) {
+            Object.keys(itemRoot.imagesOld).forEach(property => {
+              itemRoot.imagesOld[property].forEach(item => {
+                itemRoot.images[property].push(item)
+              })
+            })
+            url = '/api/categories/update'
+          }
+          await $fetch(url, {
+            body: JSON.stringify(itemRoot),
+            method: props.data ? 'PUT' : 'POST'
+          }).then(res => {
+            if (!props.data) {
+              if (Object.hasOwn(res[0], '_id')) {
+                setTimeout(() => {
+                  inputField.value.$refs.input.focus()
+                }, 1)
+                emits('newData', res[0])
+                resetData()
+              }
+            }
+            else {
+              if (Object.hasOwn(res, 'modifiedCount') && res.modifiedCount == 1) {
+                emits('updateData', category.value)
+              }
+            }
+            if (indexRoot == items.length - 1) {
+              disabled.value.submit = false
+              scrollToForm()
+              createForm.value.value = []
+              status.value.uploading = []
+              emits('doing', disabled.value.submit)
+              oldTitle.value.data = category.value.title
+            }
+            return resolveRoot()
+          })
+        })
+      }
+      else {
+        disabled.value.submit = false
+        emits('doing', disabled.value.submit)
+      }
+    })
+  })
 }
 const showElement = ref(null)
 const disabled = ref({
@@ -549,9 +568,11 @@ async function resizeImage(file, size) {
   })
   return res
 }
-async function uploadFile(file, size) {
-  let blob = await resizeImage(file, size)
-  let resizedFile = new File([blob], file.name, file)
+async function uploadFile(file, size = null) {
+  if (size) {
+    let blob = await resizeImage(file, size)
+    file = new File([blob], file.name, file)
+  }
   let data = new FormData()
   data.append('file', file)
   const promise = new Promise(async (resolve, reject) => {
@@ -559,40 +580,24 @@ async function uploadFile(file, size) {
       method: "POST",
       body: data
     }).then(async res => {
-      data = new FormData()
-      data.append('file', resizedFile)
-      await $fetch('/api/uploads/image', {
-        method: "POST",
-        body: data
-      }).then(async res1 => {
-        blob = await resizeImage(file, 350)
-        resizedFile = new File([blob], file.name, file)
-        data = new FormData()
-        data.append('file', resizedFile)
-        await $fetch('/api/uploads/image', {
-          method: "POST",
-          body: data
-        }).then(res2 => {
-          resolve({
-            status: 'success',
-            data: {
-              original: res['data']['original'],
-              small: res1['data'].original,
-              medium: res2.data.original
-            }
+      resolve({
+        status: 'success',
+        data: {
+          original: res['data']['original'],
+          small: res['data'].original,
+          medium: res.data.original
+        }
 
-          })
-        }).catch(error => {
-          resolve({
-            status: 'error',
-            data: {
-              original: null,
-              small: null,
-              medium: null
-            }
+      })
+    }).catch(error => {
+      resolve({
+        status: 'error',
+        data: {
+          original: null,
+          small: null,
+          medium: null
+        }
 
-          })
-        })
       })
     })
   })

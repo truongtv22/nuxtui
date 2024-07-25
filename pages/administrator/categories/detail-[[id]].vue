@@ -1,17 +1,34 @@
 <template>
-  <div class="grow px-4 py-5 sm:p-6 relative">
-    <DetailComponent v-if="status.loaded"  :data="category" @updateData="updateData" @doing="loading.doing=$event"/>
-   <template v-else>
+
+  <UCard :ui="{
+      base: 'h-fit flex flex-col',
+      rounded: '',
+      divide: 'divide-y divide-gray-100 dark:divide-gray-800',
+      body: {
+        base: 'grow'
+      },
+      header: {
+        base: 'bg-blue-500 relative'
+      }
+    }">
+      <template #header>
+        <div class="flex items-center justify-between">
+          <h3 class="capitalize text-base font-semibold leading-6 text-white dark:text-white">
+            {{ category.title }}
+          </h3>
+        </div>
+        <div class="bottom-0 absolute w-full right-0" v-if="loading.doing">
+          <UProgress size="xs" color="blue" animation="carousel" :ui="{progress:{rounded:'rounded-none'}}" />
+        </div>
+      </template>
+      <DetailComponent v-if="status.loaded"  :data="category" @updateData="updateData" @doing="loading.doing=$event"/>
+      <template v-else>
     <div class="flex flex-col gap-2">
       <USkeleton class="w-full min-h-screen"/>
     </div>
     
    </template>
-   <div class="top-0 absolute w-full right-0" v-if="loading.doing">
-          <UProgress color="blue" size="xs" animation="carousel" :ui="{progress:{rounded:'rounded-none'}}" />
-        </div>
-  </div>
-   
+    </UCard>
    
 </template>
 

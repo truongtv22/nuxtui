@@ -1,7 +1,7 @@
 <template>
   <div class="flex justify-between px-3 py-3.5 border-b border-gray-200 dark:border-gray-700 relative">
     <div class="flex gap-1">
-      <UButton class="capitalize" :ui="{ rounded: 'rounded-full' }" @click="modals.createForm.display = true">
+      <UButton class="capitalize" :ui="{ rounded: 'rounded-full' }" @click="modals.createForm.display = true" >
         <UIcon class="font-bold text-xl" name="i-material-symbols-light-add" />Create new category
       </UButton>
       <Transition>
@@ -25,14 +25,17 @@
       </TransitionGroup>
 
     </div>
-    <UInput v-model="table.keyword" placeholder="Filter people..." />
+    <UInput v-model="table.keyword" placeholder="Enter to search" />
   </div>
 
-  <UTable :rows="rows" :columns="table.columns" v-model="table.selected" :loading="table.loading">
+  <UTable :rows="filteredRows" :columns="table.columns" v-model="table.selected" :loading="table.loading" :ui="{base:'w-full'}">
     <template #actions-data="{ row }">
       <UButton color="blue" icon="i-material-symbols-light-info-outline-rounded" variant="ghost"
         :ui="{ rounded: 'rounded-full' }" @click="table.detail = { display: true, value: row }" />
     </template>
+    <template #title="{row}">
+      <div class="w-full">{{ row.title }}</div>
+      </template>
     <template #images-data="{ row }">
       <div class="relative flex justify-center" @dblclick="router.push('categories/detail-'+row._id)">
         <template v-if="row.images.small.length >= 1">
@@ -153,6 +156,10 @@ onBeforeMount(async () => {
     }
     table.value.loading = false
   })
+  if(basicStore.screenSize.name=='xs'){
+    table.value.columns=[{ key: 'images', label: 'Images' },
+    { key: 'title', label: 'Name' }]
+  }
 })
 function reformatDate(val) {
   return new Date(Date.parse(val))
@@ -211,7 +218,7 @@ const pageCount = computed(() => {
 })
 const filteredRows = computed(() => {
   if (!table.value.keyword) {
-    return table.value.data
+    return table.value.data.slice((table.value.page - 1) * pageCount.value, (table.value.page) * pageCount.value)
   }
 
   return table.value.data.filter((person) => {
