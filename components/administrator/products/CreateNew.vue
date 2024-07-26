@@ -18,7 +18,7 @@
             @click="emits('confirmWindow', true, 'hel woo')" />
         </div>
       </template>
-      
+
       <UForm :schema="schema" :state="product" class="space-y-4" @submit="onSubmit">
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-1 gap-y-4">
           <UFormGroup label="Tên sản phẩm" name="name">
@@ -32,62 +32,169 @@
           </UFormGroup>
         </div>
         <UFormGroup label="Categories" name="categories">
-            <USelectMenu multiple v-model="categoriesSelected" :options="product.categories.data" optionAttribute="title" optionValue="_id" :creatable="!status.loading" searchable :loading="status.loading"  ref="categories" >
+          <USelectMenu multiple v-model="categoriesSelected" :options="product.categories.data" optionAttribute="title"
+            optionValue="_id" :creatable="!status.loading" searchable :loading="status.loading" ref="categories">
             <template #label>
-              <div class="w-auto flex flex-row" v-if="product.categories.value.length>0">
-                <div v-for="item,key in product.categories.value" ref="selected" class="w-auto">
-                <UBadge v-if="selectedCalculator(selected.slice(0,key))<categories.$refs.trigger.el.clientWidth-220" class="mr-1">{{ item.title }}</UBadge>
-              </div>
+              <div class="w-auto flex flex-row" v-if="product.categories.value.length > 0">
+                <div v-for="item, key in product.categories.value" ref="selected" class="w-auto">
+                  <UBadge v-if="selectedCalculator(selected.slice(0, key)) < categories.$refs.trigger.el.clientWidth - 220"
+                    class="mr-1">{{ item.title }}</UBadge>
+                </div>
               </div>
               <span v-else class="text-gray-400">Select category</span>
-              <span class="w-auto" v-if="selected.length-selected.filter((item,index)=>{return selectedCalculator(selected.slice(0,index))<categories.$refs.trigger.el.clientWidth-220}).length>1">+{{ selected.length-selected.filter((item,index)=>{return selected.slice(0,index).reduce((val1,val2)=>val1+val2.clientWidth,0)<categories.$refs.trigger.el.clientWidth-220}).length }} items</span>
-              
+              <span class="w-auto"
+                v-if="selected.length - selected.filter((item, index) => { return selectedCalculator(selected.slice(0, index)) < categories.$refs.trigger.el.clientWidth - 220 }).length > 1">+{{
+                  selected.length - selected.filter((item, index) => {
+                    return
+                    selected.slice(0, index).reduce((val1, val2) => val1 + val2.clientWidth, 0) < categories.$refs.trigger.el.clientWidth-220}).length
+                  }} items</span>
+
             </template>
             <template #option-create="{ option }">
-                <span class="flex-shrink-0">New label:</span>
-      <span
-        class="flex-shrink-0 w-2 h-2 mt-px rounded-full -mx-1"
-      />
-      <span class="block truncate">{{ option.title }}</span>
-      
-    </template>
+              <span class="flex-shrink-0">New label:</span>
+              <span class="flex-shrink-0 w-2 h-2 mt-px rounded-full -mx-1" />
+              <span class="block truncate">{{ option.title }}</span>
+
+            </template>
           </USelectMenu>
         </UFormGroup>
         <UFormGroup label="Photos" name="images">
-          <div :class="'min-h-32 w-full border border-dotted border-2 rounded-md '+(product.previewImages.length<1?' cursor-pointer':'')">
-            <div v-if="product.previewImages.length==0" @click="fileSelected.click()" class="w-full min-h-32 justify-center items-center flex">
-              <UIcon  name="i-material-symbols-light-add-photo-alternate-outline-rounded" class="text-7xl text-gray-400"/>
+          <div
+            :class="'min-h-32 w-full border border-dotted border-2 rounded-md ' + (product.previewImages.length < 1 ? ' cursor-pointer' : '')">
+            <div v-if="product.previewImages.length == 0" @click="fileSelected.click()"
+              class="w-full min-h-32 justify-center items-center flex">
+              <UIcon name="i-material-symbols-light-add-photo-alternate-outline-rounded"
+                class="text-7xl text-gray-400" />
             </div>
-            
+
             <div v-else class="grid grid-cols-1">
-              
+
               <div class="grid grid-cols-2 sm:grid-cols-4 p-2 gap-2">
-                <div v-for="src,index in product.previewImages" class="relative">
-                  <img :src class="rounded-md" :key="index"/>
-                  <div class="absolute -top-2 -right-2 z-50 text-white text-xl bg-red-500 rounded-full  flex justify-center items-center cursor-pointer" @click="removeImage(src)">
-                    <UIcon name="i-material-symbols-light-close-small-outline-rounded"/>
+                <div v-for="src, index in product.previewImages" class="relative">
+                  <img :src class="rounded-md" :key="index" />
+                  <div
+                    class="absolute -top-2 -right-2 z-50 text-white text-xl bg-red-500 rounded-full  flex justify-center items-center cursor-pointer"
+                    @click="removeImage(src)">
+                    <UIcon name="i-material-symbols-light-close-small-outline-rounded" />
                   </div>
-                  
+
                 </div>
               </div>
-              <UDivider/>
+              <UDivider />
               <div class="flex justify-center cursor-pointer" @click="fileSelected.click()">
-                <UIcon name="i-material-symbols-light-add-photo-alternate-outline-rounded" class="text-7xl text-gray-400"/>
+                <UIcon name="i-material-symbols-light-add-photo-alternate-outline-rounded"
+                  class="text-7xl text-gray-400" />
               </div>
             </div>
-            
-            <input type="file" class="hidden" accept=".jpg, .jpeg, .png" ref="fileSelected" @change="previewSelected"/>
+
+            <input type="file" class="hidden" accept=".jpg, .jpeg, .png" ref="fileSelected" @change="previewSelected" />
           </div>
         </UFormGroup>
         <UFormGroup label="Description" name="description">
-          <UTextarea v-model="product.description" rows="6"/>
+          <UTextarea v-model="product.description" rows="6" />
         </UFormGroup>
         <UFormGroup label="Note" name="note">
-          <UTextarea v-model="product.note" rows="6"/>
+          <UTextarea v-model="product.note" rows="6" />
         </UFormGroup>
         <UFormGroup label="Tags" name="tags">
-          <UTextarea v-model="product.tags" rows="6" disabled/>
+          <UTextarea v-model="product.tags" rows="6" disabled />
         </UFormGroup>
+        <!----------------------------start create new form------------------------------>
+        <div class="w-full border px-1 rounded-md border-gray-400 py-4 relative" v-for="item, index in createForm.value"
+          :ref="skipUnwrap.wrapForm">
+          <UBadge class="absolute -top-3 -left-3">#{{ index + 1 }}</UBadge>
+          <UButton @click="createForm.value.splice(index, 1)" color="red" class="absolute -top-3 -right-3"
+            :ui="{ rounded: 'rounded-full' }" icon="i-material-symbols-light-close-small" square size="2xs"></UButton>
+          <UForm ref="form1" :schema="schema" :state="item">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-1 gap-y-4">
+          <UFormGroup label="Tên sản phẩm" name="name">
+            <UInput v-model="product.name" />
+          </UFormGroup>
+          <UFormGroup label="Barcode" name="barcode">
+            <UButtonGroup class="w-full">
+              <UInput v-model="product.barcode" class="w-full" />
+              <UButton icon="i-material-symbols-light-barcode-scanner-rounded" />
+            </UButtonGroup>
+          </UFormGroup>
+        </div>
+        <UFormGroup label="Categories" name="categories">
+          <USelectMenu multiple v-model="categoriesSelected" :options="product.categories.data" optionAttribute="title"
+            optionValue="_id" :creatable="!status.loading" searchable :loading="status.loading" ref="categories">
+            <template #label>
+              <div class="w-auto flex flex-row" v-if="product.categories.value.length > 0">
+                <div v-for="item, key in product.categories.value" ref="selected" class="w-auto">
+                  <UBadge v-if="selectedCalculator(selected.slice(0, key)) < categories.$refs.trigger.el.clientWidth - 220"
+                    class="mr-1">{{ item.title }}</UBadge>
+                </div>
+              </div>
+              <span v-else class="text-gray-400">Select category</span>
+              <span class="w-auto"
+                v-if="selected.length - selected.filter((item, index) => { return selectedCalculator(selected.slice(0, index)) < categories.$refs.trigger.el.clientWidth - 220 }).length > 1">+{{
+                  selected.length - selected.filter((item, index) => {
+                    return
+                    selected.slice(0, index).reduce((val1, val2) => val1 + val2.clientWidth, 0) < categories.$refs.trigger.el.clientWidth-220}).length
+                  }} items</span>
+
+            </template>
+            <template #option-create="{ option }">
+              <span class="flex-shrink-0">New label:</span>
+              <span class="flex-shrink-0 w-2 h-2 mt-px rounded-full -mx-1" />
+              <span class="block truncate">{{ option.title }}</span>
+
+            </template>
+          </USelectMenu>
+        </UFormGroup>
+        <UFormGroup label="Photos" name="images">
+          <div
+            :class="'min-h-32 w-full border border-dotted border-2 rounded-md ' + (product.previewImages.length < 1 ? ' cursor-pointer' : '')">
+            <div v-if="product.previewImages.length == 0" @click="fileSelected.click()"
+              class="w-full min-h-32 justify-center items-center flex">
+              <UIcon name="i-material-symbols-light-add-photo-alternate-outline-rounded"
+                class="text-7xl text-gray-400" />
+            </div>
+
+            <div v-else class="grid grid-cols-1">
+
+              <div class="grid grid-cols-2 sm:grid-cols-4 p-2 gap-2">
+                <div v-for="src, index in product.previewImages" class="relative">
+                  <img :src class="rounded-md" :key="index" />
+                  <div
+                    class="absolute -top-2 -right-2 z-50 text-white text-xl bg-red-500 rounded-full  flex justify-center items-center cursor-pointer"
+                    @click="removeImage(src)">
+                    <UIcon name="i-material-symbols-light-close-small-outline-rounded" />
+                  </div>
+
+                </div>
+              </div>
+              <UDivider />
+              <div class="flex justify-center cursor-pointer" @click="fileSelected.click()">
+                <UIcon name="i-material-symbols-light-add-photo-alternate-outline-rounded"
+                  class="text-7xl text-gray-400" />
+              </div>
+            </div>
+
+            <input type="file" class="hidden" accept=".jpg, .jpeg, .png" ref="fileSelected" @change="previewSelected" />
+          </div>
+        </UFormGroup>
+        <UFormGroup label="Description" name="description">
+          <UTextarea v-model="product.description" rows="6" />
+        </UFormGroup>
+        <UFormGroup label="Note" name="note">
+          <UTextarea v-model="product.note" rows="6" />
+        </UFormGroup>
+        <UFormGroup label="Tags" name="tags">
+          <UTextarea v-model="product.tags" rows="6" disabled />
+        </UFormGroup>
+          </UForm>
+        </div>
+        <!----------------------------end create new form------------------------------>
+        <UTooltip v-if="!props.data" text="Add more product" :popper="{ arrow: true }" class="w-full">
+          <div ref="createFormBtn"
+            class="w-full border border-dotted cursor-pointer rounded-md flex justify-center py-1 dark:border-gray-700 border-gray-300"
+            @click="insertCreateForm">
+            <UIcon class="text-3xl text-gray-500" name="i-material-symbols-light-exposure-plus-1-rounded"></UIcon>
+          </div>
+        </UTooltip>
         <div class="flex justify-end gap-1">
           <UButton type="submit">Create</UButton>
           <UButton color="red" variant="ghost">Cancel</UButton>
@@ -100,7 +207,7 @@
 <script lang="ts" setup>
 import type { _0 } from '#tailwind-config/theme/backdropBlur';
 import { compile } from 'vue';
-import {z} from 'zod'
+import { z } from 'zod'
 const props = defineProps(['modelValue'])
 const emits = defineEmits(['update:modelValue', 'confirmWindow'])
 const isOpen = computed({
@@ -119,14 +226,17 @@ function onResize() {
   sizeScreen.value.w = window.innerWidth
   sizeScreen.value.h = window.innerHeight
 }
-onBeforeMount(async ()=>{
-  await $fetch('/api/categories/list').then(res=>{
-    product.value.categories.data=res
+onBeforeMount(async () => {
+  await $fetch('/api/categories/list').then(res => {
+    product.value.categories.data = res
   })
 })
 onMounted(() => {
   onResize()
   window.addEventListener('resize', onResize)
+})
+const createForm = ref({
+  value: []
 })
 const product = ref({
   name: null,
@@ -134,55 +244,55 @@ const product = ref({
   description: null,
   images: [],
   categories: {
-    data:[],
-    value:[]
+    data: [],
+    value: []
   },
   note: null,
-  previewImages:[],
-  tags:null
+  previewImages: [],
+  tags: null
 })
-const categories=ref(null)
-const selected=ref([])
-const status=ref({
-  loading:false
+const categories = ref(null)
+const selected = ref([])
+const status = ref({
+  loading: false
 })
-const categoriesSelected=computed({
-  get:()=>product.value.categories.value,
-  set:async (val)=>{
-    const arr=val.map(async (item)=>{
-      if(item._id){
+const categoriesSelected = computed({
+  get: () => product.value.categories.value,
+  set: async (val) => {
+    const arr = val.map(async (item) => {
+      if (item._id) {
         return item
       }
-      status.value.loading=true
-      return await $fetch('/api/categories/create',{
-        method:"POST",
-        body:JSON.stringify({
-          title:item.title
+      status.value.loading = true
+      return await $fetch('/api/categories/create', {
+        method: "POST",
+        body: JSON.stringify({
+          title: item.title
         })
-      }).then(res=>{
-        if(res.length>0){
+      }).then(res => {
+        if (res.length > 0) {
           product.value.categories.data.push(res[0])
-          status.value.loading=false
+          status.value.loading = false
           return res[0]
         }
       })
     })
-    product.value.categories.value=await Promise.all(arr)
+    product.value.categories.value = await Promise.all(arr)
   }
 })
 
-const fileSelected=ref()
-function previewSelected(e){
-  const file=e.target.files[0]
+const fileSelected = ref()
+function previewSelected(e) {
+  const file = e.target.files[0]
   product.value.previewImages.push(URL.createObjectURL(file))
   console.log(file)
   product.value.images.push(file)
 }
-function removeImage(val){
-  product.value.previewImages.forEach((item,index)=>{
-    if(val==item){
-      product.value.previewImages.splice(index,1)
-      product.value.images.splice(index,1)
+function removeImage(val) {
+  product.value.previewImages.forEach((item, index) => {
+    if (val == item) {
+      product.value.previewImages.splice(index, 1)
+      product.value.images.splice(index, 1)
     }
   })
 }
@@ -196,8 +306,24 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
   // Do something with data
   console.log(event.data)
 }
-function selectedCalculator(arr){
-  return arr.reduce((val1,val2)=>val1+val2.clientWidth,0)
+function selectedCalculator(arr) {
+  return arr.reduce((val1, val2) => val1 + val2.clientWidth, 0)
+}
+function insertCreateForm() {
+  const form = {
+    name: null,
+    barcode: null,
+    description: null,
+    images: [],
+    categories: {
+      data: [],
+      value: []
+    },
+    note: null,
+    previewImages: [],
+    tags: null
+  }
+  createForm.value.value.push(form)
 }
 </script>
 
