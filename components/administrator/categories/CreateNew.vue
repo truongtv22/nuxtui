@@ -327,8 +327,6 @@ function removeImage(index, type, root) {
       })
       break
   }
-
-
 }
 const schema = z.object({
   title: z.string({
