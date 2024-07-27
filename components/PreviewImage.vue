@@ -8,9 +8,9 @@
         icon="i-material-symbols-light-visibility-outline-rounded" color="blue"
         />
     </div>
-    <UButton @click="emits('remove',index)" icon="i-material-symbols-light-close-small-outline-rounded" :ui="{rounded:'rounded-full'}" size="2xs" color="red" class="absolute -top-2 -right-2"/>
-    <div class="flex absolute top-0 left-0 w-full">
-      <UMeter :value="props.loading"/>
+    <UButton @click="emits('remove',index)" icon="i-material-symbols-light-close-small-outline-rounded" :ui="{rounded:'rounded-full'}" size="2xs" color="red" class="absolute -top-2 -right-2 z-50"/>
+    <div class="flex absolute top-0 left-0 w-full backdrop-blur-md h-full items-center px-2" v-if="status">
+      <UProgress :value="props.loading" animation="carousel" />
     </div>
   </div>
   <UModal v-model="showModal" :ui="{container:'backdrop-blur-md'}">
@@ -22,7 +22,7 @@
 </template>
 
 <script lang="ts" setup>
-const props=defineProps(['src','index','loading'])
+const props=defineProps(['src','index','loading','status'])
 const emits=defineEmits(['remove'])
 const showEyeBtn=ref(false),
 showModal=ref(false)

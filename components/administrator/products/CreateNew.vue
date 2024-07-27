@@ -22,7 +22,8 @@
       <UForm :schema="schema" class="space-y-4">
 
         <!----------------------------start create new form------------------------------>
-        <div :class="`w-full ${createForm.value.length > 1 ? 'border' : ''} px-1 rounded-md border-gray-400 py-4 relative`"
+        <div
+          :class="`w-full ${createForm.value.length > 1 ? 'border' : ''} px-1 rounded-md border-gray-400 py-4 relative`"
           v-for="itemRoot, indexRoot in createForm.value" :ref="skipUnwrap.wrapForm">
           <UBadge class="absolute -top-3 -left-3" v-if="createForm.value.length > 1">#{{ indexRoot + 1 }}</UBadge>
           <UButton v-if="createForm.value.length > 1" @click="createForm.value.splice(indexRoot, 1)" color="red"
@@ -53,9 +54,9 @@
                 </div>
 
                 <div v-else class="grid grid-cols-1">
-
                   <div class="grid grid-cols-2 sm:grid-cols-4 p-2 gap-2">
                     <PreviewImage v-for="src, index in itemRoot.previewImages" :src :index
+                      :loading="(index == meter.display && indexRoot == meter.indexForm) ? meter.data : null" :status="(status.uploading && status.uploading.indexOf(src)>-1)?true:false"
                       @remove="removeImage($event, 'temp', itemRoot)" />
                   </div>
                   <UDivider />
@@ -163,7 +164,8 @@ const product = ref({
 })
 const meter = ref({
   display: null,
-  data: 0
+  data: 0,
+  indexForm: null
 })
 const categoriesSelected = computed({
   get: () => product.value.categories.value,
@@ -221,10 +223,12 @@ function removeImage(index, type, root) {
   }
 }
 const schema = z.object({
+  /*
   name: z.string({
     required_error: "Tên product không để trống",
     invalid_type_error: "Tên product không để trống",
   }).min(6, { message: 'Tên product có độ dài ít nhất 6 ký tự' }),
+  */
   //categories: z.any().array().min(1, { message: 'Lua chon it nhat 1 nganh san pham' })
 })
 
@@ -254,30 +258,51 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
           medium: [],
           small: []
         }
-      meter.value.data = 0
+      
+      meter.value.indexForm = index
       Object.keys(data).forEach(key => {
         beforeData[key] = data[key]
       })
       delete beforeData.previewImages
-      console.log(beforeData)
-      beforeData.images.files.forEach(async (file) => {
-        let res = await uploadFile(file)
-        if (res.status == 'success') {
-          meter.value.data = 100 / 3
-          temp.original.push(res['data']['original'])
-        }
-        res = await uploadFile(file, 300)
-        if (res.status == 'success') {
-          meter.value.data = 200 / 3
-          temp.medium.push(res['data']['medium'])
-        }
-        res = await uploadFile(file, 100)
-        if (res.status == 'success') {
-          meter.value.data = 100
-          temp.small.push(res['data']['small'])
-          status.value.uploading = status.value.uploading.filter(item => item != data.previewImages[index])
-
-        }
+      for await (const file of beforeData.images.files){
+        meter.value.data = 0
+        const indexChild=beforeData.images.files.indexOf(file)
+          meter.value.display = indexChild
+          let res = await uploadFile(file)
+          if (res.status == 'success') {
+            const myInterval=setInterval(()=>{
+              meter.value.data+=1
+              if(meter.value.data==Math.round(100/3)){
+                clearInterval(myInterval)
+              }
+            },10)
+            temp.original.push(res['data']['original'])
+          }
+          res = await uploadFile(file, 300)
+          if (res.status == 'success') {
+            const myInterval=setInterval(()=>{
+              meter.value.data+=1
+              if(meter.value.data==Math.round(200/3)){
+                clearInterval(myInterval)
+              }
+            },10)
+            temp.medium.push(res['data']['medium'])
+          }
+          res = await uploadFile(file, 100)
+          if (res.status == 'success') {
+            const myInterval=setInterval(()=>{
+              meter.value.data+=1
+              if(meter.value.data==100){
+                clearInterval(myInterval)
+              }
+            },10)
+            temp.small.push(res['data']['small'])
+            status.value.uploading = status.value.uploading.filter(item => item != data.previewImages[indexChild])
+          }
+        //return await promise
+      }
+      beforeData.images.files.forEach(async (file, indexChild) => {
+        
       })
       //await uploadData(beforeData)
     }
