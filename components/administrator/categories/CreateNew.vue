@@ -77,7 +77,6 @@
     <!-------------------create form----------------------------------------------------->
     <div class="w-full border px-1 rounded-md border-gray-400 py-4 relative" v-for="item, index in createForm.value"
       :ref="skipUnwrap.wrapForm">
-      {{ index+1 }}
       <UBadge class="absolute -top-3 -left-3">#{{ index + 1 }}</UBadge>
       <UButton @click="createForm.value.splice(index, 1)" color="red" class="absolute -top-3 -right-3"
         :ui="{ rounded: 'rounded-full' }" icon="i-material-symbols-light-close-small" square size="2xs"></UButton>
@@ -328,8 +327,6 @@ function removeImage(index, type, root) {
       })
       break
   }
-
-
 }
 const schema = z.object({
   title: z.string({

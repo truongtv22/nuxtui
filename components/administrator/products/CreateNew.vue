@@ -12,84 +12,84 @@
       <template #header>
         <div class="flex items-center justify-between">
           <h3 class="capitalize text-base font-semibold leading-6 text-gray-900 dark:text-white">
-            create new product {{ sizeScreen.w }}
+            create new product
           </h3>
           <UButton color="gray" variant="ghost" icon="i-heroicons-x-mark-20-solid" class="-my-1"
             @click="emits('confirmWindow', true, 'hel woo')" />
         </div>
       </template>
-      
-      <UForm :schema="schema" :state="product" class="space-y-4" @submit="onSubmit">
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-1 gap-y-4">
-          <UFormGroup label="Tên sản phẩm" name="name">
-            <UInput v-model="product.name" />
-          </UFormGroup>
-          <UFormGroup label="Barcode" name="barcode">
-            <UButtonGroup class="w-full">
-              <UInput v-model="product.barcode" class="w-full" />
-              <UButton icon="i-material-symbols-light-barcode-scanner-rounded" />
-            </UButtonGroup>
-          </UFormGroup>
-        </div>
-        <UFormGroup label="Categories" name="categories">
-            <USelectMenu multiple v-model="categoriesSelected" :options="product.categories.data" optionAttribute="title" optionValue="_id" :creatable="!status.loading" searchable :loading="status.loading"  ref="categories" >
-            <template #label>
-              <div class="w-auto flex flex-row" v-if="product.categories.value.length>0">
-                <div v-for="item,key in product.categories.value" ref="selected" class="w-auto">
-                <UBadge v-if="selectedCalculator(selected.slice(0,key))<categories.$refs.trigger.el.clientWidth-220" class="mr-1">{{ item.title }}</UBadge>
-              </div>
-              </div>
-              <span v-else class="text-gray-400">Select category</span>
-              <span class="w-auto" v-if="selected.length-selected.filter((item,index)=>{return selectedCalculator(selected.slice(0,index))<categories.$refs.trigger.el.clientWidth-220}).length>1">+{{ selected.length-selected.filter((item,index)=>{return selected.slice(0,index).reduce((val1,val2)=>val1+val2.clientWidth,0)<categories.$refs.trigger.el.clientWidth-220}).length }} items</span>
-              
-            </template>
-            <template #option-create="{ option }">
-                <span class="flex-shrink-0">New label:</span>
-      <span
-        class="flex-shrink-0 w-2 h-2 mt-px rounded-full -mx-1"
-      />
-      <span class="block truncate">{{ option.title }}</span>
-      
-    </template>
-          </USelectMenu>
-        </UFormGroup>
-        <UFormGroup label="Photos" name="images">
-          <div :class="'min-h-32 w-full border border-dotted border-2 rounded-md '+(product.previewImages.length<1?' cursor-pointer':'')">
-            <div v-if="product.previewImages.length==0" @click="fileSelected.click()" class="w-full min-h-32 justify-center items-center flex">
-              <UIcon  name="i-material-symbols-light-add-photo-alternate-outline-rounded" class="text-7xl text-gray-400"/>
+
+      <UForm :schema="schema" class="space-y-4">
+
+        <!----------------------------start create new form------------------------------>
+        <div :class="`w-full ${createForm.value.length > 1 ? 'border' : ''} px-1 rounded-md border-gray-400 py-4 relative`"
+          v-for="itemRoot, indexRoot in createForm.value" :ref="skipUnwrap.wrapForm">
+          <UBadge class="absolute -top-3 -left-3" v-if="createForm.value.length > 1">#{{ indexRoot + 1 }}</UBadge>
+          <UButton v-if="createForm.value.length > 1" @click="createForm.value.splice(indexRoot, 1)" color="red"
+            class="absolute -top-3 -right-3" :ui="{ rounded: 'rounded-full' }"
+            icon="i-material-symbols-light-close-small" square size="2xs"></UButton>
+          <UForm ref="form" :schema="schema" :state="itemRoot">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-1 gap-y-4">
+              <UFormGroup label="Tên sản phẩm" name="name">
+                <UInput v-model="itemRoot.name" />
+              </UFormGroup>
+              <UFormGroup label="Barcode" name="barcode">
+                <UButtonGroup class="w-full">
+                  <UInput v-model="itemRoot.barcode" class="w-full" />
+                  <UButton icon="i-material-symbols-light-barcode-scanner-rounded" />
+                </UButtonGroup>
+              </UFormGroup>
             </div>
-            
-            <div v-else class="grid grid-cols-1">
-              
-              <div class="grid grid-cols-2 sm:grid-cols-4 p-2 gap-2">
-                <div v-for="src,index in product.previewImages" class="relative">
-                  <img :src class="rounded-md" :key="index"/>
-                  <div class="absolute -top-2 -right-2 z-50 text-white text-xl bg-red-500 rounded-full  flex justify-center items-center cursor-pointer" @click="removeImage(src)">
-                    <UIcon name="i-material-symbols-light-close-small-outline-rounded"/>
-                  </div>
-                  
+            <UFormGroup label="Categories" name="categories">
+              <AdministratorCategoriesSelectList :data="categoriesData" @selected="itemRoot.categories = $event" />
+            </UFormGroup>
+            <UFormGroup label="Photos" name="images">
+              <div
+                :class="'min-h-32 w-full border border-dotted border-2 rounded-md ' + (itemRoot.previewImages.length < 1 ? ' cursor-pointer' : '')">
+                <div v-if="itemRoot.previewImages.length == 0" @click="fileSelected1[indexRoot].click()"
+                  class="w-full min-h-32 justify-center items-center flex">
+                  <UIcon name="i-material-symbols-light-add-photo-alternate-outline-rounded"
+                    class="text-7xl text-gray-400" />
                 </div>
+
+                <div v-else class="grid grid-cols-1">
+
+                  <div class="grid grid-cols-2 sm:grid-cols-4 p-2 gap-2">
+                    <PreviewImage v-for="src, index in itemRoot.previewImages" :src :index
+                      @remove="removeImage($event, 'temp', itemRoot)" />
+                  </div>
+                  <UDivider />
+                  <div class="flex justify-center cursor-pointer" @click="fileSelected1[indexRoot].click()">
+                    <UIcon name="i-material-symbols-light-add-photo-alternate-outline-rounded"
+                      class="text-7xl text-gray-400" />
+                  </div>
+                </div>
+
+                <input type="file" class="hidden" accept=".jpg, .jpeg, .png" ref="fileSelected1"
+                  @change="previewSelected($event, itemRoot)" multiple />
               </div>
-              <UDivider/>
-              <div class="flex justify-center cursor-pointer" @click="fileSelected.click()">
-                <UIcon name="i-material-symbols-light-add-photo-alternate-outline-rounded" class="text-7xl text-gray-400"/>
-              </div>
-            </div>
-            
-            <input type="file" class="hidden" accept=".jpg, .jpeg, .png" ref="fileSelected" @change="previewSelected"/>
+            </UFormGroup>
+            <UFormGroup label="Description" name="description">
+              <UTextarea v-model="itemRoot.description" rows="6" />
+            </UFormGroup>
+            <UFormGroup label="Note" name="note">
+              <UTextarea v-model="itemRoot.note" rows="6" />
+            </UFormGroup>
+            <UFormGroup label="Tags" name="tags">
+              <UTextarea v-model="itemRoot.tags" rows="6" disabled />
+            </UFormGroup>
+          </UForm>
+        </div>
+        <!----------------------------end create new form------------------------------>
+        <UTooltip v-if="!props.data" text="Add more product" :popper="{ arrow: true }" class="w-full">
+          <div ref="createFormBtn"
+            class="w-full border border-dotted cursor-pointer rounded-md flex justify-center py-1 dark:border-gray-700 border-gray-300"
+            @click="insertCreateForm">
+            <UIcon class="text-3xl text-gray-500" name="i-material-symbols-light-exposure-plus-1-rounded"></UIcon>
           </div>
-        </UFormGroup>
-        <UFormGroup label="Description" name="description">
-          <UTextarea v-model="product.description" rows="6"/>
-        </UFormGroup>
-        <UFormGroup label="Note" name="note">
-          <UTextarea v-model="product.note" rows="6"/>
-        </UFormGroup>
-        <UFormGroup label="Tags" name="tags">
-          <UTextarea v-model="product.tags" rows="6" disabled/>
-        </UFormGroup>
+        </UTooltip>
         <div class="flex justify-end gap-1">
-          <UButton type="submit">Create</UButton>
+          <UButton @click="onSubmit">Create</UButton>
           <UButton color="red" variant="ghost">Cancel</UButton>
         </div>
       </UForm>
@@ -99,8 +99,10 @@
 
 <script lang="ts" setup>
 import type { _0 } from '#tailwind-config/theme/backdropBlur';
+import { beforeMain } from '@popperjs/core';
 import { compile } from 'vue';
-import {z} from 'zod'
+import { z } from 'zod'
+import PreviewImage from '~/components/PreviewImage.vue';
 const props = defineProps(['modelValue'])
 const emits = defineEmits(['update:modelValue', 'confirmWindow'])
 const isOpen = computed({
@@ -119,85 +121,256 @@ function onResize() {
   sizeScreen.value.w = window.innerWidth
   sizeScreen.value.h = window.innerHeight
 }
-onBeforeMount(async ()=>{
-  await $fetch('/api/categories/list').then(res=>{
-    product.value.categories.data=res
+onBeforeMount(async () => {
+  insertCreateForm()
+  await $fetch('/api/categories/list').then(res => {
+    categoriesData.value = res
   })
 })
 onMounted(() => {
   onResize()
   window.addEventListener('resize', onResize)
 })
+const createForm = ref({
+  value: []
+})
+const categories = ref(null)
+const selected = ref([])
+const status = ref({
+  loading: false,
+  uploading: null
+})
+const wrapForm = ref([]),
+  skipUnwrap = { wrapForm },
+  skipUnwrap1 = { selected },
+  fileSelected1 = ref([]),
+  categoriesData = ref([]),
+  form = ref([])
 const product = ref({
   name: null,
   barcode: null,
   description: null,
-  images: [],
-  categories: {
-    data:[],
-    value:[]
+  images: {
+    original: [],
+    medium: [],
+    small: [],
+    files: []
   },
+  categories: [],
   note: null,
-  previewImages:[],
-  tags:null
+  previewImages: [],
+  tags: null
 })
-const categories=ref(null)
-const selected=ref([])
-const status=ref({
-  loading:false
+const meter = ref({
+  display: null,
+  data: 0
 })
-const categoriesSelected=computed({
-  get:()=>product.value.categories.value,
-  set:async (val)=>{
-    const arr=val.map(async (item)=>{
-      if(item._id){
+const categoriesSelected = computed({
+  get: () => product.value.categories.value,
+  set: async (val) => {
+    const arr = val.map(async (item) => {
+      if (item._id) {
         return item
       }
-      status.value.loading=true
-      return await $fetch('/api/categories/create',{
-        method:"POST",
-        body:JSON.stringify({
-          title:item.title
+      status.value.loading = true
+      return await $fetch('/api/categories/create', {
+        method: "POST",
+        body: JSON.stringify({
+          title: item.title
         })
-      }).then(res=>{
-        if(res.length>0){
+      }).then(res => {
+        if (res.length > 0) {
           product.value.categories.data.push(res[0])
-          status.value.loading=false
+          status.value.loading = false
           return res[0]
         }
       })
     })
-    product.value.categories.value=await Promise.all(arr)
+    product.value.categories.value = await Promise.all(arr)
   }
 })
 
-const fileSelected=ref()
-function previewSelected(e){
-  const file=e.target.files[0]
-  product.value.previewImages.push(URL.createObjectURL(file))
-  console.log(file)
-  product.value.images.push(file)
-}
-function removeImage(val){
-  product.value.previewImages.forEach((item,index)=>{
-    if(val==item){
-      product.value.previewImages.splice(index,1)
-      product.value.images.splice(index,1)
+const fileSelected = ref()
+function previewSelected(e, root) {
+  for (let i = 0; i < e.srcElement.files.length; i++) {
+    const file = e.srcElement.files[i]
+    let iss = false
+    root.images.files.forEach(item => {
+      if (item.name == file.name) {
+        iss = true
+      }
+    })
+    if (!iss) {
+      root.previewImages.push(URL.createObjectURL(file))
+      root.images.files.push(file)
     }
-  })
+  }
+}
+function removeImage(index, type, root) {
+  switch (type) {
+    case 'temp':
+      root.previewImages.splice(index, 1)
+      root.
+        images.files.splice(index, 1)
+      break
+    case 'old':
+      Object.keys(product.value.imagesOld).forEach(property => {
+        root.imagesOld[property].splice(index, 1)
+      })
+      break
+  }
 }
 const schema = z.object({
-  name: z.string().min(2)
+  name: z.string({
+    required_error: "Tên product không để trống",
+    invalid_type_error: "Tên product không để trống",
+  }).min(6, { message: 'Tên product có độ dài ít nhất 6 ký tự' }),
+  //categories: z.any().array().min(1, { message: 'Lua chon it nhat 1 nganh san pham' })
 })
 
 type Schema = z.output<typeof schema>
 
 async function onSubmit(event: FormSubmitEvent<Schema>) {
-  // Do something with data
-  console.log(event.data)
+  let isCorrect = true
+  let firstPoint = null
+  createForm.value.value.forEach(async (data, index) => {
+    const res = await schema.safeParse(data)
+    if (res.success == false) {
+      if (firstPoint == null) {
+        firstPoint = index
+      }
+      const errors = []
+      JSON.parse(res.error).forEach(err => {
+        errors.push({ path: err.path[0], message: err.message })
+      })
+      isCorrect = false
+      form.value[index].setErrors(errors)
+    }
+    else {
+      status.value.uploading = data.previewImages
+      const beforeData = {},
+        temp = {
+          original: [],
+          medium: [],
+          small: []
+        }
+      meter.value.data = 0
+      Object.keys(data).forEach(key => {
+        beforeData[key] = data[key]
+      })
+      delete beforeData.previewImages
+      console.log(beforeData)
+      beforeData.images.files.forEach(async (file) => {
+        let res = await uploadFile(file)
+        if (res.status == 'success') {
+          meter.value.data = 100 / 3
+          temp.original.push(res['data']['original'])
+        }
+        res = await uploadFile(file, 300)
+        if (res.status == 'success') {
+          meter.value.data = 200 / 3
+          temp.medium.push(res['data']['medium'])
+        }
+        res = await uploadFile(file, 100)
+        if (res.status == 'success') {
+          meter.value.data = 100
+          temp.small.push(res['data']['small'])
+          status.value.uploading = status.value.uploading.filter(item => item != data.previewImages[index])
+
+        }
+      })
+      //await uploadData(beforeData)
+    }
+
+  })
 }
-function selectedCalculator(arr){
-  return arr.reduce((val1,val2)=>val1+val2.clientWidth,0)
+async function uploadData(data) {
+  return await $fetch('/api/products/create', {
+    method: "POST",
+    body: JSON.stringify(data)
+  }).then(res => {
+    console.log(res)
+    return res
+  })
+}
+async function resizeImage(file, size) {
+  size ??= 100
+
+  const canvas = document.createElement('canvas')
+  const ctx = canvas.getContext('2d')
+
+  canvas.width = size
+  canvas.height = size
+
+  const bitmap = await createImageBitmap(file)
+  const { width, height } = bitmap
+
+  const ratio = Math.max(size / width, size / height)
+
+  const x = (size - (width * ratio)) / 2
+  const y = (size - (height * ratio)) / 2
+
+  ctx.drawImage(bitmap, 0, 0, width, height, x, y, width * ratio, height * ratio)
+  const res = new Promise(resolve => {
+    canvas.toBlob(blob => {
+      resolve(blob)
+    }, 'image/jpeg', 1)
+  })
+  return res
+}
+async function uploadFile(file, size = null) {
+  if (size) {
+    let blob = await resizeImage(file, size)
+    file = new File([blob], file.name, file)
+  }
+  let data = new FormData()
+  data.append('file', file)
+  const promise = new Promise(async (resolve, reject) => {
+    await $fetch('/api/uploads/image', {
+      method: "POST",
+      body: data
+    }).then(async res => {
+      resolve({
+        status: 'success',
+        data: {
+          original: res['data']['original'],
+          small: res['data'].original,
+          medium: res.data.original
+        }
+
+      })
+    }).catch(error => {
+      resolve({
+        status: 'error',
+        data: {
+          original: null,
+          small: null,
+          medium: null
+        }
+
+      })
+    })
+  })
+  return promise
+}
+
+function insertCreateForm() {
+  const form = {
+    name: null,
+    barcode: null,
+    description: null,
+    images: {
+      original: [],
+      medium: [],
+      small: [],
+      files: []
+    },
+    categories: [],
+    note: null,
+    previewImages: [],
+    tags: null
+  }
+  createForm.value.value.push(form)
 }
 </script>
 
