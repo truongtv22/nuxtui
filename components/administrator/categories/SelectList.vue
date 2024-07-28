@@ -33,10 +33,18 @@ const props=defineProps({
     },
     value:{
       default:'_id'
-    }
+    },
+    selected:{}
 })
 const emits=defineEmits(['selected'])
-const selected=ref([])
+const selected=computed({
+  get(){
+    return props.selected
+  },
+  set(val){
+    emits('selected',val)
+  }
+})
 const selectEl=ref([]),
 skipUnwrap={selectEl},
 categories=ref(null),
@@ -46,9 +54,7 @@ status=ref({
 function selectedCalculator(arr) {
   return arr.reduce((val1, val2) => val1 + val2.clientWidth, 0)
 }
-watch(selected,(newVal,oldVal)=>{
-  emits('selected',newVal)
-})
+
 </script>
 
 <style>

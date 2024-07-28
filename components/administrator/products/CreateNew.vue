@@ -19,8 +19,7 @@
         </div>
       </template>
 
-      <UForm :schema="schema" class="space-y-4">
-
+      <UForm :schema="schema" class="space-y-4 relative w-full">
         <!----------------------------start create new form------------------------------>
         <div
           :class="`w-full ${createForm.value.length > 1 ? 'border' : ''} px-1 rounded-md border-gray-400 py-4 relative`"
@@ -42,7 +41,8 @@
               </UFormGroup>
             </div>
             <UFormGroup label="Categories" name="categories">
-              <AdministratorCategoriesSelectList :data="categoriesData" @selected="itemRoot.categories = $event" />
+              <AdministratorCategoriesSelectList :data="categoriesData" @selected="itemRoot.categories = $event"
+                :selected="itemRoot.categories" />
             </UFormGroup>
             <UFormGroup label="Photos" name="images">
               <div
@@ -56,7 +56,8 @@
                 <div v-else class="grid grid-cols-1">
                   <div class="grid grid-cols-2 sm:grid-cols-4 p-2 gap-2">
                     <PreviewImage v-for="src, index in itemRoot.previewImages" :src :index
-                      :loading="(index == meter.display && indexRoot == meter.indexForm) ? meter.data : null" :status="(status.uploading && status.uploading.indexOf(src)>-1)?true:false"
+                      :loading="(index == meter.display && indexRoot == meter.indexForm) ? meter.data : null"
+                      :status="(status.uploading && status.uploading.indexOf(src) > -1) ? true : false"
                       @remove="removeImage($event, 'temp', itemRoot)" />
                   </div>
                   <UDivider />
@@ -90,9 +91,10 @@
           </div>
         </UTooltip>
         <div class="flex justify-end gap-1">
-          <UButton @click="onSubmit">Create</UButton>
-          <UButton color="red" variant="ghost">Cancel</UButton>
+          <UButton @click="onSubmit" :loading="status.loading" :disabled="status.loading">Create</UButton>
+          <UButton color="red" variant="ghost" :loading="status.loading" :disabled="status.loading">Cancel</UButton>
         </div>
+        <div v-if="status.loading" class="w-full absolute top-0 left-0 z-50 h-full cursor-wait"></div>
       </UForm>
     </UCard>
   </UModal>
@@ -104,8 +106,10 @@ import { beforeMain } from '@popperjs/core';
 import { compile } from 'vue';
 import { z } from 'zod'
 import PreviewImage from '~/components/PreviewImage.vue';
+
+const notificationStore = useMyNotificationsStore()
 const props = defineProps(['modelValue'])
-const emits = defineEmits(['update:modelValue', 'confirmWindow'])
+const emits = defineEmits(['update:modelValue', 'confirmWindow','newData'])
 const isOpen = computed({
   get() {
     return props.modelValue
@@ -223,99 +227,140 @@ function removeImage(index, type, root) {
   }
 }
 const schema = z.object({
-  /*
   name: z.string({
     required_error: "Tên product không để trống",
     invalid_type_error: "Tên product không để trống",
   }).min(6, { message: 'Tên product có độ dài ít nhất 6 ký tự' }),
-  */
-  //categories: z.any().array().min(1, { message: 'Lua chon it nhat 1 nganh san pham' })
+  categories: z.any().array().min(1, { message: 'Lua chon it nhat 1 nganh san pham' })
 })
 
 type Schema = z.output<typeof schema>
 
 async function onSubmit(event: FormSubmitEvent<Schema>) {
-  let isCorrect = true
   let firstPoint = null
-  createForm.value.value.forEach(async (data, index) => {
+  status.value.loading = true
+  let i = createForm.value.value.length
+  for await (const data of createForm.value.value) {
+    const index = createForm.value.value.indexOf(data)
     const res = await schema.safeParse(data)
     if (res.success == false) {
-      if (firstPoint == null) {
-        firstPoint = index
-      }
       const errors = []
       JSON.parse(res.error).forEach(err => {
         errors.push({ path: err.path[0], message: err.message })
       })
-      isCorrect = false
       form.value[index].setErrors(errors)
     }
     else {
-      status.value.uploading = data.previewImages
-      const beforeData = {},
-        temp = {
-          original: [],
-          medium: [],
-          small: []
-        }
-      
+      const beforeData = {}
       meter.value.indexForm = index
       Object.keys(data).forEach(key => {
         beforeData[key] = data[key]
       })
       delete beforeData.previewImages
-      for await (const file of beforeData.images.files){
-        meter.value.data = 0
-        const indexChild=beforeData.images.files.indexOf(file)
+      const temp = {
+        original: [],
+        medium: [],
+        small: []
+      }
+      if (beforeData.images.files.length > 0) {
+        status.value.uploading = data.previewImages
+        for await (const file of beforeData.images.files) {
+          meter.value.data = 0
+          const indexChild = beforeData.images.files.indexOf(file)
           meter.value.display = indexChild
           let res = await uploadFile(file)
           if (res.status == 'success') {
-            const myInterval=setInterval(()=>{
-              meter.value.data+=1
-              if(meter.value.data==Math.round(100/3)){
+            const myInterval = setInterval(() => {
+              meter.value.data += 1
+              if (meter.value.data == Math.round(100 / 3)) {
                 clearInterval(myInterval)
               }
-            },10)
+            }, 100)
             temp.original.push(res['data']['original'])
           }
           res = await uploadFile(file, 300)
           if (res.status == 'success') {
-            const myInterval=setInterval(()=>{
-              meter.value.data+=1
-              if(meter.value.data==Math.round(200/3)){
+            const myInterval = setInterval(() => {
+              meter.value.data += 1
+              if (meter.value.data == Math.round(200 / 3)) {
                 clearInterval(myInterval)
               }
-            },10)
-            temp.medium.push(res['data']['medium'])
+            }, 100)
+            temp.medium.push(res['data']['original'])
           }
           res = await uploadFile(file, 100)
           if (res.status == 'success') {
-            const myInterval=setInterval(()=>{
-              meter.value.data+=1
-              if(meter.value.data==100){
+            const myInterval = setInterval(() => {
+              meter.value.data += 1
+              if (meter.value.data == 100) {
                 clearInterval(myInterval)
+
               }
-            },10)
-            temp.small.push(res['data']['small'])
+            }, 100)
+            temp.small.push(res['data']['original'])
             status.value.uploading = status.value.uploading.filter(item => item != data.previewImages[indexChild])
           }
-        //return await promise
-      }
-      beforeData.images.files.forEach(async (file, indexChild) => {
-        
-      })
-      //await uploadData(beforeData)
-    }
+          await new Promise((resolve, reject) => {
+            setTimeout(resolve, 1000)
+          })
+          if (indexChild == beforeData.images.files.length - 1) {
 
-  })
+            status.value.uploading = null
+
+
+          }
+        }
+      }
+      beforeData.images = temp
+      const temp1 = []
+      beforeData.categories.forEach(item => {
+        temp1.push(item._id)
+      })
+      beforeData.categories = temp1
+      let res = await uploadData(beforeData)
+      if (res.type == 'success') {
+        notificationStore.showNotification({ title: `${data.name} created success`, description: 'Its online now', type: 'success' })
+        createForm.value.value.splice(index, 1)
+        emits('newData',res.data)
+      }
+      else {
+        notificationStore.showNotification({ title: `Error`, description: JSON.stringify(res.data), type: 'error' })
+      }
+    }
+    if (index == createForm.value.value.length-1) {
+      status.value.loading = false
+      if (createForm.value.value.length < 1) {
+        insertCreateForm()
+      }
+      for await(const data of createForm.value.value){
+        const index=createForm.value.value.indexOf(data)
+        const res = await schema.safeParse(data)
+        if (res.success == false) {
+          if (firstPoint == null) {
+            firstPoint = index
+            wrapForm.value[index].scrollIntoView({ behavior: 'smooth', block: 'start' })
+          }
+          const errors = []
+          JSON.parse(res.error).forEach(err => {
+            errors.push({ path: err.path[0], message: err.message })
+          })
+          form.value[index].setErrors(errors)
+        }
+      }
+      
+    }
+  }
 }
 async function uploadData(data) {
   return await $fetch('/api/products/create', {
     method: "POST",
     body: JSON.stringify(data)
   }).then(res => {
-    console.log(res)
-    return res
+    if (res.length > 0) {
+      return { type: 'success', data: res }
+    }
+  }).catch(error => {
+    return { type: 'error', data: error }
   })
 }
 async function resizeImage(file, size) {

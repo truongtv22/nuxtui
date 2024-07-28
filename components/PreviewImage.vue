@@ -8,8 +8,8 @@
         icon="i-material-symbols-light-visibility-outline-rounded" color="blue"
         />
     </div>
-    <UButton @click="emits('remove',index)" icon="i-material-symbols-light-close-small-outline-rounded" :ui="{rounded:'rounded-full'}" size="2xs" color="red" class="absolute -top-2 -right-2 z-50"/>
-    <div class="flex absolute top-0 left-0 w-full backdrop-blur-md h-full items-center px-2" v-if="status">
+    <UButton @click="emits('remove',index)" icon="i-material-symbols-light-close-small-outline-rounded" :ui="{rounded:'rounded-full'}" size="2xs" color="red" class="absolute -top-2 -right-2 z-10"/>
+    <div :class="`transition-all duration-1000 flex absolute top-0 left-0 w-full backdrop-blur-${loading<30?'xl':(loading<60?'md':'xs')} h-full items-center px-2`" v-if="status">
       <UProgress :value="props.loading" animation="carousel" />
     </div>
   </div>

@@ -19,7 +19,7 @@
       </template>
     </UTable>
 
-      <AdministratorProductsCreateNew v-model="modals.createForm.display" @confirm-window="(display,title)=>{modals.confirmClose.display=display,modals.confirmClose.title=title}" />
+      <AdministratorProductsCreateNew v-model="modals.createForm.display" @confirm-window="(display,title)=>{modals.confirmClose.display=display,modals.confirmClose.title=title}" @new-data="table.data.unshift($event)"/>
 
     <ConfirmModal v-model="modals.confirmDelete.display" :title="modals.confirmDelete.title" @is-confirmed="$event?deleteSelected():loading.delete=false"/>
     <ConfirmModal v-model="modals.confirmClose.display" :title="modals.confirmClose.title" @is-confirmed="$event?modals.createForm.display=false:null"/>
@@ -46,7 +46,7 @@ const loading=ref({
 })
 const table=ref({
   columns:[
-    {key:'id',label:'ID'},
+    {key:'_id',label:'ID'},
     {key:'name',label:'Name'},
     {key:'email',label:'Email'},
     {key:'role',label:'Role'},
@@ -54,43 +54,7 @@ const table=ref({
   ],
   selected:[],
   keyword:null,
-  data:[{
-  id: 1,
-  name: 'Lindsay Walton',
-  title: 'Front-end Developer',
-  email: 'lindsay.walton@example.com',
-  role: 'Member'
-}, {
-  id: 2,
-  name: 'Courtney Henry',
-  title: 'Designer',
-  email: 'courtney.henry@example.com',
-  role: 'Admin'
-}, {
-  id: 3,
-  name: 'Tom Cook',
-  title: 'Director of Product',
-  email: 'tom.cook@example.com',
-  role: 'Member'
-}, {
-  id: 4,
-  name: 'Whitney Francis',
-  title: 'Copywriter',
-  email: 'whitney.francis@example.com',
-  role: 'Admin'
-}, {
-  id: 5,
-  name: 'Leonard Krasner',
-  title: 'Senior Designer',
-  email: 'leonard.krasner@example.com',
-  role: 'Owner'
-}, {
-  id: 6,
-  name: 'Floyd Miles',
-  title: 'Principal Designer',
-  email: 'floyd.miles@example.com',
-  role: 'Member'
-}]
+  data:[]
 })
 
 const filteredRows = computed(() => {
