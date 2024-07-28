@@ -240,17 +240,14 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
   let firstPoint = null
   status.value.loading = true
   let i = createForm.value.value.length
-  for await (const data of createForm.value.value) {
-    const index = createForm.value.value.indexOf(data)
+  const formClones=[]
+  createForm.value.value.forEach(form=>{formClones.push(form)})
+  for await (const data of formClones) {
+    const index = formClones.indexOf(data)
+    const index1=createForm.value.value.indexOf(data)
     const res = await schema.safeParse(data)
-    if (res.success == false) {
-      const errors = []
-      JSON.parse(res.error).forEach(err => {
-        errors.push({ path: err.path[0], message: err.message })
-      })
-      form.value[index].setErrors(errors)
-    }
-    else {
+    wrapForm.value[index1].scrollIntoView({ behavior: 'smooth', block: 'start' })
+    if (res.success) {
       const beforeData = {}
       meter.value.indexForm = index
       Object.keys(data).forEach(key => {
@@ -304,11 +301,9 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
             setTimeout(resolve, 1000)
           })
           if (indexChild == beforeData.images.files.length - 1) {
-
             status.value.uploading = null
-
-
           }
+          
         }
       }
       beforeData.images = temp
@@ -320,18 +315,15 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
       let res = await uploadData(beforeData)
       if (res.type == 'success') {
         notificationStore.showNotification({ title: `${data.name} created success`, description: 'Its online now', type: 'success' })
-        createForm.value.value.splice(index, 1)
+        createForm.value.value.splice(index1, 1)
         emits('newData',res.data)
       }
       else {
         notificationStore.showNotification({ title: `Error`, description: JSON.stringify(res.data), type: 'error' })
       }
     }
-    if (index == createForm.value.value.length-1) {
+    if (index == i-1) {
       status.value.loading = false
-      if (createForm.value.value.length < 1) {
-        insertCreateForm()
-      }
       for await(const data of createForm.value.value){
         const index=createForm.value.value.indexOf(data)
         const res = await schema.safeParse(data)
@@ -347,6 +339,9 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
           form.value[index].setErrors(errors)
         }
       }
+      if (createForm.value.value.length < 1) {
+        insertCreateForm()
+      }
       
     }
   }
@@ -357,7 +352,7 @@ async function uploadData(data) {
     body: JSON.stringify(data)
   }).then(res => {
     if (res.length > 0) {
-      return { type: 'success', data: res }
+      return { type: 'success', data: res[0] }
     }
   }).catch(error => {
     return { type: 'error', data: error }
