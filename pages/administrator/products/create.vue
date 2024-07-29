@@ -13,7 +13,7 @@
       <template #header>
         <div class="flex items-center justify-between">
           <h3 class="capitalize text-base font-semibold leading-6 text-white dark:text-white">
-            tạo mới thể loại
+            tạo mới san pham
           </h3>
           
         </div>
@@ -21,20 +21,17 @@
           <UProgress size="xs" animation="carousel" :ui="{progress:{rounded:'rounded-none'}}" />
         </div>
       </template>
-    <AdministratorCategoriesCreateNew
-       @doing="loading.doing=$event"/>
+    <AdministratorProductsCreateNew @doing="loading.doing=$event"/>
       </UCard>
 </template>
 
 <script lang="ts" setup>
-import CreateForm from '@@/components/administrator/categories/CreateNew.vue'
 
 const notification=useMyNotificationsStore()
 const loading=ref({
   doing:false
 })
 
-const emits=defineEmits(['newData'])
 
 </script>
 

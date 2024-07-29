@@ -7,13 +7,23 @@
         <UButton :loading="loading.delete" color="red" :ui="{rounded:'rounded-full'}" @click="modals.confirmDelete.display=true,loading.delete=true"><UIcon class="font-bold text-xl" name="i-material-symbols-light-delete"/>Delete</UButton>
   </UChip>
         </Transition>
+        <TransitionGroup>
+        <UDivider v-if="table.selected.length >= pageCount" label="or" type="dotted" />
+        <UChip v-if="table.selected.length >= pageCount" class="transition-all" :text="table.data.length" size="xl"
+          color="red">
+          <UButton :loading="loading.delete" :disabled="loading.delete" color="red" :ui="{ rounded: 'rounded-full' }"
+            @click="modals.confirmDeleteAll.display = true, loading.delete = true">
+            <UIcon class="font-bold text-xl" name="i-material-symbols-light-delete" />Delete all records
+          </UButton>
+        </UChip>
+      </TransitionGroup>
         
         
       </div>
       <UInput v-model="table.keyword" placeholder="Filter people..." />
     </div>
     <div ref="tableEl">
-      <UTable :rows="filteredRows" :columns="table.columns" v-model="table.selected">
+      <UTable :rows="filteredRows" :columns="table.columns" v-model="table.selected" :loading="table.loading">
       <template #actions-data="{row }">
         <UButton color="blue" icon="i-material-symbols-light-info-outline-rounded" variant="ghost" :ui="{rounded: 'rounded-full'}"/>
       </template>
@@ -33,8 +43,23 @@
             no data</div>
         </template>
       </div>
-        
       </template>
+      <template #edited_at-data="{ row }">
+      <UBadge size="md" variant="soft" color="blue" v-if="row.edited_at">
+        {{ reformatDate(row.edited_at) }}
+      </UBadge>
+      <span class="capitalize" v-else>
+        No data
+      </span>
+    </template>
+    <template #created_at-data="{ row }">
+      <UBadge size="md" variant="soft" color="blue" v-if="row.created_at">
+        {{ reformatDate(row.created_at) }}
+      </UBadge>
+      <span class="capitalize" v-else>
+        No data
+      </span>
+    </template>
     </UTable>
     </div>
     
@@ -42,15 +67,44 @@
   <div class="flex justify-center mt-auto mb-2 w-full">
     <UPagination v-model="table.page" :page-count="pageCount" :total="table.data.length" />
   </div>
-      <AdministratorProductsCreateNew v-if="modals.createForm.display" v-model="modals.createForm.display" @confirm-window="(display,title)=>{modals.confirmClose.display=display,modals.confirmClose.title=title}" @new-data="table.data.unshift($event)"/>
-
+  <UModal :ui="{ width: `sm:max-w-6xl`, overlay: { background: 'backdrop-blur-md' } }" v-model="modals.createForm.display"
+    :fullscreen="basicStore.screenSize.w < 800 ? true : false" prevent-close>
+    <UCard :ui="{
+      base: 'h-fit flex flex-col',
+      rounded: '',
+      divide: 'divide-y divide-gray-100 dark:divide-gray-800',
+      body: {
+        base: 'grow'
+      },
+      header: {
+        base: 'bg-green-500 relative'
+      }
+    }" class="relative">
+      <template #header>
+        <div class="flex items-center justify-between">
+          <h3 class="capitalize text-base font-semibold leading-6 text-white dark:text-white">
+            tạo mới san pham
+          </h3>
+          
+        </div>
+        <div class="bottom-0 absolute w-full right-0" v-if="loading.create">
+          <UProgress size="xs" animation="carousel" :ui="{progress:{rounded:'rounded-none'}}" />
+        </div>
+      </template>
+      <AdministratorProductsCreateNew v-if="modals.createForm.display" @confirm-window="(display,title)=>{modals.confirmClose.display=display,modals.confirmClose.title=title}" @new-data="table.data.unshift($event)" @doing="loading.create=$event"/>
+</UCard>
+</UModal>
     <ConfirmModal v-model="modals.confirmDelete.display" :title="modals.confirmDelete.title" @is-confirmed="$event?deleteSelected():loading.delete=false"/>
+    <ConfirmModal v-model="modals.confirmDeleteAll.display" :title="modals.confirmDeleteAll.title"
+    @is-confirmed="$event ? deleteSelected('all') : loading.delete = false" />
     <ConfirmModal v-model="modals.confirmClose.display" :title="modals.confirmClose.title" @is-confirmed="$event?modals.createForm.display=false:null"/>
 </template>
 
 <script lang="ts" setup>
-const router=useRouter()
-const basicStore=useMyBasicStore()
+const router=useRouter(),
+route=useRoute()
+const basicStore=useMyBasicStore(),
+notificationStore=useMyNotificationsStore()
 const modals=ref({
   createForm:{
     display:false
@@ -62,6 +116,10 @@ const modals=ref({
   confirmClose:{
     display:false,
     title:'Do you sure close this window?'
+  },
+  confirmDeleteAll:{
+    display:false,
+    title:'Do you sure delete all items?'
   }
 })
 const loading=ref({
@@ -74,9 +132,9 @@ const table=ref({
     {key:'_id',label:'ID'},
     {key:'images',label:'Images'},
     {key:'name',label:'name'},
-    {key:'description',label:'Description'},
-    {key:'note',label:'Note'},
-    {key:'tags',label:'Tags'},
+    //{key:'description',label:'Description'},
+    //{key:'note',label:'Note'},
+    //{key:'tags',label:'Tags'},
     {key:'created_at',label:'Created at'},
     {key:'created_by',label:'Created by'},
     {key:'edited_at',label:'Edited at'},
@@ -88,6 +146,7 @@ const table=ref({
   data:[],
   page: 1,
   pageCount: 10,
+  loading:false
 })
 const pageCount = computed(() => {
   if(tableEl.value ){
@@ -98,9 +157,16 @@ const pageCount = computed(() => {
   return Math.floor((basicStore.screenSize.h - 84 - 61 - 48.5 - 32) / 65)
 
 })
+function reformatDate(val) {
+  return new Date(Date.parse(val))
+}
 onMounted(async ()=>{
+  loading.value.loading=true
   await $fetch('/api/products/list').then(res=>{
-    table.value.data=res
+    if (res.length > 0) {
+      table.value.data = res.sort((item1, item2) => item1.created_at < item2.created_at)
+    }
+    table.value.loading = false
   })
 })
 const filteredRows = computed(() => {
@@ -114,16 +180,44 @@ const filteredRows = computed(() => {
     })
   })
 })
-function deleteSelected(){
-  table.value.selected.forEach((item,index)=>{
-    table.value.data.forEach((item1,index1)=>{
-      if(item.id==item1.id){
-        table.value.data.splice(index1,1)
-      }
-    })
+async function deleteSelected(type=null) {
+  loading.value.delete = true
+  const prom = new Promise(async (resolve1, reject1) => {
+    if (type == 'all') {
+      table.value.selected = table.value.data
+    }
+    const arr = Array.from(Array(table.value.selected.length).keys())
+    for await (const index of arr) {
+      const item = table.value.selected[0]
+      await $fetch('/api/products/delete', {
+        method: 'DELETE',
+        body: {
+          _id: item._id
+        }
+      }).then(res => {
+        if (Object.hasOwn(res, 'deletedCount') && res.deletedCount == 1) {
+          const promise = new Promise((resolve, reject) => {
+            resolve(table.value.data.findIndex(r => r._id == item._id))
+          })
+          promise.then(rs => {
+            table.value.data = table.value.data.filter(item1 => item._id != item1._id)
+            table.value.selected = table.value.selected.filter(item1 => item1._id != item._id)
+            notificationStore.showNotification({
+              title: `${item._id} deleted success`,
+              description: `with name: <span class="text-red-500 font-bold text-xl">${item.title}</span>`,
+              type: 'success'
+            })
+          })
+        }
+        if (index == arr.length - 1) {
+          resolve1()
+        }
+      })
+    }
   })
-  table.value.selected=[]
-  loading.value.delete=false
+  prom.then(res => {
+    loading.value.delete = false
+  })
 }
 const confirmDeleteDisplay=computed({
   get(){
@@ -134,7 +228,17 @@ watch(confirmDeleteDisplay,(newVal,oldVal)=>{
   if(!newVal){
     loading.value.delete=false
   }
-  
+})
+const createModalComp=computed(()=>{
+  return modals.value.createForm.display
+})
+watch(createModalComp,(newVal,oldVal)=>{
+  if(newVal==true){
+    window.history.pushState({}, null, route.fullPath + '/create')
+  }
+  else{
+    window.history.pushState({}, null, route.fullPath)
+  }
 })
 </script>
 

@@ -1,10 +1,10 @@
 <template>
   <UForm ref="form" :schema="schema" :state="category" class="space-y-4" @submit="onSubmit" @error="onError">
-    <UFormGroup label="Tên thể loại" name="title">
+    <UFormGroup label="Tên thể loại" name="name">
       <template #hint>
         <span class="text-gray-400 dark:text-gray-500">Required</span>
       </template>
-      <UInput v-model="category.title" :disabled="disabled.submit"/>
+      <UInput v-model="category.name" :disabled="disabled.submit"/>
     </UFormGroup>
     <UFormGroup label="Hình ảnh" name="images">
       <div
@@ -116,7 +116,7 @@ onBeforeMount(() => {
 
 const form = ref()
 const category = ref({
-  title: null,
+  name: null,
   description: null,
   images: {
     original: [],
@@ -177,7 +177,7 @@ function removeImage(index, type) {
 
 }
 const schema = z.object({
-  title: z.string({
+  name: z.string({
     required_error: "Tên thể loại không để trống",
     invalid_type_error: "Tên thể loại phải là ký tự",
   }).min(6, { message: 'Tên thể loại có độ dài ít nhất 6 ký tự' })

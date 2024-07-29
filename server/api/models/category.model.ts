@@ -1,7 +1,7 @@
 import mongoose from 'mongoose'
 
 const schema:mongoose.Schema=new mongoose.Schema({
-    title:{
+    name:{
         type:String
     },
     images:{

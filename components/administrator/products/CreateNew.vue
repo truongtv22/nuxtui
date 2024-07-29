@@ -1,24 +1,5 @@
 <template>
-  <UModal :ui="{ width: `sm:max-w-6xl`, overlay: { background: 'backdrop-blur-md' } }" v-model="isOpen"
-    :fullscreen="sizeScreen.w < 800 ? true : false" prevent-close>
-    <UCard :ui="{
-      base: 'h-fit flex flex-col',
-      rounded: '',
-      divide: 'divide-y divide-gray-100 dark:divide-gray-800',
-      body: {
-        base: 'grow'
-      }
-    }">
-      <template #header>
-        <div class="flex items-center justify-between">
-          <h3 class="capitalize text-base font-semibold leading-6 text-gray-900 dark:text-white">
-            create new product
-          </h3>
-          <UButton color="gray" variant="ghost" icon="i-heroicons-x-mark-20-solid" class="-my-1"
-            @click="emits('confirmWindow', true, 'hel woo')" />
-        </div>
-      </template>
-
+  
       <UForm :schema="schema" class="space-y-4 relative w-full">
         <!----------------------------start create new form------------------------------>
         <div
@@ -31,7 +12,7 @@
           <UForm ref="form" :schema="schema" :state="itemRoot">
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-1 gap-y-4">
               <UFormGroup label="Tên sản phẩm" name="name">
-                <UInput v-model="itemRoot.name" />
+                <UInput ref="names" v-model="itemRoot.name" @keyup.enter="onSubmit(), $event.target.blur()" />
               </UFormGroup>
               <UFormGroup label="Barcode" name="barcode">
                 <UButtonGroup class="w-full">
@@ -96,20 +77,16 @@
         </div>
         <div v-if="status.loading" class="w-full absolute top-0 left-0 z-50 h-full cursor-wait"></div>
       </UForm>
-    </UCard>
-  </UModal>
+
 </template>
 
 <script lang="ts" setup>
-import type { _0 } from '#tailwind-config/theme/backdropBlur';
-import { beforeMain } from '@popperjs/core';
-import { compile } from 'vue';
 import { z } from 'zod'
 import PreviewImage from '~/components/PreviewImage.vue';
 
 const notificationStore = useMyNotificationsStore()
 const props = defineProps(['modelValue'])
-const emits = defineEmits(['update:modelValue', 'confirmWindow','newData'])
+const emits = defineEmits(['update:modelValue', 'confirmWindow', 'newData','doing'])
 const isOpen = computed({
   get() {
     return props.modelValue
@@ -122,24 +99,16 @@ const sizeScreen = ref({
   w: null,
   h: null
 })
-function onResize() {
-  sizeScreen.value.w = window.innerWidth
-  sizeScreen.value.h = window.innerHeight
-}
 onBeforeMount(async () => {
   insertCreateForm()
   await $fetch('/api/categories/list').then(res => {
     categoriesData.value = res
   })
 })
-onMounted(() => {
-  onResize()
-  window.addEventListener('resize', onResize)
-})
 const createForm = ref({
   value: []
 })
-const categories = ref(null)
+const names = ref(null)
 const selected = ref([])
 const status = ref({
   loading: false,
@@ -165,7 +134,11 @@ const product = ref({
   note: null,
   previewImages: [],
   tags: null
-})
+}),
+  oldData = ref({
+    name: null,
+    error: null
+  })
 const meter = ref({
   display: null,
   data: 0,
@@ -237,14 +210,15 @@ const schema = z.object({
 type Schema = z.output<typeof schema>
 
 async function onSubmit(event: FormSubmitEvent<Schema>) {
+  emits('doing',true)
   let firstPoint = null
   status.value.loading = true
   let i = createForm.value.value.length
-  const formClones=[]
-  createForm.value.value.forEach(form=>{formClones.push(form)})
+  const formClones = []
+  createForm.value.value.forEach(form => { formClones.push(form) })
   for await (const data of formClones) {
     const index = formClones.indexOf(data)
-    const index1=createForm.value.value.indexOf(data)
+    const index1 = createForm.value.value.indexOf(data)
     const res = await schema.safeParse(data)
     wrapForm.value[index1].scrollIntoView({ behavior: 'smooth', block: 'start' })
     if (res.success) {
@@ -303,7 +277,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
           if (indexChild == beforeData.images.files.length - 1) {
             status.value.uploading = null
           }
-          
+
         }
       }
       beforeData.images = temp
@@ -313,19 +287,23 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
       })
       beforeData.categories = temp1
       let res = await uploadData(beforeData)
-      if (res.type == 'success') {
+      if (Object.hasOwn(res,'type') && res.type == 'success') {
         notificationStore.showNotification({ title: `${data.name} created success`, description: 'Its online now', type: 'success' })
         createForm.value.value.splice(index1, 1)
-        emits('newData',res.data)
+        emits('newData', res.data)
       }
-      else {
+      else if (Object.hasOwn(res,'type') && res.type == 'error') {
         notificationStore.showNotification({ title: `Error`, description: JSON.stringify(res.data), type: 'error' })
       }
+      else{
+        form.value[index].setErrors(res)
+      }
     }
-    if (index == i-1) {
+    if (index == i - 1) {
+      emits('doing',false)
       status.value.loading = false
-      for await(const data of createForm.value.value){
-        const index=createForm.value.value.indexOf(data)
+      for await (const data of createForm.value.value) {
+        const index = createForm.value.value.indexOf(data)
         const res = await schema.safeParse(data)
         if (res.success == false) {
           if (firstPoint == null) {
@@ -339,24 +317,55 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
           form.value[index].setErrors(errors)
         }
       }
+
       if (createForm.value.value.length < 1) {
         insertCreateForm()
+        setTimeout(() => {
+          names.value[0].$refs.input.focus()
+        }, 1)
+
       }
-      
+
     }
   }
 }
 async function uploadData(data) {
-  return await $fetch('/api/products/create', {
-    method: "POST",
-    body: JSON.stringify(data)
-  }).then(res => {
-    if (res.length > 0) {
-      return { type: 'success', data: res[0] }
+  const errors = []
+  const checking = new Promise(async (resolve, reject) => {
+    if (oldData.value.name != data.name) {
+      await $fetch('/api/products/get?' + new URLSearchParams({ name: data.name })).then(res => {
+        if (res.length > 0) {
+          errors.push({ path: 'name', message: 'Name is existed' })
+          oldData.value.error = { path: 'name', message: 'Name is existed' }
+          //form.value.setErrors([oldData.value.error])
+        }
+        else {
+          oldData.value.error = null
+        }
+        resolve(errors)
+      })
     }
-  }).catch(error => {
-    return { type: 'error', data: error }
+    else {
+      resolve(errors)
+    }
   })
+  const result = checking.then(async (res) => {
+    if (res.length < 1) {
+      return await $fetch('/api/products/create', {
+        method: "POST",
+        body: JSON.stringify(data)
+      }).then(res => {
+        if (res.length > 0) {
+          return { type: 'success', data: res[0] }
+        }
+      }).catch(error => {
+        return { type: 'error', data: error }
+      })
+    }
+    return res
+  })
+  console.log(result)
+  return result
 }
 async function resizeImage(file, size) {
   size ??= 100

@@ -34,8 +34,8 @@
       <UButton color="blue" icon="i-material-symbols-light-info-outline-rounded" variant="ghost"
         :ui="{ rounded: 'rounded-full' }" @click="table.detail = { display: true, value: row }" />
     </template>
-    <template #title="{ row }">
-      <div class="w-full">{{ row.title }}</div>
+    <template #name="{ row }">
+      <div class="w-full">{{ row.name }}</div>
     </template>
     <template #images-data="{ row }">
       <div class="relative flex justify-center" @dblclick="router.push('categories/detail-' + row._id)">
@@ -133,7 +133,7 @@
         <div class="flex items-center justify-between">
           <UBadge color="blue" class="absolute -top-4 left-0">Update</UBadge>
           <h3 class="capitalize text-base font-semibold leading-6 text-white dark:text-white">
-            {{ table.detail.value.title }}
+            {{ table.detail.value.name }}
           </h3>
           <UButton color="gray" variant="ghost" icon="i-heroicons-x-mark-20-solid" class="-my-1"
             @click="table.detail.display = false" />
@@ -198,7 +198,7 @@ const tableColumns = computed(() => {
       return [
         { key: '_id', label: 'ID' },
         { key: 'images', label: 'Images' },
-        { key: 'title', label: 'Name' },
+        { key: 'name', label: 'Name' },
         { key: 'created_at', label: 'Created at' },
         { key: 'created_by', label: 'Created by' },
         { key: 'edited_at', label: 'Edited at' },
@@ -207,7 +207,7 @@ const tableColumns = computed(() => {
       ]
     case 'xs':
       return [
-        { key: 'title', label: 'Name' },
+        { key: 'name', label: 'Name' },
       ]
   }
 })
@@ -271,7 +271,7 @@ async function deleteSelected(type) {
             table.value.selected = table.value.selected.filter(item1 => item1._id != item._id)
             store.showNotification({
               title: `${item._id} deleted success`,
-              description: `with name: <span class="text-red-500 font-bold text-xl">${item.title}</span>`,
+              description: `with name: <span class="text-red-500 font-bold text-xl">${item.name}</span>`,
               type: 'success'
             })
           })
@@ -306,10 +306,6 @@ function updateData(data) {
       table.value.data[res][key] = data[key]
     })
     table.value.data[res].edited_at = new Date()
-    store.showNotification({
-      title: `${data.title} <span class="text-blue-500">updated</span> success`,
-      type: 'success'
-    })
   })
 }
 const modalCreateDisplay = computed({

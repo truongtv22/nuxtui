@@ -14,14 +14,14 @@
       <template #header>
         <div class="flex items-center justify-between">
           <h3 class="capitalize text-base font-semibold leading-6 text-white dark:text-white">
-            {{ category.title }}
+            {{ category.name }}
           </h3>
         </div>
         <div class="bottom-0 absolute w-full right-0" v-if="loading.doing">
           <UProgress size="xs" color="blue" animation="carousel" :ui="{progress:{rounded:'rounded-none'}}" />
         </div>
       </template>
-      <DetailComponent v-if="status.loaded"  :data="category" @updateData="updateData" @doing="loading.doing=$event"/>
+      <DetailComponent v-if="status.loaded"  :data="category" @doing="loading.doing=$event"/>
       <template v-else>
     <div class="flex flex-col gap-2">
       <USkeleton class="w-full min-h-screen"/>
@@ -78,13 +78,6 @@ onBeforeMount(async ()=>{
   })
  //console.log(category.value)
 })
-function updateData(data){
-  
-  notification.showNotification({
-      title: `${data.title} <span class="text-blue-500">updated</span> success`,
-      type: 'success'
-    })
-}
 </script>
 
 <style>

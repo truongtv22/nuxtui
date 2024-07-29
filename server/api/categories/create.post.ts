@@ -2,7 +2,7 @@ import categoryModel from "../models/category.model";
 import {z} from 'zod'
 
 const categorySchema=z.object({
-    title:z.string()
+    name:z.string()
 })
 export default defineEventHandler(async (event)=>{
     const validate=await readValidatedBody(event,body=>categorySchema.safeParse(body))
@@ -11,7 +11,7 @@ export default defineEventHandler(async (event)=>{
         const body=await readBody(event)
         const result=await categoryModel.create([
             {
-                title:body.title,
+                name:body.name,
                 images:{
                     original:body.images?.original,
                     medium:body.images?.medium,

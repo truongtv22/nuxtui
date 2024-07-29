@@ -1,10 +1,10 @@
 <template>
   <UForm ref="form" :schema="schema" :state="category" class="space-y-4 relative" @submit="onSubmit" @error="onError">
-    <UFormGroup label="Tên thể loại" name="title">
+    <UFormGroup label="Tên thể loại" name="name">
       <template #hint>
         <span class="text-gray-400 dark:text-gray-500">Required</span>
       </template>
-      <UInput ref="inputField" v-model="category.title" @keyup.enter="form.submit()" :disabled="disabled.submit" />
+      <UInput ref="inputField" v-model="category.name" @keyup.enter="form.submit()" :disabled="disabled.submit" />
     </UFormGroup>
     <UFormGroup label="Hình ảnh" name="images">
       <div :class="'min-h-32 w-full border border-dotted border-2 rounded-md '">
@@ -81,11 +81,11 @@
       <UButton @click="createForm.value.splice(index, 1)" color="red" class="absolute -top-3 -right-3"
         :ui="{ rounded: 'rounded-full' }" icon="i-material-symbols-light-close-small" square size="2xs"></UButton>
       <UForm ref="form1" :schema="schema" :state="item">
-        <UFormGroup label="Tên thể loại" name="title">
+        <UFormGroup label="Tên thể loại" name="name">
           <template #hint>
             <span class="text-gray-400 dark:text-gray-500">Required</span>
           </template>
-          <UInput ref="inputField" v-model="item.title" @keyup.enter="form.submit()" :disabled="disabled.submit" />
+          <UInput ref="inputField" v-model="item.name" @keyup.enter="form.submit()" :disabled="disabled.submit" />
         </UFormGroup>
         <UFormGroup label="Hình ảnh" name="images">
           <div :class="'min-h-32 w-full border border-dotted border-2 rounded-md '">
@@ -181,9 +181,7 @@
 </template>
 
 <script lang="ts" setup>
-import type { _0 } from '#tailwind-config/theme/backdropBlur';
 import type { FormError, FormErrorEvent, FormSubmitEvent } from '#ui/types'
-import { readUsedSize } from 'chart.js/helpers';
 import { Schema, z } from 'zod'
 
 const notiStore = useMyNotificationsStore()
@@ -191,7 +189,7 @@ const basicStore=useMyBasicStore()
 const props = defineProps(['data'])
 const emits = defineEmits(['newData', 'updateData', 'doing', 'modal'])
 useSeoMeta({
-  title: `${props.data ? `${props.data.title} >` : 'Create'} Category`
+  title: `${props.data ? `${props.data.name} >` : 'Create'} Category`
 })
 
 const createFormBtn = ref(null)
@@ -215,12 +213,11 @@ function resetData() {
       })
     })
     category.value.previewImages = []
-    oldTitle.value.data = category.value.title
-    console.log(category.value)
+    oldTitle.value.data = category.value.name
   }
   else {
     category.value = {
-      title: null,
+      name: null,
       description: null,
       images: {
         original: [],
@@ -267,7 +264,7 @@ const form = ref(),
 const inputField = ref()
 const myBtn = ref()
 const category = ref({
-  title: null,
+  name: null,
   description: null,
   images: {
     original: [],
@@ -329,21 +326,21 @@ function removeImage(index, type, root) {
   }
 }
 const schema = z.object({
-  title: z.string({
+  name: z.string({
     required_error: "Tên thể loại không để trống",
     invalid_type_error: "Tên thể loại phải là ký tự",
   }).min(6, { message: 'Tên thể loại có độ dài ít nhất 6 ký tự' })
 })
 const validate = async (state: any): FormError[] => {
   const errors = []
-  if (state.title && !props.data || (props.data && state.title != props.data.title)) {
+  if (state.name && !props.data || (props.data && state.name != props.data.name)) {
     const promise = new Promise(async (resolve, reject) => {
-      if (oldTitle.value.data != state.title) {
+      if (oldTitle.value.data != state.name) {
         //disabled.value.submit=true
-        await $fetch('/api/categories/get?' + new URLSearchParams({ title: state.title })).then(res => {
+        await $fetch('/api/categories/get?' + new URLSearchParams({ title: state.name })).then(res => {
           if (res.length > 0) {
-            errors.push({ path: 'title', message: 'Title is existed' })
-            oldTitle.value.error = { path: 'title', message: 'Title is existed' }
+            errors.push({ path: 'name', message: 'Name is existed' })
+            oldTitle.value.error = { path: 'name', message: 'Name is existed' }
           }
           else {
             oldTitle.value.error = null
@@ -351,7 +348,7 @@ const validate = async (state: any): FormError[] => {
           resolve(errors)
         })
       }
-      else if (oldTitle.value.data == state.title && oldTitle.value.error) {
+      else if (oldTitle.value.data == state.name && oldTitle.value.error) {
         errors.push(oldTitle.value.error)
         resolve(errors)
       }
@@ -421,11 +418,11 @@ function singleUpload(itemRoot, items) {
     const promises = []
     const errors = []
     const checking = new Promise(async (resolve, reject) => {
-      if (oldTitle.value.data != itemRoot.title) {
-        await $fetch('/api/categories/get?' + new URLSearchParams({ title: itemRoot.title })).then(res => {
+      if (oldTitle.value.data != itemRoot.name) {
+        await $fetch('/api/categories/get?' + new URLSearchParams({ name: itemRoot.name })).then(res => {
           if (res.length > 0) {
-            errors.push({ path: 'title', message: 'Title is existed' })
-            oldTitle.value.error = { path: 'title', message: 'Title is existed' }
+            errors.push({ path: 'name', message: 'Name is existed' })
+            oldTitle.value.error = { path: 'name', message: 'Name is existed' }
             form.value.setErrors([oldTitle.value.error])
           }
           else {
@@ -512,13 +509,17 @@ function singleUpload(itemRoot, items) {
                 emits('updateData', category.value)
               }
             }
+            notiStore.showNotification({
+                  title: `${itemRoot.name} <span class="text-${props.data?'blue':'green'}-500">${props.data?'updated':'created'}</span> success`,
+                  type: 'success'
+                })
             if (indexRoot == items.length - 1) {
               disabled.value.submit = false
               scrollToForm()
               createForm.value.value = []
               status.value.uploading = []
               emits('doing', disabled.value.submit)
-              oldTitle.value.data = category.value.title
+              oldTitle.value.data = category.value.name
             }
             return resolveRoot()
           })
@@ -607,7 +608,7 @@ const oldTitle = ref({
 })
 function insertCreateForm() {
   const form = {
-    title: null,
+    name: null,
     description: null,
     images: {
       original: [],
