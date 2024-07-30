@@ -25,7 +25,7 @@
     <div ref="tableEl">
       <UTable :rows="filteredRows" :columns="table.columns" v-model="table.selected" :loading="table.loading">
       <template #actions-data="{row }">
-        <UButton color="blue" icon="i-material-symbols-light-info-outline-rounded" variant="ghost" :ui="{rounded: 'rounded-full'}"/>
+        <UButton @click="showDetail(row)" color="blue" icon="i-material-symbols-light-info-outline-rounded" variant="ghost" :ui="{rounded: 'rounded-full'}"/>
       </template>
       <template #images-data="{row}">
         <div class="relative flex justify-center" @dblclick="router.push('products/detail-' + row._id)">
@@ -77,27 +77,29 @@
         base: 'grow'
       },
       header: {
-        base: 'bg-green-500 relative'
+        base: `bg-${modals.updateForm.data?'blue':'green'}-500 relative`
       }
     }" class="relative">
       <template #header>
         <div class="flex items-center justify-between">
           <h3 class="capitalize text-base font-semibold leading-6 text-white dark:text-white">
-            tạo mới san pham
+            {{modals.updateForm.data?modals.updateForm.data.name:'tạo mới san pham'}}
           </h3>
-          
+          <UButton :disabled="loading.create" color="gray" variant="ghost" icon="i-heroicons-x-mark-20-solid"
+              class="-my-1"
+              @click=" modals.confirmClose.display = true, modals.confirmClose.title = 'Bạn có chắc muốn đóng cửa sổ này?'" />
         </div>
         <div class="bottom-0 absolute w-full right-0" v-if="loading.create">
           <UProgress size="xs" animation="carousel" :ui="{progress:{rounded:'rounded-none'}}" />
         </div>
       </template>
-      <AdministratorProductsCreateNew v-if="modals.createForm.display" @confirm-window="(display,title)=>{modals.confirmClose.display=display,modals.confirmClose.title=title}" @new-data="table.data.unshift($event)" @doing="loading.create=$event"/>
+      <AdministratorProductsCreateNew v-if="modals.createForm.display" :data="modals.updateForm.data" @confirm-window="(display,title)=>{modals.confirmClose.display=display,modals.confirmClose.title=title}" @new-data="table.data.unshift($event)" @doing="loading.create=$event"/>
 </UCard>
 </UModal>
     <ConfirmModal v-model="modals.confirmDelete.display" :title="modals.confirmDelete.title" @is-confirmed="$event?deleteSelected():loading.delete=false"/>
     <ConfirmModal v-model="modals.confirmDeleteAll.display" :title="modals.confirmDeleteAll.title"
     @is-confirmed="$event ? deleteSelected('all') : loading.delete = false" />
-    <ConfirmModal v-model="modals.confirmClose.display" :title="modals.confirmClose.title" @is-confirmed="$event?modals.createForm.display=false:null"/>
+    <ConfirmModal v-model="modals.confirmClose.display" :title="modals.confirmClose.title" @is-confirmed="$event?(modals.createForm.display=false,modals.updateForm.data=null):null"/>
 </template>
 
 <script lang="ts" setup>
@@ -120,6 +122,9 @@ const modals=ref({
   confirmDeleteAll:{
     display:false,
     title:'Do you sure delete all items?'
+  },
+  updateForm:{
+    data:null
   }
 })
 const loading=ref({
@@ -203,7 +208,7 @@ async function deleteSelected(type=null) {
             table.value.selected = table.value.selected.filter(item1 => item1._id != item._id)
             notificationStore.showNotification({
               title: `${item._id} deleted success`,
-              description: `with name: <span class="text-red-500 font-bold text-xl">${item.title}</span>`,
+              description: `with name: <span class="text-red-500 font-bold text-xl">${item.name}</span>`,
               type: 'success'
             })
           })
@@ -233,12 +238,20 @@ const createModalComp=computed(()=>{
 })
 watch(createModalComp,(newVal,oldVal)=>{
   if(newVal==true){
-    window.history.pushState({}, null, route.fullPath + '/create')
+    if(!modals.value.updateForm.data){
+      window.history.pushState({}, null, route.fullPath + '/create')
+    }
+    
   }
   else{
     window.history.pushState({}, null, route.fullPath)
   }
 })
+function showDetail(row){
+  modals.value.createForm.display=true
+  modals.value.updateForm.data=row
+  window.history.pushState({}, null, route.fullPath + '/detail-'+row._id)
+}
 </script>
 
 <style>

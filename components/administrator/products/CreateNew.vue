@@ -247,7 +247,9 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
     const index1 = createForm.value.value.indexOf(data)
     const res = await schema.safeParse(data)
     let errors=[]
-    const res1=await $fetch('/api/products/get?' + new URLSearchParams({ name: data.name })).then(resC => {
+    let res1=[]
+    if(oldData.value.name!=data.name){
+      res1=await $fetch('/api/products/get?' + new URLSearchParams({ name: data.name })).then(resC => {
         if (resC.length > 0) {
           errors.push({ path: 'name', message: 'Name is existed' })
           oldData.value.error = { path: 'name', message: 'Name is existed' }
@@ -259,6 +261,8 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
         }
         return errors
       })
+    }
+    
     wrapForm.value[index1].scrollIntoView({ behavior: 'smooth', block: 'start' })
     if (res.success && res1.length==0) {
       const beforeData = {}
@@ -331,6 +335,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
       beforeData.categories = temp1
       let res = await uploadData(beforeData)
       if (Object.hasOwn(res, 'type') && res.type == 'success') {
+        oldData.value.name=data.name
         notificationStore.showNotification({
           title: `${data.name} <span class="text-${props.data ? 'blue' : 'green'}-500">${props.data ? 'updated' : 'created'}</span> success`,
           type: 'success'
