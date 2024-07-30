@@ -15,11 +15,7 @@ export default defineEventHandler(async (event)=>{
                 name:body.name,
                 barcode:body.barcode,
                 categories:body.categories,
-                images:{
-                    original:body.images?.original,
-                    medium:body.images?.medium,
-                    small:body.images?.small
-                },
+                images:body.images,
                 description:body.description,
                 note:body.note,
                 tags:body.tags,

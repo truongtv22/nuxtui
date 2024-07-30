@@ -1,82 +1,82 @@
 <template>
-  
-      <UForm :schema="schema" class="space-y-4 relative w-full">
-        <!----------------------------start create new form------------------------------>
-        <div
-          :class="`w-full ${createForm.value.length > 1 ? 'border' : ''} px-1 rounded-md border-gray-400 py-4 relative`"
-          v-for="itemRoot, indexRoot in createForm.value" :ref="skipUnwrap.wrapForm">
-          <UBadge class="absolute -top-3 -left-3" v-if="createForm.value.length > 1">#{{ indexRoot + 1 }}</UBadge>
-          <UButton v-if="createForm.value.length > 1" @click="createForm.value.splice(indexRoot, 1)" color="red"
-            class="absolute -top-3 -right-3" :ui="{ rounded: 'rounded-full' }"
-            icon="i-material-symbols-light-close-small" square size="2xs"></UButton>
-          <UForm ref="form" :schema="schema" :state="itemRoot">
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-1 gap-y-4">
-              <UFormGroup label="Tên sản phẩm" name="name">
-                <UInput ref="names" v-model="itemRoot.name" @keyup.enter="onSubmit(), $event.target.blur()" />
-              </UFormGroup>
-              <UFormGroup label="Barcode" name="barcode">
-                <UButtonGroup class="w-full">
-                  <UInput v-model="itemRoot.barcode" class="w-full" />
-                  <UButton icon="i-material-symbols-light-barcode-scanner-rounded" />
-                </UButtonGroup>
-              </UFormGroup>
+
+  <UForm :schema="schema" class="space-y-4 relative w-full">
+    <!----------------------------start create new form------------------------------>
+    <div :class="`w-full ${createForm.value.length > 1 ? 'border' : ''} px-1 rounded-md border-gray-400 py-4 relative`"
+      v-for="itemRoot, indexRoot in createForm.value" :ref="skipUnwrap.wrapForm">
+      <UBadge class="absolute -top-3 -left-3" v-if="createForm.value.length > 1">#{{ indexRoot + 1 }}</UBadge>
+      <UButton v-if="createForm.value.length > 1" @click="createForm.value.splice(indexRoot, 1)" color="red"
+        class="absolute -top-3 -right-3" :ui="{ rounded: 'rounded-full' }" icon="i-material-symbols-light-close-small"
+        square size="2xs"></UButton>
+      <UForm ref="form" :schema="schema" :state="itemRoot">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-1 gap-y-4">
+          <UFormGroup label="Tên sản phẩm" name="name">
+            <UInput ref="names" v-model="itemRoot.name" @keyup.enter="onSubmit(), $event.target.blur()" />
+          </UFormGroup>
+          <UFormGroup label="Barcode" name="barcode">
+            <UButtonGroup class="w-full">
+              <UInput v-model="itemRoot.barcode" class="w-full" />
+              <UButton icon="i-material-symbols-light-barcode-scanner-rounded" />
+            </UButtonGroup>
+          </UFormGroup>
+        </div>
+        <UFormGroup label="Categories" name="categories">
+          <AdministratorCategoriesSelectList :data="categoriesData" @selected="itemRoot.categories = $event"
+            :selected="itemRoot.categories" />
+        </UFormGroup>
+        <UFormGroup label="Photos" name="images">
+          <div
+            :class="'min-h-32 w-full border border-dotted border-2 rounded-md ' + (itemRoot.previewImages.length < 1 ? ' cursor-pointer' : '')">
+            <div v-if="itemRoot.previewImages.length == 0" @click="fileSelected1[indexRoot].click()"
+              class="w-full min-h-32 justify-center items-center flex">
+              <UIcon name="i-material-symbols-light-add-photo-alternate-outline-rounded"
+                class="text-7xl text-gray-400" />
             </div>
-            <UFormGroup label="Categories" name="categories">
-              <AdministratorCategoriesSelectList :data="categoriesData" @selected="itemRoot.categories = $event"
-                :selected="itemRoot.categories" />
-            </UFormGroup>
-            <UFormGroup label="Photos" name="images">
-              <div
-                :class="'min-h-32 w-full border border-dotted border-2 rounded-md ' + (itemRoot.previewImages.length < 1 ? ' cursor-pointer' : '')">
-                <div v-if="itemRoot.previewImages.length == 0" @click="fileSelected1[indexRoot].click()"
-                  class="w-full min-h-32 justify-center items-center flex">
-                  <UIcon name="i-material-symbols-light-add-photo-alternate-outline-rounded"
-                    class="text-7xl text-gray-400" />
-                </div>
 
-                <div v-else class="grid grid-cols-1">
-                  <div class="grid grid-cols-2 sm:grid-cols-4 p-2 gap-2">
-                    <PreviewImage v-for="src, index in itemRoot.previewImages" :src :index
-                      :loading="(index == meter.display && indexRoot == meter.indexForm) ? meter.data : null"
-                      :status="(status.uploading && status.uploading.indexOf(src) > -1) ? true : false"
-                      @remove="removeImage($event, 'temp', itemRoot)" />
-                  </div>
-                  <UDivider />
-                  <div class="flex justify-center cursor-pointer" @click="fileSelected1[indexRoot].click()">
-                    <UIcon name="i-material-symbols-light-add-photo-alternate-outline-rounded"
-                      class="text-7xl text-gray-400" />
-                  </div>
-                </div>
-
-                <input type="file" class="hidden" accept=".jpg, .jpeg, .png" ref="fileSelected1"
-                  @change="previewSelected($event, itemRoot)" multiple />
+            <div v-else class="grid grid-cols-1">
+              <div class="grid grid-cols-2 sm:grid-cols-4 p-2 gap-2">
+                <PreviewImage v-for="data, index in itemRoot.previewImages" :data :index
+                  :loading="(index == meter.display && indexRoot == meter.indexForm) ? meter.data : null"
+                  :status="(status.uploading && status.uploading.indexOf(data) > -1 && data.original.indexOf('blob')>-1) ? true : false"
+                  @remove="removeImage($event, 'temp', itemRoot)" />
               </div>
-            </UFormGroup>
-            <UFormGroup label="Description" name="description">
-              <UTextarea v-model="itemRoot.description" rows="6" />
-            </UFormGroup>
-            <UFormGroup label="Note" name="note">
-              <UTextarea v-model="itemRoot.note" rows="6" />
-            </UFormGroup>
-            <UFormGroup label="Tags" name="tags">
-              <UTextarea v-model="itemRoot.tags" rows="6" disabled />
-            </UFormGroup>
-          </UForm>
-        </div>
-        <!----------------------------end create new form------------------------------>
-        <UTooltip v-if="!props.data" text="Add more product" :popper="{ arrow: true }" class="w-full">
-          <div ref="createFormBtn"
-            class="w-full border border-dotted cursor-pointer rounded-md flex justify-center py-1 dark:border-gray-700 border-gray-300"
-            @click="insertCreateForm">
-            <UIcon class="text-3xl text-gray-500" name="i-material-symbols-light-exposure-plus-1-rounded"></UIcon>
+              <UDivider />
+              <div class="flex justify-center cursor-pointer" @click="fileSelected1[indexRoot].click()">
+                <UIcon name="i-material-symbols-light-add-photo-alternate-outline-rounded"
+                  class="text-7xl text-gray-400" />
+              </div>
+            </div>
+
+            <input type="file" class="hidden" accept=".jpg, .jpeg, .png" ref="fileSelected1"
+              @change="previewSelected($event, itemRoot)" multiple />
           </div>
-        </UTooltip>
-        <div class="flex justify-end gap-1">
-          <UButton @click="onSubmit" :loading="status.loading" :disabled="status.loading">Create</UButton>
-          <UButton color="red" variant="ghost" :loading="status.loading" :disabled="status.loading">Cancel</UButton>
-        </div>
-        <div v-if="status.loading" class="w-full absolute top-0 left-0 z-50 h-full cursor-wait"></div>
+        </UFormGroup>
+        <UFormGroup label="Description" name="description">
+          <UTextarea v-model="itemRoot.description" rows="6" />
+        </UFormGroup>
+        <UFormGroup label="Note" name="note">
+          <UTextarea v-model="itemRoot.note" rows="6" />
+        </UFormGroup>
+        <UFormGroup label="Tags" name="tags">
+          <UTextarea v-model="itemRoot.tags" rows="6" disabled />
+        </UFormGroup>
       </UForm>
+    </div>
+    <!----------------------------end create new form------------------------------>
+    <UTooltip v-if="!props.data" text="Add more product" :popper="{ arrow: true }" class="w-full">
+      <div ref="createFormBtn"
+        class="w-full border border-dotted cursor-pointer rounded-md flex justify-center py-1 dark:border-gray-700 border-gray-300"
+        @click="insertCreateForm">
+        <UIcon class="text-3xl text-gray-500" name="i-material-symbols-light-exposure-plus-1-rounded"></UIcon>
+      </div>
+    </UTooltip>
+    <div class="flex justify-end gap-1">
+      <UButton @click="onSubmit" :loading="status.loading" :disabled="status.loading"
+        :color="props.data ? 'blue' : 'green'">{{ props.data ? 'Update' : 'Create' }}</UButton>
+      <UButton color="red" variant="ghost" :loading="status.loading" :disabled="status.loading">Cancel</UButton>
+    </div>
+    <div v-if="status.loading" class="w-full absolute top-0 left-0 z-50 h-full cursor-wait"></div>
+  </UForm>
 
 </template>
 
@@ -85,8 +85,8 @@ import { z } from 'zod'
 import PreviewImage from '~/components/PreviewImage.vue';
 
 const notificationStore = useMyNotificationsStore()
-const props = defineProps(['modelValue'])
-const emits = defineEmits(['update:modelValue', 'confirmWindow', 'newData','doing'])
+const props = defineProps(['modelValue', 'data'])
+const emits = defineEmits(['update:modelValue', 'confirmWindow', 'newData', 'doing'])
 const isOpen = computed({
   get() {
     return props.modelValue
@@ -100,10 +100,33 @@ const sizeScreen = ref({
   h: null
 })
 onBeforeMount(async () => {
-  insertCreateForm()
   await $fetch('/api/categories/list').then(res => {
     categoriesData.value = res
   })
+  insertCreateForm()
+  if (props.data) {
+    setTimeout(() => {
+      Object.keys(props.data).forEach(key => {
+        
+        if (key == 'images') {
+          createForm.value.value[0][key].files = []
+          props.data[key].forEach(item=>{
+            createForm.value.value[0][key].push(item)
+            createForm.value.value[0][key].files.push(null)
+          })
+          createForm.value.value[0].previewImages=props.data[key]
+        }
+        else{
+          createForm.value.value[0][key] = props.data[key]
+          if (key == 'name') {
+          oldData.value.name = props.data[key]
+        }
+        }
+      })
+      createForm.value.value[0].categories = categoriesData.value.filter(item => createForm.value.value[0].categories.indexOf(item._id) > -1)
+    }, 1)
+  }
+
 })
 const createForm = ref({
   value: []
@@ -170,18 +193,21 @@ const categoriesSelected = computed({
 })
 
 const fileSelected = ref()
-function previewSelected(e, root) {
+async function previewSelected(e, root) {
   for (let i = 0; i < e.srcElement.files.length; i++) {
+    
     const file = e.srcElement.files[i]
+    const resizedBlob=await resizeImage(file,300),
+    resized=URL.createObjectURL(resizedBlob)
     let iss = false
-    root.images.files.forEach(item => {
-      if (item.name == file.name) {
+    root.files.forEach(item => {
+      if (item && item.name == file.name) {
         iss = true
       }
     })
     if (!iss) {
-      root.previewImages.push(URL.createObjectURL(file))
-      root.images.files.push(file)
+      root.previewImages.push({original:URL.createObjectURL(file),small:resized})
+      root.files.push(file)
     }
   }
 }
@@ -189,8 +215,8 @@ function removeImage(index, type, root) {
   switch (type) {
     case 'temp':
       root.previewImages.splice(index, 1)
-      root.
-        images.files.splice(index, 1)
+      root.files.splice(index, 1)
+      root.images.splice(index, 1)
       break
     case 'old':
       Object.keys(product.value.imagesOld).forEach(property => {
@@ -210,7 +236,7 @@ const schema = z.object({
 type Schema = z.output<typeof schema>
 
 async function onSubmit(event: FormSubmitEvent<Schema>) {
-  emits('doing',true)
+  emits('doing', true)
   let firstPoint = null
   status.value.loading = true
   let i = createForm.value.value.length
@@ -220,24 +246,35 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
     const index = formClones.indexOf(data)
     const index1 = createForm.value.value.indexOf(data)
     const res = await schema.safeParse(data)
+    let errors=[]
+    const res1=await $fetch('/api/products/get?' + new URLSearchParams({ name: data.name })).then(resC => {
+        if (resC.length > 0) {
+          errors.push({ path: 'name', message: 'Name is existed' })
+          oldData.value.error = { path: 'name', message: 'Name is existed' }
+          form.value[index].setErrors([oldData.value.error])
+        }
+        else {
+          oldData.value.error = null
+          errors=[]
+        }
+        return errors
+      })
     wrapForm.value[index1].scrollIntoView({ behavior: 'smooth', block: 'start' })
-    if (res.success) {
+    if (res.success && res1.length==0) {
       const beforeData = {}
       meter.value.indexForm = index
       Object.keys(data).forEach(key => {
         beforeData[key] = data[key]
       })
       delete beforeData.previewImages
-      const temp = {
-        original: [],
-        medium: [],
-        small: []
-      }
-      if (beforeData.images.files.length > 0) {
+      const tempRoot = []
+      if (beforeData.files.length > 0) {
         status.value.uploading = data.previewImages
-        for await (const file of beforeData.images.files) {
+        for await (const file of beforeData.files) {
+          if(file){
+            const temp={}
           meter.value.data = 0
-          const indexChild = beforeData.images.files.indexOf(file)
+          const indexChild = beforeData.files.indexOf(file)
           meter.value.display = indexChild
           let res = await uploadFile(file)
           if (res.status == 'success') {
@@ -247,7 +284,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
                 clearInterval(myInterval)
               }
             }, 100)
-            temp.original.push(res['data']['original'])
+            temp.original=res['data']['original']
           }
           res = await uploadFile(file, 300)
           if (res.status == 'success') {
@@ -257,7 +294,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
                 clearInterval(myInterval)
               }
             }, 100)
-            temp.medium.push(res['data']['original'])
+            temp.medium=res['data']['original']
           }
           res = await uploadFile(file, 100)
           if (res.status == 'success') {
@@ -268,39 +305,51 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
 
               }
             }, 100)
-            temp.small.push(res['data']['original'])
+            temp.small=res['data']['original']
             status.value.uploading = status.value.uploading.filter(item => item != data.previewImages[indexChild])
           }
           await new Promise((resolve, reject) => {
+            tempRoot.push(temp)
             setTimeout(resolve, 1000)
           })
-          if (indexChild == beforeData.images.files.length - 1) {
-            status.value.uploading = null
+          if (indexChild == beforeData.files.length - 1) {
+            
           }
-
+          }
         }
       }
-      beforeData.images = temp
+      status.value.uploading = null
+      data.files=[]
+      beforeData.images = props.data?beforeData.images.concat(tempRoot):tempRoot
+      if(props.data){
+        createForm.value.value[0].images=createForm.value.value[0].images.concat(tempRoot)
+      }
       const temp1 = []
       beforeData.categories.forEach(item => {
         temp1.push(item._id)
       })
       beforeData.categories = temp1
       let res = await uploadData(beforeData)
-      if (Object.hasOwn(res,'type') && res.type == 'success') {
-        notificationStore.showNotification({ title: `${data.name} created success`, description: 'Its online now', type: 'success' })
-        createForm.value.value.splice(index1, 1)
-        emits('newData', res.data)
+      if (Object.hasOwn(res, 'type') && res.type == 'success') {
+        notificationStore.showNotification({
+          title: `${data.name} <span class="text-${props.data ? 'blue' : 'green'}-500">${props.data ? 'updated' : 'created'}</span> success`,
+          type: 'success'
+        })
+        if(!props.data){
+          createForm.value.value.splice(index1, 1)
+          emits('newData', res.data)
+        }
+        
       }
-      else if (Object.hasOwn(res,'type') && res.type == 'error') {
+      else if (Object.hasOwn(res, 'type') && res.type == 'error') {
         notificationStore.showNotification({ title: `Error`, description: JSON.stringify(res.data), type: 'error' })
       }
-      else{
+      else {
         form.value[index].setErrors(res)
       }
     }
     if (index == i - 1) {
-      emits('doing',false)
+      emits('doing', false)
       status.value.loading = false
       for await (const data of createForm.value.value) {
         const index = createForm.value.value.indexOf(data)
@@ -351,12 +400,12 @@ async function uploadData(data) {
   })
   const result = checking.then(async (res) => {
     if (res.length < 1) {
-      return await $fetch('/api/products/create', {
-        method: "POST",
+      return await $fetch(`/api/products/${props.data ? 'update' : 'create'}`, {
+        method: props.data ? "PUT" : "POST",
         body: JSON.stringify(data)
       }).then(res => {
-        if (res.length > 0) {
-          return { type: 'success', data: res[0] }
+        if (props.data && res.modifiedCount == 1 || res.length > 0) {
+          return { type: 'success', data: props.data ? data : res[0] }
         }
       }).catch(error => {
         return { type: 'error', data: error }
@@ -364,7 +413,6 @@ async function uploadData(data) {
     }
     return res
   })
-  console.log(result)
   return result
 }
 async function resizeImage(file, size) {
@@ -433,12 +481,8 @@ function insertCreateForm() {
     name: null,
     barcode: null,
     description: null,
-    images: {
-      original: [],
-      medium: [],
-      small: [],
-      files: []
-    },
+    images: [],
+    files:[],
     categories: [],
     note: null,
     previewImages: [],

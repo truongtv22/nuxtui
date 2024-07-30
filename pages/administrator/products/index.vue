@@ -29,12 +29,12 @@
       </template>
       <template #images-data="{row}">
         <div class="relative flex justify-center" @dblclick="router.push('products/detail-' + row._id)">
-        <template v-if="row.images.small.length >= 1">
-          <div class="w-12 h-12 bg-gray-400 rounded-md" v-if="row.images.small.length > 1"></div>
-          <div :class="row.images.small.length > 1 ? 'absolute top-0 left-1 shadow-2xl' : ''">
-            <img :src="row.images.small[0]" class="w-12 drop-shadow-xl rounded-md" />
+        <template v-if="row.images.length >= 1">
+          <div class="w-12 h-12 bg-gray-400 rounded-md" v-if="row.images.length > 1"></div>
+          <div :class="row.images.length > 1 ? 'absolute top-0 left-1 shadow-2xl' : ''">
+            <img :src="row.images[0].small" class="w-12 drop-shadow-xl rounded-md" />
           </div>
-          <UBadge v-if="row.images.small.length > 1" :label="(row.images.small.length - 1) + '+'"
+          <UBadge v-if="row.images.length > 1" :label="(row.images.length - 1) + '+'"
             class="absolute right-0 top-0 " size="xs"></UBadge>
         </template>
         <template v-else>
@@ -150,7 +150,6 @@ const table=ref({
 })
 const pageCount = computed(() => {
   if(tableEl.value ){
-    console.log(tableEl.value.offsetTop)
     return Math.floor((basicStore.screenSize.h-tableEl.value.offsetTop-32-68.5) / 80.5)
   }
   
@@ -161,7 +160,7 @@ function reformatDate(val) {
   return new Date(Date.parse(val))
 }
 onMounted(async ()=>{
-  loading.value.loading=true
+  table.value.loading=true
   await $fetch('/api/products/list').then(res=>{
     if (res.length > 0) {
       table.value.data = res.sort((item1, item2) => item1.created_at < item2.created_at)

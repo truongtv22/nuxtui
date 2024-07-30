@@ -1,6 +1,6 @@
 <template>
   <div class="relative" @mouseover="showEyeBtn=true" @mouseout="showEyeBtn=false">
-    <NuxtImg class="rounded-md w-full min-h-52 max-h-52 object-cover" :src loading="lazy"/>
+    <NuxtImg class="rounded-md w-full min-h-52 max-h-52 object-cover" :src="data.small" loading="lazy"/>
     <div
       class="w-full min-h-52 max-h-52 absolute top-0 left-0 backdrop-blur-sm flex justify-center items-center rounded-md cursor-pointer"
       v-show="showEyeBtn">
@@ -15,14 +15,14 @@
   </div>
   <UModal v-model="showModal" :ui="{container:'backdrop-blur-md'}">
       <div class="p-2 flex justify-center items-center">
-        <NuxtImg :src/>
+        <NuxtImg :src="data.original"/>
       </div>
       <UButton @click="showModal=false" icon="i-material-symbols-light-close-small-outline-rounded" class="absolute -top-2 -right-2"  :ui="{rounded:'rounded-full'}" size="2xs" color="red"/>
     </UModal>
 </template>
 
 <script lang="ts" setup>
-const props=defineProps(['src','index','loading','status'])
+const props=defineProps(['data','index','loading','status'])
 const emits=defineEmits(['remove'])
 const showEyeBtn=ref(false),
 showModal=ref(false)

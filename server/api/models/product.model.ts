@@ -8,15 +8,7 @@ const schema:mongoose.Schema=new mongoose.Schema({
       type:String
     },
     images:{
-        original:{
-            type:Array
-        },
-        medium:{
-            type:Array
-        },
-        small:{
-            type:Array
-        }
+        type:Array
     },
     categories:{ 
       type:Array

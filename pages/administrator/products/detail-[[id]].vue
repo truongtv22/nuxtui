@@ -14,14 +14,14 @@
       <template #header>
         <div class="flex items-center justify-between">
           <h3 class="capitalize text-base font-semibold leading-6 text-white dark:text-white">
-            {{ category.name }}
+            {{ product.name }}
           </h3>
         </div>
         <div class="bottom-0 absolute w-full right-0" v-if="loading.doing">
           <UProgress size="xs" color="blue" animation="carousel" :ui="{progress:{rounded:'rounded-none'}}" />
         </div>
       </template>
-      <DetailComponent v-if="status.loaded"  :data="category" @doing="loading.doing=$event"/>
+      <AdministratorProductsCreateNew v-if="status.loaded"  :data="product" @doing="loading.doing=$event"/>
       <template v-else>
     <div class="flex flex-col gap-2">
       <USkeleton class="w-full min-h-screen"/>
@@ -33,7 +33,6 @@
 </template>
 
 <script lang="ts" setup>
-import DetailComponent from '@@/components/administrator/categories/Detail.vue'
 const route=useRoute()
 const notification=useMyNotificationsStore()
 const status=ref({
@@ -42,41 +41,19 @@ const status=ref({
 const loading=ref({
   doing:false
 })
-const category=ref({
-  title: null,
-  description: null,
-  images: {
-    original: [],
-    medium: [],
-    small: [],
-    files: []
-  },
-  imagesOld: {
-    original: [],
-    medium: [],
-    small: []
-  },
-  categories: [],
-  note: null,
-  previewImages: [],
-  tags: null,
-  _id: null,
-  created_at: null,
-  edited_at: null
-})
+const product=ref({})
 async function getData(id){
-  return await $fetch('/api/categories/get?'+new URLSearchParams({_id:id})).then(res=>{
+  return await $fetch('/api/products/get?'+new URLSearchParams({_id:id})).then(res=>{
     return res[0]
   })
 }
 onBeforeMount(async ()=>{
  const res=await getData(route.params.id)
-  category.value= res
+  product.value= res
   status.value.loaded=true
   useSeoMeta({
-    title:category.value.name
+    title:product.value.name
   })
- //console.log(category.value)
 })
 </script>
 
