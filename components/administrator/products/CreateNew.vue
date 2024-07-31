@@ -1,5 +1,4 @@
 <template>
-
   <UForm :schema="schema" class="space-y-4 relative w-full">
     <!----------------------------start create new form------------------------------>
     <div :class="`w-full ${createForm.value.length > 1 ? 'border' : ''} px-1 rounded-md border-gray-400 py-4 relative`"

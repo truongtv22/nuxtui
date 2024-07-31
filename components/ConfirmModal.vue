@@ -18,7 +18,7 @@
 </template>
 
 <script lang="ts" setup>
-const props=defineProps(['modelValue','title','description'])
+const props=defineProps(['modelValue','title','description','input'])
 const emits=defineEmits(['update:modelValue','isConfirmed'])
 const isOpen=computed({
   get(){
@@ -30,7 +30,8 @@ const isOpen=computed({
 })
 const isConfirmed=(val:Boolean)=>{
 isOpen.value=false
-emits('isConfirmed',val)
+let input=props.input
+emits('isConfirmed',props.input)
 }
 </script>
 

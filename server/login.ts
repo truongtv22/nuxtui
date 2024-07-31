@@ -25,7 +25,7 @@ export default async ()=>{
     }
   let url='https://shopee.vn/api/v4/account/basic/get_account_info'
   let requests=new Request(url)
-    let data={"phone": '84352568944',
+    let data={"phone": '84927857019',
       "password": 'bcb1bac5908e6224e4264074451c22ec21ea82fc69665036e90766ec28cbc164',
       "support_ivs": true,
       "client_identifier": {
@@ -135,10 +135,9 @@ export default async ()=>{
                             })
                             url = 'https://banhang.shopee.vn/api/v2/login/'
                             rs5=await $fetch.raw(url,{headers}).then(rs6=>{
-                              console.log(rs6)
                               if(rs6.status<400){
                                 js=rs6._data
-                                if(Object.hasOwn(js,'errorCode') && js['errorCode']==0){
+                                if(Object.hasOwn(js,'errcode') && js['errcode']==0){
                                   rs6.headers.getSetCookie().forEach(item=>{
                                     headers['cookie']+=item+';'
                                   })
