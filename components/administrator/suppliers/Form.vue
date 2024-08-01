@@ -153,88 +153,39 @@ async function onSubmit() {
   emits('doing', true)
   const formsClone = []
   forms.value.data.forEach(item => formsClone.push(item))
-  for await (const data of formsClone) {
-    const index = formsClone.indexOf(data)
-
+  for await (const data of forms.value.data) {
+    const index = forms.value.data.indexOf(data)
     const isValid = await forms.value.schema.safeParse(data)
     const existedName = await $fetch('/api/suppliers/get?' + new URLSearchParams({ name: data.name })).then(response => {
       return response.length > 0
     })
     Promise.all([isValid, existedName]).then(([isValid, existedName]) => {
       if (isValid.success && !existedName) {
-        forms.value.data[index].refs.main.scrollIntoView({ behavior: 'smooth', block: 'start' })
+        forms.value.data[0].refs.main.scrollIntoView({ behavior: 'smooth', block: 'start' })
         data.status.loading = true
         const dataPrepared = {}
-        Object.keys(data).forEach(key=>{
-          dataPrepared[key]=data[key]
+        Object.keys(data).forEach(key => {
+          dataPrepared[key] = data[key]
         })
         const promiseRoot = new Promise(async (resolveRoot) => {
-          for await (const obj of dataPrepared.images) {
-            if (Object.hasOwn(obj, 'file')) {
-              const objIndex = dataPrepared.images.indexOf(obj)
-              dataPrepared.previewImages[objIndex].meter.display = true
-              let promise = new Promise(async (resolve, reject) => {
-                let response = await uploadFile(obj.file)
-                const interval = setInterval(() => {
-                  if(dataPrepared.previewImages[objIndex].meter.value<Math.round(100 / 3)){
-                    dataPrepared.previewImages[objIndex].meter.value += 1
-                  }
-                  console.log(dataPrepared.previewImages[objIndex].meter.value)
-                  if (response.status=='success') {
-                    resolve(response)
-                    clearInterval(interval)
-                  }
-                }, 100)
-              })
-              promise.then(async (response) => {
-                if (response.status == 'success') {
-                  dataPrepared.images[objIndex].original = response.data.original
-                  promise = new Promise(async (resolve, reject) => {
-                    response = await uploadFile(obj.file, 300)
-                    const interval = setInterval(() => {
-                      if (dataPrepared.previewImages[objIndex].meter.value < Math.round(200 / 3)) {
-                      dataPrepared.previewImages[objIndex].meter.value += 1
-                      }
-                      if (response.status=='success') {
-                        resolve(response)
-                        clearInterval(interval)
-                      }
-                    }, 100)
-                  })
-                  promise.then(async (response) => {
-                    if (response.status == 'success') {
-                      dataPrepared.images[objIndex].medium = response.data.original
-                      promise = new Promise(async (resolve, reject) => {
-                        response = await uploadFile(obj.file, 100)
-                        const interval = setInterval(() => {
-                          if (dataPrepared.previewImages[objIndex].meter.value < 99) {
-                          dataPrepared.previewImages[objIndex].meter.value += 1
-                          }
-                          if (response.status=='success') {
-                            resolve(response)
-                            clearInterval(interval)
-                          }
-                        }, 100)
-                      })
-                      promise.then(async (response) => {
-                        if (response.status == 'success') {
-                          dataPrepared.images[objIndex].small = response.data.original
-                          dataPrepared.previewImages[objIndex].meter.value = 100
-                          dataPrepared.previewImages[objIndex].meter.display = false
-                          delete dataPrepared.images[objIndex].file
-                          if (dataPrepared.previewImages.filter(item => item.meter.value == 100).length == dataPrepared.previewImages.length) {
-                            resolveRoot()
-                          }
-                        }
-                      })
-                    }
-                  })
-                }
-              })
-            }
-
+          for await (const obj of dataPrepared.images){
+            const objIndex=dataPrepared.images.indexOf(obj)
+            dataPrepared.previewImages[objIndex].meter.display=true
+            const interval=setInterval(()=>{
+              if(dataPrepared.previewImages[objIndex].meter.value<100){
+                dataPrepared.previewImages[objIndex].meter.value+=1
+              }
+              if(dataPrepared.previewImages[objIndex].meter.value==100){
+                clearInterval(interval)
+              }
+              
+            },100)
+            await uploadFile(obj.file).then(async ()=>await uploadFile(obj.file)).then(async()=>await uploadFile(obj.file)).then(()=>{
+              dataPrepared.previewImages[objIndex].meter.value+=1
+              dataPrepared.previewImages[objIndex].meter.display=false
+              console.log( dataPrepared.previewImages[objIndex].meter.value)
+            })
           }
-
         })
         promiseRoot.then(async (response) => {
           data.status.loading = false
@@ -247,9 +198,16 @@ async function onSubmit() {
           })
           if (response.length > 0) {
             notificationStore.showNotification({ type: 'success', title: `${response[0].name} <span class="text-${props.data ? 'blue' : 'green'}-500 font-bold">${props.data ? 'updated' : 'created'}</span> success` })
-            //forms.value.data.splice(index, 1)
+            forms.value.data[index] = null
+            if (index == forms.value.data.length - 1) {
+              forms.value.data = []
+              emits('doing', false)
+              if (forms.value.data.length < 1) {
+                insertForm()
+              }
+            }
           }
-          console.log(dataPrepared)
+
         })
       }
       if (!isValid.success) {
@@ -265,12 +223,6 @@ async function onSubmit() {
       }
       if (existedName) {
 
-      }
-      if (index == formsClone.length - 1) {
-        emits('doing', false)
-        if (forms.value.data.length < 1) {
-          insertForm()
-        }
       }
     })
   }
