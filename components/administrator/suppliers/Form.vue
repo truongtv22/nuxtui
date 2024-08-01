@@ -2,7 +2,7 @@
   <UForm :schema="schema" class="space-y-4 relative w-full">
     <!----------------------------start create new form------------------------------>
     <div :class="`w-full ${forms.data.length > 1 ? 'border' : ''} px-1 rounded-md border-gray-400 py-4 relative`"
-      v-for="itemRoot, indexRoot in forms.data" :ref="el => itemRoot.refs.main = el">
+      v-for="itemRoot, indexRoot in forms.data" :ref="skipUnwrap.elements">
       <UBadge class="absolute -top-3 -left-3" v-if="forms.data.length > 1">#{{ indexRoot + 1 }}</UBadge>
       <UButton v-if="forms.data.length > 1" @click="forms.data.splice(indexRoot, 1)" color="red"
         class="absolute -top-3 -right-3" :ui="{ rounded: 'rounded-full' }" icon="i-material-symbols-light-close-small"
@@ -116,7 +116,9 @@ const forms = ref({
     }).min(6, { message: 'Tên nha cung cap có độ dài ít nhất 6 ký tự' }),
     email: z.union([z.literal(''), z.string().email()])
   })
-})
+}),
+elements=ref([])
+const skipUnwrap={elements}
 const formProcessing = computed(() => {
   return forms.value.data.filter(item => item.status.loading).length > 0
 })
@@ -153,21 +155,23 @@ async function onSubmit() {
   emits('doing', true)
   const formsClone = []
   forms.value.data.forEach(item => formsClone.push(item))
-  for await (const data of forms.value.data) {
-    const index = forms.value.data.indexOf(data)
+  for await (const data of formsClone) {
+    const index = formsClone.indexOf(data),
+    index1=forms.value.data.indexOf(data)
+    console.log(index)
     const isValid = await forms.value.schema.safeParse(data)
     const existedName = await $fetch('/api/suppliers/get?' + new URLSearchParams({ name: data.name })).then(response => {
       return response.length > 0
     })
-    Promise.all([isValid, existedName]).then(([isValid, existedName]) => {
+    await Promise.all([isValid, existedName]).then(async ([isValid, existedName]) => {
       if (isValid.success && !existedName) {
-        forms.value.data[0].refs.main.scrollIntoView({ behavior: 'smooth', block: 'start' })
+        elements.value[index1].scrollIntoView({ behavior: 'smooth', block: 'start' })
         data.status.loading = true
         const dataPrepared = {}
         Object.keys(data).forEach(key => {
           dataPrepared[key] = data[key]
         })
-        const promiseRoot = new Promise(async (resolveRoot) => {
+        const promiseRoot = async () => {
           for await (const obj of dataPrepared.images){
             const objIndex=dataPrepared.images.indexOf(obj)
             dataPrepared.previewImages[objIndex].meter.display=true
@@ -178,16 +182,38 @@ async function onSubmit() {
               if(dataPrepared.previewImages[objIndex].meter.value==100){
                 clearInterval(interval)
               }
-              
             },100)
-            await uploadFile(obj.file).then(async ()=>await uploadFile(obj.file)).then(async()=>await uploadFile(obj.file)).then(()=>{
-              dataPrepared.previewImages[objIndex].meter.value+=1
-              dataPrepared.previewImages[objIndex].meter.display=false
-              console.log( dataPrepared.previewImages[objIndex].meter.value)
+            return await uploadFile(obj.file).then(async (res)=>{
+              if(res.status=='success'){
+                obj.original=res.data.original
+                return await uploadFile(obj.file,300)
+              }
+            }).then(async(res)=>{
+              if(res?.status=='success'){
+                obj.medium=res.data.original
+                return await uploadFile(obj.file,100)
+              }
+            }).then(res=>{
+              if(res?.status=='success'){
+                obj.small=res.data.original
+                dataPrepared.previewImages[objIndex].meter.value=100
+                dataPrepared.previewImages[objIndex].meter.display=false
+                clearInterval(interval)
+                console.log(obj)
+                //resolveRoot()
+                
+              }
+              if(objIndex==dataPrepared.images.length-1){
+                return true
+              }
             })
           }
-        })
-        promiseRoot.then(async (response) => {
+          if(dataPrepared.images.length==0){
+            return true
+          }
+        }
+        await promiseRoot().then(async (response) => {
+          console.log(response)
           data.status.loading = false
           delete dataPrepared.previewImages
           delete dataPrepared.status
@@ -198,8 +224,9 @@ async function onSubmit() {
           })
           if (response.length > 0) {
             notificationStore.showNotification({ type: 'success', title: `${response[0].name} <span class="text-${props.data ? 'blue' : 'green'}-500 font-bold">${props.data ? 'updated' : 'created'}</span> success` })
-            forms.value.data[index] = null
-            if (index == forms.value.data.length - 1) {
+            forms.value.data.splice(index,1)
+            console.log(index,formsClone.length,forms.value.data.length)
+            if (index == formsClone.length - 1) {
               forms.value.data = []
               emits('doing', false)
               if (forms.value.data.length < 1) {
@@ -207,13 +234,13 @@ async function onSubmit() {
               }
             }
           }
-
         })
       }
       if (!isValid.success) {
+        console.log(isValid.success)
         if (firstPoint == null) {
           firstPoint = index
-          forms.value.data[index].refs.main.scrollIntoView({ behavior: 'smooth', block: 'start' })
+          elements.value[index1].scrollIntoView({ behavior: 'smooth', block: 'start' })
         }
         const errors = []
         JSON.parse(isValid.error).forEach(err => {
