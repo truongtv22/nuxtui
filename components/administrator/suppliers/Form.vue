@@ -1,20 +1,22 @@
 <template>
   <UForm :schema="schema" class="space-y-4 relative w-full">
     <!----------------------------start create new form------------------------------>
-    <template v-for="itemRoot, indexRoot in forms">
-      <div v-if="itemRoot" :class="`w-full ${forms.length > 1 ? 'border' : ''} px-1 rounded-md border-gray-400 py-4 relative`"
-       :ref="skipUnwrap.elements">
+    <template v-for="itemRoot, indexRoot in forms" :key="itemRoot._id">
+      <div v-if="itemRoot"
+        :class="`w-full ${forms.length > 1 ? 'border' : ''} px-1 rounded-md border-gray-400 py-4 relative`"
+        :ref="skipUnwrap.elements">
         <UBadge class="absolute -top-3 -left-3" v-if="forms.length > 1">#{{ indexRoot + 1 }}</UBadge>
-      <UButton v-if="forms.length > 1" @click="forms.splice(indexRoot, 1)" color="red"
-        class="absolute -top-3 -right-3" :ui="{ rounded: 'rounded-full' }" icon="i-material-symbols-light-close-small"
-        square size="2xs"></UButton>
-        {{forms[indexRoot].loading}}{{ test }}{{indexRoot}}{{ test==indexRoot }}
-        <AdministratorSuppliersForm1 @status="processDone(indexRoot,$event)" :submit="test==indexRoot?true:null"/>
+        <UButton v-if="forms.length > 1" @click="forms.splice(indexRoot, 1)" color="red"
+          class="absolute -top-3 -right-3" :ui="{ rounded: 'rounded-full' }" icon="i-material-symbols-light-close-small"
+          square size="2xs"></UButton>
+        {{ itemRoot._id }}
+        <AdministratorSuppliersForm1 :state="itemRoot" @status="response = $event"
+          :submit="test == itemRoot ? true : null" :errors="itemRoot.errors" />
 
-      
-    </div>
+
+      </div>
     </template>
-    
+
     <!----------------------------end create new form------------------------------>
     <UTooltip v-if="!props.data" text="Add more product" :popper="{ arrow: true }" class="w-full">
       <div ref="insertFormBtn"
@@ -43,37 +45,73 @@ onBeforeMount(() => {
 })
 const forms = ref([]),
   elements = ref([]),
-  test=ref(null)
+  test = ref(null),
+  schema = z.object({
+    name: z.string({
+      required_error: "Tên nha cung cap không để trống",
+      invalid_type_error: "Tên nha cung cap không để trống",
+    }).min(6, { message: 'Tên nha cung cap có độ dài ít nhất 6 ký tự' }),
+    email:  z.string().email().optional().or(z.literal(''))
+  })
 const skipUnwrap = { elements }
 const formProcessing = computed(() => {
-  return forms.value.filter(item =>{
-    return item?item.loading:item
+  return forms.value.filter(item => {
+    return item ? item.loading : item
   }).length > 0
 })
 function insertForm() {
-  forms.value.push({loading:false})
+  forms.value.push({
+    name: null,
+    email: '',
+    contacts: [{
+      address: null,
+      phone: null
+    }],
+    created_at: null,
+    created_by: null,
+    edited_at: null,
+    edited_by: null,
+    description: null,
+    note: null,
+    tags: null,
+    images: [],
+    previewImages: [],
+    refs: {
+      file: null,
+      main: null,
+      form: null
+    },
+    status: {
+      loading: false
+    },
+    errors:[]
+  })
 }
-async function onSubmit(){
-  forms.value=forms.value.filter(item=>item).map(item=>({loading:true}))
-  test.value=0 
+const response = ref(null)
+async function onSubmit() {
+  for await (const form of forms.value) {
+    const validate = await schema.safeParse(form)
+    const nameValid = await $fetch('/api/suppliers/get?' + new URLSearchParams({ name: form.name })).then(response => {
+      return response.length < 1
+    })
+    await Promise.all([validate, nameValid]).then(([validate, nameValid]) => { 
+      if(!validate.success){
+        JSON.parse(validate.error).forEach(err => {
+          form.errors.push({ path: err.path[0], message: err.message })
+        })
+      }
+      if(validate.success && nameValid){
+        console.log('done')
+        forms.value=forms.value.filter(item=>item!=form)
+      }
+      if(forms.value.length<1){
+        insertForm()
+      }
+    })
+  }
 }
-function processDone(index,data){
-
-  test.value+=1 
-  if(!Object.hasOwn(data,'error')){
-    console.log('done')
-    forms.value[index]=null
-  }
-  else{
-    forms.value[index].loading=false
-  }
-  console.log(JSON.stringify(forms.value))
-  if(forms.value.filter(item=>item).length==0){
-    forms.value=[]
-    setTimeout(()=>{
-      insertForm()
-    },1)
-  }
+async function processDone(index, data) {
+  console.log(index, data)
 }
 async function onSubmit1() {
   let firstPoint = null
@@ -143,14 +181,14 @@ async function onSubmit1() {
           await $fetch('/api/suppliers/create', {
             method: "POST",
             body: JSON.stringify(dataPrepared)
-          }).then(response=>{
+          }).then(response => {
             if (response.length > 0) {
-            notificationStore.showNotification({ type: 'success', title: `${response[0].name} <span class="text-${props.data ? 'blue' : 'green'}-500 font-bold">${props.data ? 'updated' : 'created'}</span> success` })
-            forms.value.data.splice(indexForm, 1)
-            console.log(1111)
-          }
+              notificationStore.showNotification({ type: 'success', title: `${response[0].name} <span class="text-${props.data ? 'blue' : 'green'}-500 font-bold">${props.data ? 'updated' : 'created'}</span> success` })
+              forms.value.data.splice(indexForm, 1)
+              console.log(1111)
+            }
           })
-          
+
         })
       }
       if (existedName) {
@@ -171,7 +209,7 @@ async function onSubmit1() {
                 errors.push({ path: err.path[0], message: err.message })
               })
               data.refs.form.setErrors(errors)
-              
+
             }
           }
           elements.value[0].scrollIntoView({ behavior: 'smooth', block: 'start' })

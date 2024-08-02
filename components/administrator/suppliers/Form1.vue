@@ -75,34 +75,9 @@
 <script lang="ts" setup>
 import { z } from 'zod';
 const emits = defineEmits(['status']),
-  props = defineProps(['submit'])
+  props = defineProps(['submit','state','errors'])
 
-const state = ref({
-  name: null,
-  email: '',
-  contacts: [{
-    address: null,
-    phone: null
-  }],
-  created_at: null,
-  created_by: null,
-  edited_at: null,
-  edited_by: null,
-  description: null,
-  note: null,
-  tags: null,
-  images: [],
-  previewImages: [],
-  refs: {
-    file: null,
-    main: null,
-    form: null
-  },
-  status: {
-    loading: false
-  }
-}),
-  form = ref(),
+const form = ref(),
   schema = z.object({
     name: z.string({
       required_error: "Tên nha cung cap không để trống",
@@ -118,13 +93,13 @@ async function previewSelected(e) {
     const resizedBlob = await resizeImage(file, 300),
       resized = URL.createObjectURL(resizedBlob)
     let iss = false
-    state.value.images.forEach(item => {
+    props.state.images.forEach(item => {
       if (item && item.file == file.name) {
         iss = true
       }
     })
     if (!iss) {
-      state.value.previewImages.push({
+      props.state.previewImages.push({
         original: URL.createObjectURL(file),
         small: resized,
         meter: {
@@ -132,7 +107,7 @@ async function previewSelected(e) {
           value: 0
         }
       })
-      state.value.images.push({ file })
+      props.state.images.push({ file })
     }
   }
 }
@@ -251,12 +226,11 @@ async function submited() {
   })
 
 }
-watch(() => props.submit, (newVal, oldVal) => {
+watch(() => props.errors, (newVal, oldVal) => {
   if (newVal) {
-    console.log(123123)
-    submited()
+    form.value.setErrors(props.errors)
   }
-})
+},{deep:true})
 </script>
 
 <style></style>
