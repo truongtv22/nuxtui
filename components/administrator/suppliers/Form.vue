@@ -51,13 +51,11 @@ const forms = ref([]),
       required_error: "Tên nha cung cap không để trống",
       invalid_type_error: "Tên nha cung cap không để trống",
     }).min(6, { message: 'Tên nha cung cap có độ dài ít nhất 6 ký tự' }),
-    email:  z.string().email().optional().or(z.literal(''))
+    email: z.string().email().optional().or(z.literal(''))
   })
 const skipUnwrap = { elements }
 const formProcessing = computed(() => {
-  return forms.value.filter(item => {
-    return item ? item.loading : item
-  }).length > 0
+  return forms.value.filter(item => item.status.loading).length > 0
 })
 function insertForm() {
   forms.value.push({
@@ -84,29 +82,71 @@ function insertForm() {
     status: {
       loading: false
     },
-    errors:[]
+    errors: []
   })
 }
 const response = ref(null)
 async function onSubmit() {
   for await (const form of forms.value) {
+    form.status.loading = true
     const validate = await schema.safeParse(form)
     const nameValid = await $fetch('/api/suppliers/get?' + new URLSearchParams({ name: form.name })).then(response => {
       return response.length < 1
     })
-    await Promise.all([validate, nameValid]).then(([validate, nameValid]) => { 
-      if(!validate.success){
+    await Promise.all([validate, nameValid]).then(async ([validate, nameValid]) => {
+      if (!validate.success) {
         JSON.parse(validate.error).forEach(err => {
           form.errors.push({ path: err.path[0], message: err.message })
         })
       }
-      if(validate.success && nameValid){
-        console.log('done')
-        forms.value=forms.value.filter(item=>item!=form)
+      if (validate.success && nameValid) {
+        console.log(form)
+        const promise = async () => {
+          for await (const obj of form.images) {
+            if (Object.hasOwn(obj, 'file')) {
+              const objIndex = form.images.indexOf(obj)
+              form.previewImages[objIndex].meter.display = true
+              const interval = setInterval(() => {
+                if (form.previewImages[objIndex].meter.value < 100) {
+                  form.previewImages[objIndex].meter.value += 1
+                }
+                if (form.previewImages[objIndex].meter.value == 100) {
+                  clearInterval(interval)
+                }
+              }, 100)
+              await uploadFile(obj.file).then(async (res) => {
+                if (res.status == 'success') {
+                  obj.original = res.data.original
+                  return await uploadFile(obj.file, 300)
+                }
+              }).then(async (res) => {
+                if (res?.status == 'success') {
+                  obj.medium = res.data.original
+                  return await uploadFile(obj.file, 100)
+                }
+              }).then(res => {
+                if (res?.status == 'success') {
+                  obj.small = res.data.original
+                  form.previewImages[objIndex].meter.value = 100
+                  form.previewImages[objIndex].meter.display = false
+                  delete obj.file
+                  clearInterval(interval)
+                }
+              })
+            }
+          }
+        }
+        await promise().then(()=>{
+          console.log('done')
+          forms.value=forms.value.filter(item=>item!=form)
+        })
+        //console.log('done')
+        //forms.value=forms.value.filter(item=>item!=form)
       }
-      if(forms.value.length<1){
+      if (forms.value.length < 1) {
         insertForm()
       }
+      form.status.loading = false
     })
   }
 }
