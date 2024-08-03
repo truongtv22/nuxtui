@@ -47,7 +47,7 @@
           </span>
         </template>
         <template #created_at-data="{ row }">
-          <UBadge size="md" variant="soft" color="blue" v-if="row.created_at">
+          <UBadge size="md" variant="soft" color="green" v-if="row.created_at">
             {{ reformatDate(row.created_at) }}
           </UBadge>
           <span class="capitalize" v-else>
