@@ -1,4 +1,5 @@
 <template>
+  <div class="flex flex-col min-h-full">
     <div class="flex justify-between px-3 py-3.5 border-b border-gray-200 dark:border-gray-700">
       <div class="flex gap-1">
         <UButton class="capitalize" :ui="{rounded:'rounded-full'}" @click="modals.createForm.display=true"><UIcon class="font-bold text-xl" name="i-material-symbols-light-add"/>Create new product</UButton>
@@ -100,6 +101,8 @@
     <ConfirmModal v-model="modals.confirmDeleteAll.display" :title="modals.confirmDeleteAll.title"
     @is-confirmed="$event ? deleteSelected('all') : loading.delete = false" />
     <ConfirmModal v-model="modals.confirmClose.display" :title="modals.confirmClose.title" @is-confirmed="$event?(modals.createForm.display=false,modals.updateForm.data=null):null"/>
+  </div>
+    
 </template>
 
 <script lang="ts" setup>

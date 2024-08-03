@@ -32,9 +32,9 @@
       </div>
       <UDivider orientation="horizontal" :ui="{ border: { base: 'dark:border-gray-600' } }" class="block xl:hidden" />
       <UDivider orientation="vertical" :ui="{ border: { base: 'dark:border-gray-600' } }" class="hidden mdForNav:block" />
-      <div class="w-full flex flex-col" :style="`min-height:${testVal}px;`" ref="rightContent">
+      <div class="w-full flex flex-col h-screen"  ref="rightContent">
         <ClientOnly>
-          <div class="flex justify-between xl:py-5 px-3 py-2">
+          <div class="flex justify-between xl:py-5 px-3 py-2 h-fit">
             <div class="flex flex-col">
               <h1 class="capitalize  font-bold flex items-center" v-if="props.title">{{ props.title }}</h1>
             <h1 class="capitalize  font-bold flex items-center" v-if="props.breadcumb">
@@ -108,8 +108,11 @@
             </UCard>
           </USlideover>
         </ClientOnly>
-        <UDivider orientation="horizontal" :ui="{ border: { base: 'dark:border-gray-600' } }" />
+        <div class="flex-1">
+          <UDivider orientation="horizontal" :ui="{ border: { base: 'dark:border-gray-600' } }" />
           <slot class="w-full" />
+        </div>
+        
         
       </div>
 

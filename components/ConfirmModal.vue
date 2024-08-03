@@ -1,11 +1,11 @@
 <template>
-  <UModal v-model="isOpen" :ui="{overlay:{background:'backdrop-blur-xl'}}" prevent-close>
+  <UModal v-model="isOpen" :ui="{ overlay: { background: 'backdrop-blur-xl' } }" prevent-close>
     <UCard>
       <template #header v-if="props.description">
         {{ props.title }}
       </template>
       <div>
-        {{ props.description?props.description:props.title }}
+        {{ props.description ? props.description : props.title }}
       </div>
       <template #footer>
         <div class="flex justify-center gap-1">
@@ -18,23 +18,20 @@
 </template>
 
 <script lang="ts" setup>
-const props=defineProps(['modelValue','title','description','input'])
-const emits=defineEmits(['update:modelValue','isConfirmed'])
-const isOpen=computed({
-  get(){
+const props = defineProps(['modelValue', 'title', 'description', 'input'])
+const emits = defineEmits(['update:modelValue', 'isConfirmed'])
+const isOpen = computed({
+  get() {
     return props.modelValue
   },
-  set(val){
-    emits('update:modelValue',val)
+  set(val) {
+    emits('update:modelValue', val)
   }
 })
-const isConfirmed=(val:Boolean)=>{
-isOpen.value=false
-let input=props.input
-emits('isConfirmed',props.input)
+const isConfirmed = (val: Boolean) => {
+  isOpen.value = false
+  emits('isConfirmed', {input:props.input,value:val})
 }
 </script>
 
-<style>
-
-</style>
+<style></style>
