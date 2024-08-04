@@ -1,0 +1,56 @@
+import mongoose from 'mongoose'
+
+const schema:mongoose.Schema=new mongoose.Schema({
+    name:{
+        type:String
+    },
+    avatar:{
+        type:String
+    },
+    banner:{
+      type:String
+    },
+    address:{ 
+      type:String
+    },
+    city:{ 
+      type:String
+    },
+    province:{ 
+      type:String
+    },
+    country:{ 
+      type:String
+    },
+    zip:{ 
+      type:String
+    },
+    phone:{ 
+      type:String
+    },
+    status:{
+        type:String,
+    },
+    note:{
+        type:String,
+    },
+    tags:{
+        type:String,
+    },
+    history:{
+      type:Array
+    },
+    created_by:{
+        type:String
+    },
+    created_at:{
+        type:Date
+    },
+    edited_by:{
+        type:String
+    },
+    edited_at:{
+        type:Date
+    }
+})
+export default mongoose.model('Customer',schema)
