@@ -1,66 +1,168 @@
 <template>
   <UForm ref="form" :schema="schema" :state="state">
-    <UFormGroup label="Tên nha cung cap" name="name">
-      <UInput ref="names" v-model="state.name" @keyup.enter="$event.target.blur(), emits('submit')" @blur="state.name=$event.target.value.trim()"/>
-    </UFormGroup>
-    <UFormGroup label="Contacts" name="contacts">
-      <div class="flex flex-col gap-y-2">
-        <UFormGroup name="email">
-          <UInput placeholder="Email" v-model="state.email" class="">
-            <template #leading>
-              <UIcon name="i-material-symbols-light-mail-rounded"></UIcon>
+    <div class="grid md:grid-cols-3 grid-cols-1 gap-x-1">
+      <UFormGroup label="First Name" name="first_name">
+        <UInput ref="names" v-model="state.first_name" @keyup.enter="$event.target.blur(), emits('submit')"
+          @blur="state.first_name = $event.target.value.trim()" />
+      </UFormGroup>
+      <UFormGroup label="Mid Name" name="middle_name">
+        <UInput ref="names" placeholder="optional" v-model="state.middle_name"
+          @blur="state.middle_name = $event.target.value.trim()" />
+      </UFormGroup>
+      <UFormGroup label="Last Name" name="last_name">
+        <UInput ref="names" v-model="state.last_name" @keyup.enter="$event.target.blur(), emits('submit')"
+          @blur="state.last_name = $event.target.value.trim()" />
+      </UFormGroup>
+    </div>
+    <div class="flex flex-row gap-x-1">
+      <div class="flex-1 grid grid-cols-3 gap-x-1">
+        <UFormGroup label="Username" name="account.username">
+          <UInput :disabled="state.account.status" v-model="state.account.username"
+            @blur="state.name = $event.target.value.trim()" />
+        </UFormGroup>
+        <UFormGroup label="Password" name="account.password">
+          <UInput :type="display.password ? 'password' : 'text'" :disabled="state.account.status"
+            v-model="state.account.password" :ui="{ icon: { trailing: { pointer: '' } } }">
+            <template #trailing>
+              <UIcon class="cursor-pointer" @click="display.password = !display.password"
+                :name="`i-material-symbols-light-visibility${!display.password ? '-off' : ''}-outline-rounded`" />
             </template>
           </UInput>
         </UFormGroup>
-        <div class="grid grid-cols-1 gap-x-1 relative " v-for="item, index in state.contacts">
-          <UDivider :label="`#${index + 1}`" v-if="state.contacts.length > 1" />
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-1 gap-y-1">
-            <UInput placeholder="Address" v-model="item.address">
-              <template #leading>
-                <UIcon name="i-material-symbols-light-location-on-rounded" />
-              </template>
-            </UInput>
-            <UInput placeholder="Phone number" v-model="item.phone" @keypress="isLetter($event)">
-              <template #leading>
-                <UIcon name="i-material-symbols-light-phone-iphone-sharp" />
-              </template>
-            </UInput>
-          </div>
-          <div v-if="state.contacts.length > 1"
-            class="absolute top-0 right-0 bg-red-500 flex items-center justify-center rounded-full cursor-pointer"
-            @click="state.contacts.splice(index, 1)">
-            <UIcon name="i-material-symbols-light-close-small-rounded" class=" text-white" />
+        <UFormGroup label="Level" name="account.type">
+          <UInput :disabled="state.account.status" v-model="state.account.type" />
+        </UFormGroup>
+      </div>
+      <div class="w-20 flex">
+        <UFormGroup :ui="{ wrapper: 'flex flex-col', container: 'flex flex-1 items-center' }" label="Status active"
+          name="account.status">
+          <UToggle v-model="state.account.status" />
+        </UFormGroup>
+      </div>
+
+    </div>
+    <UFormGroup label="Contacts" name="contacts">
+      <div class="flex flex-col gap-y-2">
+        <div class="w-full flex flex-row gap-x-2" v-for="item, index in state.contacts" :key="'contact' + index">
+          <Transition>
+            <UButton v-if="item.email || item.phone" class="h-fit" :color="index == 0 ? 'green' : 'red'"
+              :icon="index == 0 ? 'i-material-symbols-light-add' : 'i-material-symbols-light-remove-rounded'"
+              :variant="index == 0 ? 'soft' : 'ghost'"
+              @click="index == 0 ? state.contacts.unshift({ address: null, phone: null }) : state.contacts.splice(index, 1)">
+            </UButton>
+          </Transition>
+
+          <div class="flex-1 grid md:grid-cols-2 grid-cols-1 gap-x-1">
+            <UFormGroup :name="`contacts.${index}.email`">
+              <UInput placeholder="Email" v-model="item.email">
+                <template #leading>
+                  <UIcon name="i-material-symbols-light-mail-rounded"></UIcon>
+                </template>
+              </UInput>
+            </UFormGroup>
+            <UFormGroup name="phone">
+              <UInput placeholder="Phone number" v-model="item.phone_number" class="" @keypress="isLetter($event)">
+                <template #leading>
+                  <UIcon name="i-material-symbols-light-phone-iphone-sharp"></UIcon>
+                </template>
+              </UInput>
+            </UFormGroup>
           </div>
         </div>
-        <UButton class="w-full text-center flex justify-center" variant="soft" label="Add more contact"
-          @click="state.contacts.push({ address: null, phone: null })"></UButton>
+        <div class="w-full flex flex-row gap-x-2" v-for="item, index in state.info" :key="'info' + index">
+          <Transition>
+            <UButton v-if="item.address || item.district || item.province || item.country || item.zip_code"
+              :color="index == 0 ? 'green' : 'red'"
+              :icon="index == 0 ? 'i-material-symbols-light-add' : 'i-material-symbols-light-remove-rounded'"
+              :variant="index == 0 ? 'soft' : 'ghost'"
+              @click="index == 0 ? state.info.unshift({ address: null, district: null, province: null, country: null, zip_code: null }) : state.info.splice(index, 1)">
+            </UButton>
+          </Transition>
+
+          <div class="flex-1 grid grid-cols-5 gap-x-1">
+            <UFormGroup name="address">
+              <UInput placeholder="Address" v-model="item.address" class="">
+                <template #leading>
+                  <UIcon name="i-material-symbols-light-location-on-rounded"></UIcon>
+                </template>
+              </UInput>
+            </UFormGroup>
+            <UFormGroup name="district">
+              <UInput placeholder="District" v-model="item.district" class="">
+
+              </UInput>
+            </UFormGroup>
+            <UFormGroup name="province">
+              <UInput placeholder="Province" v-model="item.province" class="">
+              </UInput>
+            </UFormGroup>
+            <UFormGroup name="country">
+              <UInput placeholder="Country" v-model="item.country" class="">
+                <template #leading>
+                  <UIcon name="i-material-symbols-light-globe"></UIcon>
+                </template>
+              </UInput>
+            </UFormGroup>
+            <UFormGroup name="zip">
+              <UInput placeholder="Zip Code" v-model="item.zip_code" class="">
+                <template #leading>
+                  <UIcon name="i-material-symbols-light-barcode"></UIcon>
+                </template>
+              </UInput>
+            </UFormGroup>
+          </div>
+        </div>
+
+
       </div>
 
     </UFormGroup>
     <UFormGroup label="Photos" name="images">
-      <div
-        :class="'min-h-32 w-full border border-dotted border-2 rounded-md ' + (state.previewImages.length < 1 ? ' cursor-pointer' : '')">
-        <div v-if="state.previewImages.length == 0 && state.images.length==0" @click="state.refs.file.click()"
-          class="w-full min-h-32 justify-center items-center flex">
-          <UIcon name="i-material-symbols-light-add-photo-alternate-outline-rounded" class="text-7xl text-gray-400" />
+      <div class="flex flex-row w-full gap-x-2">
+        <div class="w-32 border border-dotted h-32 rounded-md relative">
+          <PreviewImage v-if="Object.hasOwn(state,'avatar_old') && state.avatar_old" :data="state.avatar_old" :width="'full'" :height="'full'"
+            @remove="state.avatar_old = null" />
+            <template v-else>
+              <UIcon class="w-32 h-32" v-if="!state.avatar.preview" name="i-material-symbols-light-account-box-outline"
+            @mouseover="display.avatarAction = true" />
+          <PreviewImage v-else :data="state.avatar.preview" :width="32" :height="32" @remove="state.avatar.preview = null"
+            :loading="state.avatar.preview.meter.value" :status="state.avatar.preview.meter.display" />
+          <Transition>
+            <div v-if="display.avatarAction" class="absolute top-0 right-0 w-full h-full backdrop-blur-md rounded-md"
+              @mouseout="display.avatarAction = false" @click="state.avatar.refs.click()">
+              <UIcon class="w-32 h-32" name="i-material-symbols-light-add" />
+            </div>
+          </Transition>
+          <input class="hidden" type="file" :ref="el => state.avatar.refs = el"
+            @change="previewSelected($event, state.avatar)" />
+            </template>
+          
         </div>
-
-        <div v-else class="grid grid-cols-1">
-          <div class="grid grid-cols-2 sm:grid-cols-4 p-2 gap-2">
-            <PreviewImage v-for="data, index in state.images" :data @remove="state.images.splice(index,1)" :key="index"/>
-            <PreviewImage v-for="data, index in state.previewImages" :data :index :loading="data.meter.value"
-              :status="data.meter.display" @remove="state.previewImages.splice(index, 1)" :key="index"/>
-          </div>
-          <UDivider />
-          <div class="flex justify-center cursor-pointer" @click="state.refs.file.click()">
-            <UIcon name="i-material-symbols-light-add-photo-alternate-outline-rounded" class="text-7xl text-gray-400" />
-          </div>
+        <div class="flex-1 border border-dotted h-32 rounded-md relative justify-center flex w-full"
+          @mouseover="display.bannerAction = true">
+          <PreviewImage v-if="Object.hasOwn(state,'banner_old') && state.banner_old" :data="state.banner_old" :width="'full'" :height="'full'"
+            @remove="state.banner_old = null" />
+            <template v-else>
+              <UIcon class="w-32 h-32" v-if="!state.banner.preview"
+            name="i-material-symbols-light-imagesmode-outline-rounded" />
+          <PreviewImage v-else :data="state.banner.preview" :width="'full'" :height="'full'"
+            @remove="state.banner.preview = null" :loading="state.banner.preview.meter.value"
+            :status="state.banner.preview.meter.display" />
+          <Transition>
+            <div v-show="display.bannerAction"
+              class="absolute flex justify-center top-0 right-0 w-full h-full backdrop-blur-md rounded-md"
+               @mouseout.stop="display.bannerAction=false" @click="state.banner.refs.click()">
+              <UIcon class="w-32 h-32" name="i-material-symbols-light-add" />
+            </div>
+          </Transition>
+          <input class="hidden" type="file" :ref="el => state.banner.refs = el"
+            @change="previewSelected($event, state.banner)" />
+            </template>
+          
         </div>
-
-        <input type="file" class="hidden" accept=".jpg, .jpeg, .png" :ref="el => state.refs.file = el"
-          @change="previewSelected($event)" multiple />
       </div>
     </UFormGroup>
+
     <UFormGroup label="Description" name="description">
       <UTextarea v-model="state.description" rows="6" />
     </UFormGroup>
@@ -75,40 +177,44 @@
 
 <script lang="ts" setup>
 import { z } from 'zod';
-const emits = defineEmits(['status','submit']),
-  props = defineProps(['submit','state','errors'])
+const emits = defineEmits(['status', 'submit']),
+  props = defineProps(['submit', 'state', 'errors'])
 
+const fileAvatar = ref(null)
+const display = ref({
+  avatarAction: false,
+  bannerAction: false,
+  password: true
+})
 const form = ref(),
   schema = z.object({
-    name: z.string({
-      required_error: "Tên nha cung cap không để trống",
-      invalid_type_error: "Tên nha cung cap không để trống",
-    }).min(6, { message: 'Tên nha cung cap có độ dài ít nhất 6 ký tự' }),
-    email:  z.string().email().optional().or(z.literal(''))
+    first_name: z.string({
+      required_error: "First name không để trống",
+      invalid_type_error: "First name không để trống",
+    }),
+    last_name: z.string({
+      required_error: "Last name không để trống",
+      invalid_type_error: "Last name không để trống",
+    }),
+    contacts: z.array(z.object({
+      email: z.string().email().optional().or(z.literal(''))
+    }))
   })
 
-async function previewSelected(e) {
+async function previewSelected(e, output) {
   for (let i = 0; i < e.srcElement.files.length; i++) {
 
     const file = e.srcElement.files[i]
     const resizedBlob = await resizeImage(file, 300),
       resized = URL.createObjectURL(resizedBlob)
-    let iss = false
-    props.state.previewImages.forEach(item => {
-      if (item && item.file.name == file.name) {
-        iss = true
-      }
-    })
-    if (!iss) {
-      props.state.previewImages.push({
-        original: URL.createObjectURL(file),
-        small: resized,
-        meter: {
-          display: false,
-          value: 0
-        },
-        file
-      })
+    output.preview = {
+      original: URL.createObjectURL(file),
+      small: resized,
+      meter: {
+        display: false,
+        value: 0
+      },
+      file
     }
   }
 }
@@ -142,12 +248,13 @@ watch(() => props.errors, (newVal, oldVal) => {
   if (newVal) {
     form.value.setErrors(props.errors)
   }
-},{deep:true})
+}, { deep: true })
 function isLetter(e) {
   let char = String.fromCharCode(e.charCode);
-  if(!/^[A-Za-z]+$/.test(char)) return true; 
+  if (!/^[A-Za-z]+$/.test(char)) return true;
   else e.preventDefault();
 }
+
 </script>
 
 <style></style>

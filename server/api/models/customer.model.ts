@@ -1,35 +1,40 @@
 import mongoose from 'mongoose'
 
 const schema:mongoose.Schema=new mongoose.Schema({
-    name:{
+    first_name:{
         type:String
     },
+    middle_name:{
+      type:String
+  },
+  last_name:{
+    type:String
+},
+account:{
+  username:{
+    type:String
+  },
+  password:{
+    type:String
+  },
+  status_active:{
+    type:String
+  },
+  type:{
+    type:String
+  }
+},
     avatar:{
-        type:String
+        type:Object
     },
     banner:{
-      type:String
+      type:Object
     },
-    address:{ 
-      type:String
+    contacts:{
+      type:Array
     },
-    city:{ 
-      type:String
-    },
-    province:{ 
-      type:String
-    },
-    country:{ 
-      type:String
-    },
-    zip:{ 
-      type:String
-    },
-    phone:{ 
-      type:String
-    },
-    status:{
-        type:String,
+    info:{
+      type:Array
     },
     note:{
         type:String,

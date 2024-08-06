@@ -68,7 +68,7 @@
           <template v-else>No Data</template>
         </template>
         <template #name-data="{ row }">
-          <div @dblclick="router.push('suppliers/detail-' + row._id)">{{ row.name }}</div>
+          <div @dblclick="router.push('customers/detail-' + row._id)">{{ row.first_name+' '+(row.middle_name?row.middle_name+' ':'')+row.last_name }}</div>
         </template>
       </UTable>
     </div>
@@ -93,7 +93,7 @@
         <template #header>
           <div class="flex items-center justify-between">
             <h3 class="capitalize text-base font-semibold leading-6 text-white dark:text-white">
-              {{ modals.form.data ? modals.form.data.name : 'tạo mới khach hang' }}
+              {{ modals.form.data ?( modals.form.data.first_name+' '+(modals.form.data.middle_name?modals.form.data.middle_name+' ':'')+modals.form.data.last_name) : 'tạo mới khach hang' }}
             </h3>
             <UButton :disabled="loading.create" color="gray" variant="ghost" icon="i-heroicons-x-mark-20-solid"
               class="-my-1"
@@ -140,7 +140,7 @@ const tableEl = ref(null)
 const table = ref({
   columns: [
     { key: '_id', label: 'ID' },
-    { key: 'name', label: 'name' },
+    { key: 'name', label: 'Full name' },
     { key: 'contacts', label: 'Contacts' },
     //{key:'description',label:'Description'},
     //{key:'note',label:'Note'},
@@ -219,7 +219,7 @@ async function deleteSelected(type = null) {
             table.value.selected = table.value.selected.filter(item1 => item1._id != item._id)
             notificationStore.showNotification({
               title: `${item._id} deleted success`,
-              description: `with name: <span class="text-red-500 font-bold text-xl">${item.name}</span>`,
+              description: `with name: <span class="text-red-500 font-bold text-xl">${item.first_name+' '+(item.middle_name?item.middle_name+' ':'')+item.last_name}</span>`,
               type: 'success'
             })
           })
@@ -240,7 +240,7 @@ function showForm(data = null) {
   modals.value.form.data = data
   window.history.pushState({}, null, route.fullPath + (data ? '/detail-' + data._id : '/create'))
   useSeoMeta({
-    title: data ? `${data.name}- Editing customer` : 'Create new customer'
+    title: data ? `Editing customer` : 'Create new customer'
   })
 }
 async function isConfirmed(data) {

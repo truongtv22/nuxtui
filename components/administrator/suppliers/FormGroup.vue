@@ -103,6 +103,7 @@ async function onSubmit() {
     emits('doing', true)
     const index = forms.value.indexOf(form)
     skipUnwrap.elements.value[index].scrollIntoView({ behavior: 'smooth', block: 'start' })
+    console.log(form)
     form.status.loading = true
     form.errors = []
     const validate = await schema.safeParse(form)

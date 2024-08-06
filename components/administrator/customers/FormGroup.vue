@@ -9,7 +9,7 @@
         <UButton v-if="forms.length > 1" @click="forms.splice(indexRoot, 1)" color="red"
           class="absolute -top-3 -right-3" :ui="{ rounded: 'rounded-full' }" icon="i-material-symbols-light-close-small"
           square size="2xs"></UButton>
-        <AdministratorSuppliersForm :state="itemRoot" @status="response = $event"
+        <AdministratorCustomersForm :state="itemRoot" @status="response = $event"
           :submit="test == itemRoot ? true : null" :errors="itemRoot.errors" @submit="onSubmit()"/>
 
 
@@ -51,6 +51,9 @@ onBeforeMount(() => {
       if(key=='contacts' && props.data.contacts.length==0){
         oldData.value.contacts.push({address:null,phone:null})
       }
+      if(['banner','avatar'].includes(key)){
+        forms.value[0][key+'_old']=props.data[key]
+      }
     })
   }
 })
@@ -59,10 +62,14 @@ const forms = ref([]),
   elements = ref([]),
   test = ref(null),
   schema = z.object({
-    name: z.string({
-      required_error: "Tên nha cung cap không để trống",
-      invalid_type_error: "Tên nha cung cap không để trống",
-    }).min(6, { message: 'Tên nha cung cap có độ dài ít nhất 6 ký tự' }),
+    first_name: z.string({
+      required_error: "Fist name không để trống",
+      invalid_type_error: "Fist name cung cap không để trống",
+    }),
+    last_name: z.string({
+      required_error: "Last name không để trống",
+      invalid_type_error: "Last namecung cap không để trống",
+    }),
     email: z.string().email().optional().or(z.literal(''))
   })
 const skipUnwrap = { elements }
@@ -71,11 +78,26 @@ const formProcessing = computed(() => {
 })
 function insertForm() {
   forms.value.push({
-    name: null,
+    account:{
+      username:null,
+      password:null,
+      type:null,
+      status_active:false
+    },
+    first_name: null,
+    middle_name:null,
+    last_name:null,
     email: '',
     contacts: [{
-      address: null,
-      phone: null
+      email: null,
+      phone_number: null
+    }],
+    info:[{
+      address:null,
+      district:null,
+      province:null,
+      country:null,
+      zip_code:null
     }],
     created_at: null,
     created_by: null,
@@ -84,12 +106,15 @@ function insertForm() {
     description: null,
     note: null,
     tags: null,
-    images: [],
-    previewImages: [],
-    refs: {
-      file: null,
-      main: null,
-      form: null
+    avatar: {
+      file:null,
+      preview:null,
+      refs:null
+    },
+    banner:{
+      file:null,
+      preview:null,
+      refs:null
     },
     status: {
       loading: false
@@ -107,8 +132,8 @@ async function onSubmit() {
     form.errors = []
     const validate = await schema.safeParse(form)
     let nameValid = true
-    if ((oldData.value && oldData.value.name != form.name) || !oldData.value) {
-      nameValid = await $fetch('/api/suppliers/get?' + new URLSearchParams({ name: form.name })).then(response => {
+    if ((oldData.value && oldData.value.account.username != form.account.username) || !oldData.value && form.account.username) {
+      nameValid = await $fetch('/api/customers/get?' + new URLSearchParams({ username: form.account.username })).then(response => {
         return response.length < 1
       })
     }
@@ -120,64 +145,96 @@ async function onSubmit() {
         })
       }
       if (!nameValid) {
-        form.errors.push({ path: 'name', message: 'Supplier is existed' })
+        form.errors.push({ path: 'account.username', message: 'Username is existed' })
       }
       if (validate.success && nameValid) {
-        const imageUrls = []
+        const avatarUrls = {},
+        bannerUrls={}
         const promise = async () => {
-          for await (const obj of form.previewImages) {
-            if (Object.hasOwn(obj, 'file')) {
+            if (form.avatar.preview) {
               const temp = {}
-              const objIndex = form.previewImages.indexOf(obj)
-              form.previewImages[objIndex].meter.display = true
+              form.avatar.preview.meter.display = true
               const interval = setInterval(() => {
-                if (form.previewImages[objIndex].meter.value < 100) {
-                  form.previewImages[objIndex].meter.value += 1
+                if (form.avatar.preview.meter.value < 100) {
+                  form.avatar.preview.meter.value += 1
                 }
-                if (form.previewImages[objIndex].meter.value == 100) {
+                if (form.avatar.preview.meter.value == 100) {
                   clearInterval(interval)
                 }
               }, 100)
-              await uploadFile(obj.file).then(async (res) => {
+              await uploadFile(form.avatar.preview.file).then(async (res) => {
                 if (res.status == 'success') {
-                  temp.original = res.data.original
-                  return await uploadFile(obj.file, 300)
+                  avatarUrls.original = res.data.original
+                  return await uploadFile(form.avatar.preview.file, 300)
                 }
               }).then(async (res) => {
                 if (res?.status == 'success') {
-                  temp.medium = res.data.original
-                  return await uploadFile(obj.file, 100)
+                  avatarUrls.medium = res.data.original
+                  return await uploadFile(form.avatar.preview.file, 100)
                 }
               }).then(res => {
                 if (res?.status == 'success') {
-                  temp.small = res.data.original
-                  form.previewImages[objIndex].meter.value = 100
-                  form.previewImages[objIndex].meter.display = false
-                  delete obj.file
-                  imageUrls.push(temp)
+                  avatarUrls.small = res.data.original
+                  form.avatar.preview.meter.value = 100
+                  form.avatar.preview.meter.display = false
                   clearInterval(interval)
                 }
               })
             }
-          }
+            if (form.banner.preview) {
+              form.banner.preview.meter.display = true
+              const interval = setInterval(() => {
+                if (form.banner.preview.meter.value < 100) {
+                  form.banner.preview.meter.value += 1
+                }
+                if (form.banner.preview.meter.value == 100) {
+                  clearInterval(interval)
+                }
+              }, 100)
+              await uploadFile(form.banner.preview.file).then(async (res) => {
+                if (res.status == 'success') {
+                  bannerUrls.original = res.data.original
+                  return await uploadFile(form.banner.preview.file, 300)
+                }
+              }).then(async (res) => {
+                if (res?.status == 'success') {
+                  bannerUrls.medium = res.data.original
+                  return await uploadFile(form.banner.preview.file, 100)
+                }
+              }).then(res => {
+                if (res?.status == 'success') {
+                  bannerUrls.small = res.data.original
+                  form.banner.preview.meter.value = 100
+                  form.banner.preview.meter.display = false
+                  clearInterval(interval)
+                }
+              })
+            }
         }
         await promise().then(async () => {
           const dataPrepared = {}
           Object.keys(form).forEach(key => {
-            if (!['previewImages', 'refs', 'status'].includes(key)) {
+            if (!['status','error','previewImages'].includes(key)) {
               dataPrepared[key] = form[key]
             }
           })
-          dataPrepared.images = dataPrepared.images.concat(imageUrls)
+          if(Object.keys(avatarUrls).length>0){
+            dataPrepared.avatar = avatarUrls
+          }
+          if(Object.keys(bannerUrls).length>0){
+            dataPrepared.banner = bannerUrls
+          }
+          
           dataPrepared.created_at = new Date()
-          dataPrepared.contacts = dataPrepared.contacts.filter(item => item.address || item.phone)
-          await $fetch(`/api/suppliers/${oldData.value ? 'update' : 'create'}`, {
+          dataPrepared.contacts = dataPrepared.contacts.filter(item => item.email || item.phone)
+          dataPrepared.info = dataPrepared.info.filter(item => item.address || item.province || item.district || item.country)
+          await $fetch(`/api/customers/${oldData.value ? 'update' : 'create'}`, {
             method: oldData.value ? 'PUT' : 'POST',
             body: JSON.stringify(dataPrepared)
           }).then(rs => {
             if (rs.length > 0 || rs.modifiedCount==1) {
               notificationStore.showNotification({
-                title: `Supplier: <strong>${form.name}</strong> <span class="text-${props.data ? 'blue' : 'green'}-500">${props.data ? 'updated' : 'created'}</span> success`,
+                title: `Supplier: <strong>${form.first_name} ${form.middle_name} ${form.last_name}</strong> <span class="text-${props.data ? 'blue' : 'green'}-500">${props.data ? 'updated' : 'created'}</span> success`,
                 type: 'success'
               })
               if (!oldData.value) {

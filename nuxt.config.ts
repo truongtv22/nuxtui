@@ -6,7 +6,7 @@ export default defineNuxtConfig({
     }
   },
   devtools: { enabled: true },
-  modules: ['@nuxt/ui', "nuxt-lodash", '@pinia/nuxt','@nuxt/image',],
+  modules: ['@nuxt/ui', "nuxt-lodash", '@pinia/nuxt', '@nuxt/image', "@nuxt/icon"],
   plugins:[],
   colorMode: {
     preference: 'system'
