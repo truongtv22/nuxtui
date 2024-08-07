@@ -60,6 +60,10 @@
           <UTextarea v-model="itemRoot.tags" rows="6" disabled />
         </UFormGroup>
       </UForm>
+      <div v-if="display.barcode" class="absolute w-full h-full z-50 top-0 right-0">
+      <BarcodeReader @result="itemRoot.barcode=$event,display.barcode=false"/>
+    </div>
+    
     </div>
     <!----------------------------end create new form------------------------------>
     <UTooltip v-if="!props.data" text="Add more product" :popper="{ arrow: true }" class="w-full">
@@ -75,9 +79,6 @@
       <UButton color="red" variant="ghost" :loading="status.loading" :disabled="status.loading">Cancel</UButton>
     </div>
     <div v-if="status.loading" class="w-full absolute top-0 left-0 z-50 h-full cursor-wait"></div>
-    <div v-if="display.barcode" class="absolute w-full h-full z-50 top-0 right-0">
-      <BarcodeReader @result="product.barcode=$event,display.barcode=false"/>
-    </div>
     
   </UForm>
 
