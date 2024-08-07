@@ -15,7 +15,7 @@
           <UFormGroup label="Barcode" name="barcode">
             <UButtonGroup class="w-full">
               <UInput v-model="itemRoot.barcode" class="w-full" />
-              <UButton icon="i-material-symbols-light-barcode-scanner-rounded" />
+              <UButton icon="i-material-symbols-light-barcode-scanner-rounded" @click="display.barcode=true"/>
             </UButtonGroup>
           </UFormGroup>
         </div>
@@ -75,6 +75,7 @@
       <UButton color="red" variant="ghost" :loading="status.loading" :disabled="status.loading">Cancel</UButton>
     </div>
     <div v-if="status.loading" class="w-full absolute top-0 left-0 z-50 h-full cursor-wait"></div>
+    <BarcodeReader v-if="display.barcode"/>
   </UForm>
 
 </template>
@@ -86,18 +87,11 @@ import PreviewImage from '~/components/PreviewImage.vue';
 const notificationStore = useMyNotificationsStore()
 const props = defineProps(['modelValue', 'data'])
 const emits = defineEmits(['update:modelValue', 'confirmWindow', 'newData', 'doing'])
-const isOpen = computed({
-  get() {
-    return props.modelValue
-  },
-  set(val) {
-    emits('update:modelValue', val)
-  }
+
+const display=ref({
+  barcode:false
 })
-const sizeScreen = ref({
-  w: null,
-  h: null
-})
+
 onBeforeMount(async () => {
   await $fetch('/api/categories/list').then(res => {
     categoriesData.value = res
@@ -138,7 +132,6 @@ const status = ref({
 })
 const wrapForm = ref([]),
   skipUnwrap = { wrapForm },
-  skipUnwrap1 = { selected },
   fileSelected1 = ref([]),
   categoriesData = ref([]),
   form = ref([])
@@ -166,32 +159,7 @@ const meter = ref({
   data: 0,
   indexForm: null
 })
-const categoriesSelected = computed({
-  get: () => product.value.categories.value,
-  set: async (val) => {
-    const arr = val.map(async (item) => {
-      if (item._id) {
-        return item
-      }
-      status.value.loading = true
-      return await $fetch('/api/categories/create', {
-        method: "POST",
-        body: JSON.stringify({
-          title: item.title
-        })
-      }).then(res => {
-        if (res.length > 0) {
-          product.value.categories.data.push(res[0])
-          status.value.loading = false
-          return res[0]
-        }
-      })
-    })
-    product.value.categories.value = await Promise.all(arr)
-  }
-})
 
-const fileSelected = ref()
 async function previewSelected(e, root) {
   for (let i = 0; i < e.srcElement.files.length; i++) {
     

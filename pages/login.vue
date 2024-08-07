@@ -11,6 +11,7 @@
       <UDivider label="or"/>
       <UButton block type="submit" color="gray"><Icon name="logos:google-icon" style="color: black" />Continue with Google</UButton>
       <UButton block class="text-center" color="gray" type="submit"><Icon name="logos:facebook" style="color: black" />Continue with Facebook</UButton>
+      <UButton block class="text-center" color="gray" type="submit"><Icon name="grommet-icons:github" style="color: black" />Continue with Github</UButton>
     </div>
   </div>
 
