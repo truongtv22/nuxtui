@@ -33,7 +33,7 @@ onMounted(()=>{
     ctx.value.canvas.height = window.innerHeight
     ctx.value.strokeStyle = "orange";
     ctx.value.beginPath();
-    requestAnimationFrame(loop);
+    //requestAnimationFrame(loop);
 })
 </script>
 

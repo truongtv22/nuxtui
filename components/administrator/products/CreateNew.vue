@@ -75,7 +75,10 @@
       <UButton color="red" variant="ghost" :loading="status.loading" :disabled="status.loading">Cancel</UButton>
     </div>
     <div v-if="status.loading" class="w-full absolute top-0 left-0 z-50 h-full cursor-wait"></div>
-    <BarcodeReader v-if="display.barcode"/>
+    <div v-if="display.barcode" class="absolute w-full h-full z-50 top-0 right-0">
+      <BarcodeReader @result="product.barcode=$event,display.barcode=false"/>
+    </div>
+    
   </UForm>
 
 </template>

@@ -1,5 +1,5 @@
 <template>
-  <div class="flex justify-center">
+  <div class="flex justify-center w-full h-full relative">
     <div :style="(display.video ? `height: ${constrains.video.height}px;` : '')" ref="container"
       class="flex justify-center relative w-full">
       <div :class="`w-${display.video ? 'full' : '3/4'} relative h-full`">
