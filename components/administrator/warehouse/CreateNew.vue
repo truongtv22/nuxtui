@@ -22,6 +22,9 @@ const sizeScreen = ref({
   w: null,
   h: null
 })
+const display=ref({
+  barcode:false
+})
 function onResize() {
   sizeScreen.value.w = window.innerWidth
   sizeScreen.value.h = window.innerHeight
@@ -617,11 +620,6 @@ function generateColorFromString (str) {
 
         <UForm :schema="schema" :state="productInfo" class="space-y-4" @submit="onSubmit">
           <UFormGroup label="Tên sản phẩm" name="name">
-            <ClientOnly >
-              {{result}}
-              <QrcodeStream :track="trackFunctionSelected.value" :formats="barcodeFormats"  :camera="{ width: { min: 1280 }, height: { min:720 } }" @detect="onDetect" @error="onError"> </QrcodeStream>
-            </ClientOnly>
-            
             <div v-if="productInfo.selected.length > 0"
               class="w-full flex-col justify-center flex gap-y-1 border p-2 rounded-md">
               <h1 class="text-center border border-dotted border-gray-800 rounded-md p-2" @dblclick="router.push('/')">
@@ -642,7 +640,7 @@ function generateColorFromString (str) {
           <UFormGroup label="Barcode" name="barcode">
             <UButtonGroup class="w-full">
               <UInput v-model="productInfo.barcode" class="w-full" disabled/>
-              <UButton icon="i-material-symbols-light-barcode-scanner-rounded" @click=""/>
+              <UButton icon="i-material-symbols-light-barcode-scanner-rounded" @click="display.barcode=true"/>
             </UButtonGroup>
           </UFormGroup>
           
@@ -853,6 +851,10 @@ function generateColorFromString (str) {
       </template>
     </SideOver>
     <ConfirmModal v-model="confirmModal.display" @is-confirmed="isOpen=!$event" :title="confirmModal.title" :description="confirmModal.description"/>
+    <UModal v-model="display.barcode" >
+          <BarcodeReader @result="itemRoot.barcode=$event,display.barcode=false"/>
+          <UButton :ui="{rounded:'rounded-full'}" icon="material-symbols-light:close-small-outline-rounded" @click="display.barcode=false" class="absolute -top-3 -right-3" color="red"></UButton>
+        </UModal>
   </div>
 </template>
 <style>

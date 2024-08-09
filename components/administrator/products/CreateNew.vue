@@ -60,9 +60,13 @@
           <UTextarea v-model="itemRoot.tags" rows="6" disabled />
         </UFormGroup>
       </UForm>
-      <div v-if="display.barcode" class="absolute w-full h-full z-50 top-0 right-0">
-      <BarcodeReader @result="itemRoot.barcode=$event,display.barcode=false"/>
-    </div>
+        <UModal v-model="display.barcode" >
+          <BarcodeReader @result="itemRoot.barcode=$event,display.barcode=false"/>
+          <UButton :ui="{rounded:'rounded-full'}" icon="material-symbols-light:close-small-outline-rounded" @click="display.barcode=false" class="absolute -top-3 -right-3" color="red"></UButton>
+        </UModal>
+      
+      
+
     
     </div>
     <!----------------------------end create new form------------------------------>

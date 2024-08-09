@@ -5,7 +5,7 @@
       <div :class="`w-${display.video ? 'full' : '3/4'} relative h-full`">
         <canvas style="position: absolute;top:0;left:0px;" ref="canvas"></canvas>
         <div v-if="display.video" style="" class="absolute w-full h-full flex items-center justify-center">
-          <div class="relative flex items-center justify-center w-3/4 h-3/4 border-2 rounded-md" ref="el1">
+          <div class="relative flex items-center justify-center w-3/4 h-3/4 border-2 rounded-md w-full h-full" ref="el1">
             <div class="w-full h-8 bg-white top-0 absolute backdrop-blur-3xl opacity-50" ref="el2"
               style="transition: all ease-in-out 1s;"></div>
           </div>
