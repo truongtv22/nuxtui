@@ -852,7 +852,7 @@ function generateColorFromString (str) {
     </SideOver>
     <ConfirmModal v-model="confirmModal.display" @is-confirmed="isOpen=!$event" :title="confirmModal.title" :description="confirmModal.description"/>
     <UModal v-model="display.barcode" >
-          <BarcodeReader @result="itemRoot.barcode=$event,display.barcode=false"/>
+          <BarcodeReader @result="productInfo.barcode=$event,display.barcode=false"/>
           <UButton :ui="{rounded:'rounded-full'}" icon="material-symbols-light:close-small-outline-rounded" @click="display.barcode=false" class="absolute -top-3 -right-3" color="red"></UButton>
         </UModal>
   </div>
